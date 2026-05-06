@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LightningMCLLM</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header>
+  <h1>LightningMCLLM</h1>
+  <div class="conn">
+    <span id="conn-status" class="dot offline" title="WebSocket"></span>
+    <span id="env-label">env: —</span>
+    <select id="env-select"></select>
+    <button id="reload-btn" title="Reload show from disk">Reload</button>
+  </div>
+</header>
+
+<main>
+  <section class="panel" id="status-panel">
+    <h2>Status</h2>
+    <div class="status-grid">
+      <div><label>BPM</label><span id="bpm-value">—</span></div>
+      <div><label>Source</label><span id="bpm-source">—</span></div>
+      <div><label>Beat</label><span id="beat-pos">—</span></div>
+      <div><label>Master</label><span id="master-value">—</span></div>
+      <div><label>DMX</label><span id="dmx-status">—</span></div>
+      <div><label>Voices</label><span id="voice-count">—</span></div>
+      <div><label>NonZero ch</label><span id="nonzero">—</span></div>
+      <div><label>Tick</label><span id="tick-rate">—</span></div>
+    </div>
+    <div class="control-row">
+      <label>BPM</label>
+      <input type="range" id="bpm-slider" min="40" max="240" value="120" step="0.5">
+      <input type="number" id="bpm-input" min="40" max="240" value="120" step="0.5">
+      <button id="tap-btn">Tap</button>
+    </div>
+    <div class="control-row">
+      <label>Master</label>
+      <input type="range" id="master-slider" min="0" max="1" step="0.01" value="1">
+      <button class="danger" id="blackout-btn">BLACKOUT</button>
+      <button id="release-blackout-btn">Release</button>
+      <button id="stop-all-btn">Stop chases</button>
+    </div>
+    <div class="control-row">
+      <label>Genre</label>
+      <select id="genre-select"><option value="">— pick —</option></select>
+      <button id="genre-apply">Apply</button>
+      <span id="genre-hint" class="muted-hint"></span>
+    </div>
+    <div id="errors" class="errors"></div>
+  </section>
+
+  <section class="panel" id="bank-panel">
+    <h2>Bank slots</h2>
+    <div class="bank-select-row">
+      <label>Bank:</label>
+      <select id="bank-select"></select>
+    </div>
+    <div id="slots-grid" class="slots-grid"></div>
+  </section>
+
+  <section class="panel" id="show-panel">
+    <h2>Show</h2>
+    <div class="cols">
+      <div>
+        <h3>Scenes</h3>
+        <ul id="scenes-list" class="link-list"></ul>
+      </div>
+      <div>
+        <h3>Chases</h3>
+        <ul id="chases-list" class="link-list"></ul>
+      </div>
+      <div>
+        <h3>Fixtures</h3>
+        <ul id="fixtures-list" class="link-list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="universe-panel">
+    <h2>Universe 0</h2>
+    <canvas id="universe-canvas" width="1024" height="64"></canvas>
+    <div class="universe-hint">Each pixel = one DMX channel (1..512). Brightness = channel value.</div>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

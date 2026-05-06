@@ -1,0 +1,21 @@
+# Generic 7-channel RGBW LED par can.
+# Profile is intentionally minimal so it works for many cheap LED pars.
+name: generic_rgbw_par
+description: 7-channel RGBW par (dimmer + RGBW + strobe + macro)
+manufacturer: generic
+model: rgbw_par_7ch
+channels:
+  - { offset: 0, role: dimmer, default: 0, description: "master brightness" }
+  - { offset: 1, role: color/red, default: 0 }
+  - { offset: 2, role: color/green, default: 0 }
+  - { offset: 3, role: color/blue, default: 0 }
+  - { offset: 4, role: color/white, default: 0 }
+  - offset: 5
+    role: strobe
+    default: 0
+    description: "0 = off, 1-255 = strobe rate"
+    presets: { off: 0, slow: 30, fast: 200 }
+  - offset: 6
+    role: effect/macro
+    default: 0
+    presets: { none: 0, rainbow: 50, pulse: 100, fade: 150 }

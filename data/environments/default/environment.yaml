@@ -1,0 +1,33 @@
+# The "default" environment — a small starter rig.
+# Two front pars, two moving heads. Tagged so scenes target by role.
+name: default
+description: Starter rig — two front RGBW pars + two moving heads
+universes: [0]
+default_bank: starter
+
+fixtures:
+  # Front fill — 7 channels each, addresses 1 and 8.
+  - name: par-l
+    profile: generic_rgbw_par
+    address: 1
+    universe: 0
+    tags: [par, front, left]
+
+  - name: par-r
+    profile: generic_rgbw_par
+    address: 8
+    universe: 0
+    tags: [par, front, right]
+
+  # Moving heads — 16 channels each, addresses 100 and 116 (gap for safety).
+  - name: mh-l
+    profile: generic_moving_head_16ch
+    address: 100
+    universe: 0
+    tags: [moving_head, mh, left]
+
+  - name: mh-r
+    profile: generic_moving_head_16ch
+    address: 116
+    universe: 0
+    tags: [moving_head, mh, right]

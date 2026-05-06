@@ -1,0 +1,15 @@
+# Moving heads alternate between blue-up and amber-down every 2 beats.
+# Demonstrates parallel actions: while MHs transition, pars also strobe softly.
+name: mh_alternating_sweep
+description: Moving heads sweep up/down with alternating colours.
+loop: true
+length_beats: 8
+
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: moving_head }, scene: mh_beam_open_blue, fade_seconds: 1.5, easing: ease_in_out }
+
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: moving_head }, scene: mh_beam_open_amber, fade_seconds: 1.5, easing: ease_in_out }

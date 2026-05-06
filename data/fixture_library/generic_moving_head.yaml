@@ -1,0 +1,29 @@
+# 16-channel moving head — pan, tilt, RGBW, gobo, strobe, prism, focus, dimmer.
+# Inspired by Stairville MH-100 / MH-x25 type fixtures. Adjust offsets per actual unit.
+name: generic_moving_head_16ch
+description: 16-channel LED moving head
+manufacturer: generic
+model: mh_16ch
+channels:
+  - { offset: 0, role: position/pan, default: 128 }
+  - { offset: 1, role: position/pan_fine, default: 0 }
+  - { offset: 2, role: position/tilt, default: 128 }
+  - { offset: 3, role: position/tilt_fine, default: 0 }
+  - { offset: 4, role: movement/speed, default: 0, description: "0 = fastest" }
+  - { offset: 5, role: dimmer, default: 0 }
+  - { offset: 6, role: shutter, default: 255, description: "0 closed, 255 open, mid = strobe" }
+  - { offset: 7, role: color/red, default: 0 }
+  - { offset: 8, role: color/green, default: 0 }
+  - { offset: 9, role: color/blue, default: 0 }
+  - { offset: 10, role: color/white, default: 0 }
+  - offset: 11
+    role: gobo/wheel
+    default: 0
+    presets: { open: 0, dots: 32, lines: 64, stars: 96, breakup: 128, swirl: 160, plant: 192, custom: 224 }
+  - { offset: 12, role: gobo/rotation, default: 0 }
+  - { offset: 13, role: prism, default: 0 }
+  - { offset: 14, role: focus, default: 128 }
+  - offset: 15
+    role: control/reset
+    default: 0
+    description: "200-220 triggers reset; keep at 0 normally"

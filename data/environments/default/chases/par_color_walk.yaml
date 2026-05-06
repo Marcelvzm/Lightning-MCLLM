@@ -1,0 +1,22 @@
+# A free-running (time-anchored, not BPM) ambient color walk for the pars.
+name: par_color_walk
+description: Slow ambient colour drift on pars, 16-second loop, BPM-independent.
+loop: true
+length_seconds: 16
+
+steps:
+  - at_seconds: 0
+    actions:
+      - { kind: transition, group: { tag: par }, values: { dimmer: 180, color/red: 0, color/green: 60, color/blue: 255, color/white: 0 }, fade_seconds: 4.0, easing: ease_in_out }
+
+  - at_seconds: 4
+    actions:
+      - { kind: transition, group: { tag: par }, values: { dimmer: 180, color/red: 200, color/green: 30, color/blue: 220, color/white: 0 }, fade_seconds: 4.0, easing: ease_in_out }
+
+  - at_seconds: 8
+    actions:
+      - { kind: transition, group: { tag: par }, values: { dimmer: 180, color/red: 255, color/green: 100, color/blue: 30, color/white: 40 }, fade_seconds: 4.0, easing: ease_in_out }
+
+  - at_seconds: 12
+    actions:
+      - { kind: transition, group: { tag: par }, values: { dimmer: 180, color/red: 60, color/green: 255, color/blue: 80, color/white: 0 }, fade_seconds: 4.0, easing: ease_in_out }

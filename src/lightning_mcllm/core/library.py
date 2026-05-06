@@ -1,0 +1,395 @@
+"""Loaders + the runtime `Show` aggregate.
+
+`FixtureLibrary` indexes the global fixture profiles. `Show` joins one
+environment's manifest with its scenes/chases/banks, validates cross-references,
+and exposes lookups the engine needs (resolve scene, fixture by name, etc.).
+
+Validation strategy: collect *all* errors during load instead of failing on the
+first. The engine should never silently accept a broken show, but the user/LLM
+needs the full list to fix the YAML quickly.
+"""
+
+from __future__ import annotations
+
+import logging
+from collections.abc import Iterable
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from pydantic import ValidationError
+
+from lightning_mcllm.core.banks import Bank
+from lightning_mcllm.core.chases import Chase, ReleaseAction, SnapAction, TransitionAction
+from lightning_mcllm.core.environments import EnvironmentManifest
+from lightning_mcllm.core.fixtures import FixtureInstance, FixtureProfile
+from lightning_mcllm.core.genres import GenreList, GenrePreset
+from lightning_mcllm.core.scenes import RenderedScene, Scene
+from lightning_mcllm.core.selectors import Selector, resolve as selector_resolve
+from lightning_mcllm.yaml_io import load_data
+
+log = logging.getLogger(__name__)
+
+
+@dataclass
+class LoadIssues:
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+    @property
+    def ok(self) -> bool:
+        return not self.errors
+
+    def extend(self, other: "LoadIssues") -> None:
+        self.errors.extend(other.errors)
+        self.warnings.extend(other.warnings)
+
+
+def _iter_yaml_files(directory: Path) -> Iterable[Path]:
+    if not directory.exists():
+        return
+    for p in sorted(directory.iterdir()):
+        if p.is_file() and p.suffix.lower() in {".yaml", ".yml"}:
+            yield p
+
+
+def _format_validation_error(path: Path, exc: ValidationError) -> str:
+    msgs = []
+    for err in exc.errors():
+        loc = ".".join(str(x) for x in err["loc"])
+        msgs.append(f"  - {loc}: {err['msg']}")
+    return f"{path}: validation errors:\n" + "\n".join(msgs)
+
+
+# ---------------------------------------------------------------------------
+# Fixture library
+# ---------------------------------------------------------------------------
+
+
+class FixtureLibrary:
+    def __init__(self, profiles: dict[str, FixtureProfile]):
+        self._profiles = profiles
+
+    def __contains__(self, name: str) -> bool:
+        return name in self._profiles
+
+    def get(self, name: str) -> FixtureProfile | None:
+        return self._profiles.get(name)
+
+    def require(self, name: str) -> FixtureProfile:
+        prof = self._profiles.get(name)
+        if prof is None:
+            raise KeyError(f"unknown fixture profile {name!r}")
+        return prof
+
+    def names(self) -> list[str]:
+        return sorted(self._profiles.keys())
+
+    def all(self) -> list[FixtureProfile]:
+        return list(self._profiles.values())
+
+
+def load_fixture_library(directory: Path) -> tuple[FixtureLibrary, LoadIssues]:
+    issues = LoadIssues()
+    profiles: dict[str, FixtureProfile] = {}
+    for path in _iter_yaml_files(directory):
+        try:
+            data = load_data(path)
+            if data is None:
+                issues.warnings.append(f"{path}: empty file")
+                continue
+            prof = FixtureProfile.model_validate(data)
+        except ValidationError as e:
+            issues.errors.append(_format_validation_error(path, e))
+            continue
+        except Exception as e:  # noqa: BLE001 — parse-time errors must not crash loader
+            issues.errors.append(f"{path}: failed to parse — {e}")
+            continue
+        if prof.name in profiles:
+            issues.errors.append(f"{path}: profile name {prof.name!r} already defined")
+            continue
+        profiles[prof.name] = prof
+    return FixtureLibrary(profiles), issues
+
+
+# ---------------------------------------------------------------------------
+# Show — environment + scenes + chases + banks, joined with library
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class Show:
+    """Everything the engine needs to run one environment."""
+
+    library: FixtureLibrary
+    manifest: EnvironmentManifest
+    fixtures: list[FixtureInstance]
+    scenes: dict[str, Scene]
+    chases: dict[str, Chase]
+    banks: dict[str, Bank]
+    env_dir: Path
+    genres: dict[str, GenrePreset] = field(default_factory=dict)
+
+    @property
+    def name(self) -> str:
+        return self.manifest.name
+
+    def fixture_by_name(self, name: str) -> FixtureInstance | None:
+        for f in self.fixtures:
+            if f.name == name:
+                return f
+        return None
+
+    def fixtures_for(self, selector: Selector) -> list[FixtureInstance]:
+        return selector_resolve(selector, self.fixtures)
+
+    def render_scene(self, scene: Scene) -> RenderedScene:
+        """Resolve a scene against this show's fixtures into (universe, addr) -> value."""
+        out: dict[tuple[int, int], int] = {}
+        for target in scene.targets:
+            matches = selector_resolve(target.select, self.fixtures)
+            for fixture in matches:
+                profile = self.library.get(fixture.profile)
+                if profile is None:
+                    log.warning("scene %r: fixture %r references unknown profile %r",
+                                scene.name, fixture.name, fixture.profile)
+                    continue
+                # Inline role values
+                for role, value in target.values.items():
+                    offset = profile.role_to_offset(role)
+                    if offset is None:
+                        continue
+                    out[(fixture.universe, fixture.address - 1 + offset)] = int(value)
+                # Preset values (resolved via profile.presets)
+                if target.presets:
+                    for role, preset_name in target.presets.items():
+                        offset = profile.role_to_offset(role)
+                        if offset is None:
+                            continue
+                        # Find the channel and look up its presets
+                        ch = next((c for c in profile.channels if c.role == role), None)
+                        if ch is None or not ch.presets or preset_name not in ch.presets:
+                            log.warning("scene %r: preset %r not found for role %r on profile %r",
+                                        scene.name, preset_name, role, profile.name)
+                            continue
+                        out[(fixture.universe, fixture.address - 1 + offset)] = int(ch.presets[preset_name])
+        return RenderedScene(name=scene.name, values=out)
+
+    def render_inline_values(
+        self, selector: Selector, role_values: dict[str, int]
+    ) -> dict[tuple[int, int], int]:
+        """Resolve inline (role -> value) for a selector — used by chase actions."""
+        out: dict[tuple[int, int], int] = {}
+        for fixture in self.fixtures_for(selector):
+            profile = self.library.get(fixture.profile)
+            if profile is None:
+                continue
+            for role, value in role_values.items():
+                offset = profile.role_to_offset(role)
+                if offset is None:
+                    continue
+                out[(fixture.universe, fixture.address - 1 + offset)] = int(value)
+        return out
+
+    def channels_for(self, selector: Selector) -> set[tuple[int, int]]:
+        """Every (universe, addr) channel touched by any fixture matching the selector."""
+        out: set[tuple[int, int]] = set()
+        for fixture in self.fixtures_for(selector):
+            profile = self.library.get(fixture.profile)
+            if profile is None:
+                continue
+            for ch in profile.channels:
+                out.add((fixture.universe, fixture.address - 1 + ch.offset))
+        return out
+
+
+# ---------------------------------------------------------------------------
+# Environment loader
+# ---------------------------------------------------------------------------
+
+
+def load_show(env_dir: Path, library: FixtureLibrary) -> tuple[Show | None, LoadIssues]:
+    """Load an environment directory into a runtime Show.
+
+    Layout:
+        env_dir/environment.yaml
+        env_dir/scenes/*.yaml
+        env_dir/chases/*.yaml
+        env_dir/banks/*.yaml
+    """
+    issues = LoadIssues()
+
+    manifest_path = env_dir / "environment.yaml"
+    if not manifest_path.exists():
+        issues.errors.append(f"{env_dir}: missing environment.yaml")
+        return None, issues
+    try:
+        manifest_data = load_data(manifest_path)
+        manifest = EnvironmentManifest.model_validate(manifest_data)
+    except ValidationError as e:
+        issues.errors.append(_format_validation_error(manifest_path, e))
+        return None, issues
+    except Exception as e:  # noqa: BLE001
+        issues.errors.append(f"{manifest_path}: {e}")
+        return None, issues
+
+    # Validate fixtures against library
+    valid_fixtures: list[FixtureInstance] = []
+    occupied: dict[int, dict[int, str]] = {}  # universe -> {address -> fixture_name}
+    for fx in manifest.fixtures:
+        profile = library.get(fx.profile)
+        if profile is None:
+            issues.errors.append(
+                f"{manifest_path}: fixture {fx.name!r} references unknown profile {fx.profile!r}"
+            )
+            continue
+        end = fx.address + profile.footprint - 1
+        if end > 512:
+            issues.errors.append(
+                f"fixture {fx.name!r}: address {fx.address} + footprint {profile.footprint} exceeds 512"
+            )
+            continue
+        u_map = occupied.setdefault(fx.universe, {})
+        for a in range(fx.address, end + 1):
+            if a in u_map:
+                issues.errors.append(
+                    f"fixture {fx.name!r} (univ {fx.universe} addr {a}) overlaps with {u_map[a]!r}"
+                )
+                break
+        else:
+            for a in range(fx.address, end + 1):
+                u_map[a] = fx.name
+            valid_fixtures.append(fx)
+
+    # Load scenes
+    scenes: dict[str, Scene] = {}
+    for path in _iter_yaml_files(env_dir / "scenes"):
+        try:
+            data = load_data(path)
+            if data is None:
+                continue
+            scene = Scene.model_validate(data)
+        except ValidationError as e:
+            issues.errors.append(_format_validation_error(path, e))
+            continue
+        except Exception as e:  # noqa: BLE001
+            issues.errors.append(f"{path}: {e}")
+            continue
+        if scene.name in scenes:
+            issues.errors.append(f"{path}: scene {scene.name!r} already defined")
+            continue
+        scenes[scene.name] = scene
+
+    # Load chases
+    chases: dict[str, Chase] = {}
+    for path in _iter_yaml_files(env_dir / "chases"):
+        try:
+            data = load_data(path)
+            if data is None:
+                continue
+            chase = Chase.model_validate(data)
+        except ValidationError as e:
+            issues.errors.append(_format_validation_error(path, e))
+            continue
+        except Exception as e:  # noqa: BLE001
+            issues.errors.append(f"{path}: {e}")
+            continue
+        if chase.name in chases:
+            issues.errors.append(f"{path}: chase {chase.name!r} already defined")
+            continue
+        # Validate scene references
+        for i, step in enumerate(chase.steps):
+            for j, action in enumerate(step.actions):
+                if isinstance(action, (TransitionAction, SnapAction)):
+                    if action.scene is not None and action.scene not in scenes:
+                        issues.errors.append(
+                            f"{path}: step {i} action {j} references unknown scene {action.scene!r}"
+                        )
+                if isinstance(action, ReleaseAction):
+                    pass  # nothing to validate
+        chases[chase.name] = chase
+
+    # Load banks
+    banks: dict[str, Bank] = {}
+    for path in _iter_yaml_files(env_dir / "banks"):
+        try:
+            data = load_data(path)
+            if data is None:
+                continue
+            bank = Bank.model_validate(data)
+        except ValidationError as e:
+            issues.errors.append(_format_validation_error(path, e))
+            continue
+        except Exception as e:  # noqa: BLE001
+            issues.errors.append(f"{path}: {e}")
+            continue
+        if bank.name in banks:
+            issues.errors.append(f"{path}: bank {bank.name!r} already defined")
+            continue
+        # Validate slot references
+        from lightning_mcllm.core.banks import ChaseSlot, SceneSlot
+        for slot in bank.slots:
+            if isinstance(slot, SceneSlot) and slot.name not in scenes:
+                issues.errors.append(
+                    f"{path}: bank {bank.name!r} slot {slot.id} references unknown scene {slot.name!r}"
+                )
+            if isinstance(slot, ChaseSlot) and slot.name not in chases:
+                issues.errors.append(
+                    f"{path}: bank {bank.name!r} slot {slot.id} references unknown chase {slot.name!r}"
+                )
+        banks[bank.name] = bank
+
+    if manifest.default_bank is not None and manifest.default_bank not in banks:
+        issues.warnings.append(
+            f"environment {manifest.name!r}: default_bank {manifest.default_bank!r} not found"
+        )
+
+    # Genres (optional)
+    genres: dict[str, GenrePreset] = {}
+    genres_path = env_dir / "genres.yaml"
+    if genres_path.exists():
+        try:
+            data = load_data(genres_path) or {}
+            gl = GenreList.model_validate(data)
+            for g in gl.genres:
+                if g.name in genres:
+                    issues.errors.append(f"{genres_path}: duplicate genre {g.name!r}")
+                    continue
+                # Validate references
+                if g.lead_chase is not None and g.lead_chase not in chases:
+                    issues.warnings.append(
+                        f"{genres_path}: genre {g.name!r} lead_chase {g.lead_chase!r} not found"
+                    )
+                for ch in g.recommended_chases:
+                    if ch not in chases:
+                        issues.warnings.append(
+                            f"{genres_path}: genre {g.name!r} recommends unknown chase {ch!r}"
+                        )
+                for sc in g.recommended_scenes:
+                    if sc not in scenes:
+                        issues.warnings.append(
+                            f"{genres_path}: genre {g.name!r} recommends unknown scene {sc!r}"
+                        )
+                genres[g.name] = g
+        except Exception as e:  # noqa: BLE001
+            issues.errors.append(f"{genres_path}: {e}")
+
+    if issues.errors:
+        return None, issues
+
+    show = Show(
+        library=library,
+        manifest=manifest,
+        fixtures=valid_fixtures,
+        scenes=scenes,
+        chases=chases,
+        banks=banks,
+        env_dir=env_dir,
+        genres=genres,
+    )
+    return show, issues
+
+
+def list_environments(envs_dir: Path) -> list[str]:
+    if not envs_dir.exists():
+        return []
+    return sorted(p.name for p in envs_dir.iterdir() if p.is_dir() and (p / "environment.yaml").exists())

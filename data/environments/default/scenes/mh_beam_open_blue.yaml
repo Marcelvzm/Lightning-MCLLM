@@ -1,0 +1,12 @@
+name: mh_beam_open_blue
+description: Moving heads open shutter, blue beam, tilted up.
+targets:
+  - select: { tag: moving_head }
+    values:
+      shutter: 255
+      dimmer: 220
+      color/red: 0
+      color/green: 30
+      color/blue: 255
+      color/white: 0
+      position/tilt: 90

@@ -1,0 +1,27 @@
+# A simple 4-on-the-floor red pulse on the pars, locked to the BPM clock.
+# Each beat: snap-on, then 0.4s fade to "off" (low). Loops every 4 beats.
+name: red_pulse
+description: Beat-locked red pulse on front pars.
+loop: true
+length_beats: 4
+
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: par }, scene: red_pulse_on }
+      - { kind: transition, group: { tag: par }, scene: red_pulse_off, fade_seconds: 0.4 }
+
+  - at_beat: 1
+    actions:
+      - { kind: snap, group: { tag: par }, scene: red_pulse_on }
+      - { kind: transition, group: { tag: par }, scene: red_pulse_off, fade_seconds: 0.4 }
+
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { tag: par }, scene: red_pulse_on }
+      - { kind: transition, group: { tag: par }, scene: red_pulse_off, fade_seconds: 0.4 }
+
+  - at_beat: 3
+    actions:
+      - { kind: snap, group: { tag: par }, scene: red_pulse_on }
+      - { kind: transition, group: { tag: par }, scene: red_pulse_off, fade_seconds: 0.4 }

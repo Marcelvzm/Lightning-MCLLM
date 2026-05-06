@@ -1,0 +1,54 @@
+# LightningMCLLM
+
+LLM-authored DMX lighting show controller for live performance.
+
+## What it is
+
+A robust, cross-platform (Linux / macOS / Windows) lighting show engine that:
+
+- Plays DMX lightshows out a **Eurolite USB-DMX512 PRO MK2** (or any Enttec-Pro-compatible USB-DMX interface).
+- Lets an LLM (Claude) **author and live-edit** shows via MCP — fixtures, scenes, chases, banks — while the show is running.
+- Survives crashes by isolating the realtime DMX I/O in its own process. Engine restarts in <500ms; DMX hardware never sees a gap.
+- Has a web GUI (open it in any browser on the same network — laptop, phone, iPad) to pick environments, trigger scenes, drive BPM manually or from audio input.
+
+## Architecture
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│ supervisor       │──┬──▶│ dmx_io           │──────▶ Eurolite USB-DMX │
+│ (parent process) │  │   │ (realtime, slim) │   serial @ 250kbaud
+│                  │  ├──▶│ engine           │
+│ restarts crashed │  │   │ (scenes, chases) │
+│ children in      │  │   └──────────────────┘
+│ <500ms           │  └──▶│ web (FastAPI)    │◀── browser GUI
+└──────────────────┘      │  + MCP server    │◀── Claude (LLM editor)
+                          └──────────────────┘
+```
+
+Authoring is file-based (YAML, comments preserved). LLM edits files; engine hot-reloads without dropping output.
+
+## Status
+
+Pre-alpha. Built overnight 2026-05-06. **50/50 tests green**, including a full end-to-end pipeline against a virtual Eurolite Pro on a PTY pseudo-terminal — same `pyserial` code path as production. First hardware-on-stage test is yours to run.
+
+## Quickstart
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate                    # Windows: .venv\Scripts\activate
+pip install -e .
+lightning run                                # http://localhost:7777
+```
+
+Without hardware connected, the engine runs against an in-memory null DMX adapter; the web GUI works fully. Plug in your Eurolite USB-DMX512 PRO MK2, restart `lightning run`, and the driver auto-detects via FTDI VID 0x0403.
+
+For the watchdog/auto-restart variant: `lightning supervised -- --bpm 128`.
+
+To wire Claude as the LLM editor, install the `[mcp]` extra and configure
+Claude Desktop / Code to launch `lightning mcp`. See `technical_details.md`
+section 11 for the exact JSON.
+
+## Read this first
+
+The full architecture, YAML schemas, chase grammar, hardware-setup notes,
+testing strategy, and roadmap are in **[`technical_details.md`](technical_details.md)**.

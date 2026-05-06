@@ -1,0 +1,11 @@
+name: starter
+description: Starter bank — primary scenes and chases on the first 9 slots.
+slots:
+  - { id: 1, kind: scene, name: warm_idle, label: "Idle" }
+  - { id: 2, kind: scene, name: red_pulse_on, label: "Red full" }
+  - { id: 3, kind: scene, name: mh_beam_open_blue, label: "MH Blue" }
+  - { id: 4, kind: scene, name: mh_beam_open_amber, label: "MH Amber" }
+  - { id: 5, kind: chase, name: red_pulse, label: "Red Pulse Chase" }
+  - { id: 6, kind: chase, name: mh_alternating_sweep, label: "MH Sweep" }
+  - { id: 7, kind: chase, name: par_color_walk, label: "Color Walk" }
+  - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }

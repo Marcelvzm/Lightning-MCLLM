@@ -1,0 +1,12 @@
+name: mh_beam_open_amber
+description: Moving heads open shutter, warm amber beam, tilted down.
+targets:
+  - select: { tag: moving_head }
+    values:
+      shutter: 255
+      dimmer: 220
+      color/red: 255
+      color/green: 90
+      color/blue: 0
+      color/white: 30
+      position/tilt: 200

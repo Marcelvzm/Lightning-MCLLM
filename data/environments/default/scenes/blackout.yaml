@@ -1,0 +1,11 @@
+name: blackout
+description: All lights off (dimmer + RGBW = 0).
+targets:
+  - select: { all: true }
+    values:
+      dimmer: 0
+      color/red: 0
+      color/green: 0
+      color/blue: 0
+      color/white: 0
+      shutter: 0

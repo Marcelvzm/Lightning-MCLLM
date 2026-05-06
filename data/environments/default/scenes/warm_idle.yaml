@@ -1,0 +1,16 @@
+name: warm_idle
+description: Soft warm-white wash on the pars; moving heads parked centre, lights off.
+targets:
+  - select: { tag: par }
+    values:
+      dimmer: 140
+      color/red: 200
+      color/green: 80
+      color/blue: 20
+      color/white: 60
+  - select: { tag: moving_head }
+    values:
+      position/pan: 128
+      position/tilt: 128
+      dimmer: 0
+      shutter: 255

@@ -1,0 +1,10 @@
+name: red_pulse_on
+description: Pars saturated red, full bright.
+targets:
+  - select: { tag: par }
+    values:
+      dimmer: 255
+      color/red: 255
+      color/green: 0
+      color/blue: 0
+      color/white: 0

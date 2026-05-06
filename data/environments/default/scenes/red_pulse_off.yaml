@@ -1,0 +1,9 @@
+name: red_pulse_off
+description: Pars red but at very low brightness — the "off" half of a red pulse chase.
+targets:
+  - select: { tag: par }
+    values:
+      dimmer: 30
+      color/red: 255
+      color/green: 0
+      color/blue: 0
