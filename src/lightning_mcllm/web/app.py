@@ -15,6 +15,9 @@ Endpoints:
     POST /api/cmd/{op}           submit engine command (json body = args)
     GET  /api/yaml?path=...      read a YAML file from data/ (sandboxed)
     PUT  /api/yaml               write a YAML file (sandboxed)
+    GET  /api/instruct           return llm_instruct.md (authoring guide for LLMs)
+    GET  /api/genres             list genre presets
+    POST /api/genres/{name}      apply a genre (BPM + start lead chase)
     WS   /api/ws                 5Hz status updates pushed to clients
 """
 
@@ -163,6 +166,20 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
     @app.get("/api/show")
     async def get_show() -> Any:
         return _show_summary(engine)
+
+    @app.get("/api/instruct")
+    async def get_instruct() -> Any:
+        """Return llm_instruct.md if present in the repo root.
+
+        This is the authoring guide that an LLM should read before writing
+        any scene/chase/bank YAML. The MCP server forwards this verbatim.
+        """
+        # Resolve repo root: data_dir's parent (since data_dir = <repo>/data).
+        repo_root = settings.paths.data_dir.parent
+        candidate = repo_root / "llm_instruct.md"
+        if not candidate.is_file():
+            raise HTTPException(404, f"llm_instruct.md not found at {candidate}")
+        return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
 
     @app.get("/api/genres")
     async def get_genres() -> Any:

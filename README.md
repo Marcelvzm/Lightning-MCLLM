@@ -50,5 +50,8 @@ section 11 for the exact JSON.
 
 ## Read this first
 
-The full architecture, YAML schemas, chase grammar, hardware-setup notes,
-testing strategy, and roadmap are in **[`technical_details.md`](technical_details.md)**.
+* **[`technical_details.md`](technical_details.md)** — architecture, YAML
+  schemas, chase grammar, hardware-setup notes, testing strategy, roadmap.
+* **[`llm_instruct.md`](llm_instruct.md)** — authoring guide for any LLM
+  (Claude or otherwise) tasked with writing shows through MCP. Reachable
+  at runtime via `GET /api/instruct` and via the MCP tool `read_authoring_guide`.

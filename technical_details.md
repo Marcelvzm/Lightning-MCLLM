@@ -675,6 +675,7 @@ process and spoken to by Claude over stdio. This lets Claude:
 
 | Tool | Purpose |
 | --- | --- |
+| `read_authoring_guide` | **Call first.** Returns `llm_instruct.md`, the deterministic show-writing playbook |
 | `status` | Live engine status |
 | `list_show` | Fixtures, scenes, chases, banks of the loaded show |
 | `list_environments`, `switch_environment(name)` | Multi-stage support |
@@ -689,6 +690,9 @@ process and spoken to by Claude over stdio. This lets Claude:
 
 ### Suggested LLM workflow
 
+0. **`read_authoring_guide`** to load `llm_instruct.md` — the deterministic
+   principles, genre playbook, and YAML cookbook. Skip this step and the
+   shows will be technically valid but visually flat.
 1. `list_show` to learn what fixtures/scenes/chases exist.
 2. To add a new chase: `read_yaml` on a similar one, `write_yaml` with the
    new file, then `reload`. The reload reply contains validation errors
@@ -696,6 +700,10 @@ process and spoken to by Claude over stdio. This lets Claude:
 3. To live-test: `snap_scene` or `start_chase` after writing.
 4. To add a fixture: edit `environment.yaml` (`read_yaml` / `write_yaml`),
    `reload` to validate.
+
+`llm_instruct.md` lives at the repo root and is also reachable at
+`GET /api/instruct` for any external LLM-tooling that wants it without
+going through MCP.
 
 ---
 

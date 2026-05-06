@@ -108,6 +108,10 @@ class LightningClient:
         q = "?" + urlencode({"prefix": prefix}) if prefix else ""
         return _http_get(f"{self._base}/api/yaml/list{q}")
 
+    def read_authoring_guide(self) -> str:
+        text = _http_get(f"{self._base}/api/instruct")
+        return text if isinstance(text, str) else json.dumps(text)
+
     def read_yaml(self, path: str) -> str:
         text = _http_get(f"{self._base}/api/yaml?{urlencode({'path': path})}")
         if isinstance(text, str):
@@ -147,6 +151,17 @@ def run_stdio(api_url: str) -> None:
     @srv.list_tools()
     async def list_tools() -> list[Any]:
         return [
+            Tool(
+                name="read_authoring_guide",
+                description=(
+                    "Return llm_instruct.md — the authoring guide for writing professional "
+                    "lightshows with this system. **Call this FIRST before authoring any scene, "
+                    "chase, bank, or genre.** It contains the deterministic principles, genre "
+                    "playbook, workflow, YAML cookbook, and anti-patterns. Skipping this step is "
+                    "the #1 reason LLM-authored shows fail."
+                ),
+                inputSchema={"type": "object", "properties": {}},
+            ),
             Tool(
                 name="status",
                 description="Get current engine status (BPM, beat, voices, errors, DMX connection, etc).",
@@ -302,7 +317,9 @@ def run_stdio(api_url: str) -> None:
     @srv.call_tool()
     async def call_tool(name: str, arguments: dict[str, Any]) -> list[Any]:
         try:
-            if name == "status":
+            if name == "read_authoring_guide":
+                out = client.read_authoring_guide()
+            elif name == "status":
                 out = client.status()
             elif name == "list_show":
                 out = client.show()
