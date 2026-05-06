@@ -181,6 +181,30 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
             raise HTTPException(404, f"llm_instruct.md not found at {candidate}")
         return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
 
+    def _genre_concepts_dir() -> Path:
+        return settings.paths.data_dir.parent / "genre_concepts"
+
+    @app.get("/api/genre_concepts")
+    async def list_genre_concepts() -> Any:
+        """List available genre concept files (one .md per genre)."""
+        d = _genre_concepts_dir()
+        if not d.is_dir():
+            return {"concepts": []}
+        names = sorted(p.stem for p in d.glob("*.md") if p.stem.lower() != "readme")
+        return {"concepts": names}
+
+    @app.get("/api/genre_concept/{name}")
+    async def read_genre_concept(name: str) -> Any:
+        """Return one genre concept file (markdown). Sandboxed to genre_concepts/."""
+        # Sanitize: only filename, no path traversal
+        safe = Path(name).name
+        if not safe or safe.startswith(".") or "/" in name or "\\" in name:
+            raise HTTPException(400, "invalid name")
+        candidate = _genre_concepts_dir() / f"{safe}.md"
+        if not candidate.is_file():
+            raise HTTPException(404, f"genre concept {name!r} not found")
+        return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
+
     @app.get("/api/genres")
     async def get_genres() -> Any:
         show = engine.show()

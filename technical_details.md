@@ -676,6 +676,8 @@ process and spoken to by Claude over stdio. This lets Claude:
 | Tool | Purpose |
 | --- | --- |
 | `read_authoring_guide` | **Call first.** Returns `llm_instruct.md`, the deterministic show-writing playbook |
+| `list_genre_concepts` | List the per-genre deep-dive concept files installed |
+| `read_genre_concept` | **Call before authoring for a specific genre.** Returns the deep-dive concept (palette, motion, archetypes, motifs, anti-patterns, motif inventory) |
 | `status` | Live engine status |
 | `list_show` | Fixtures, scenes, chases, banks of the loaded show |
 | `list_environments`, `switch_environment(name)` | Multi-stage support |

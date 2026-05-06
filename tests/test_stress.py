@@ -115,9 +115,17 @@ def test_simulator_throughput_at_full_engine_rate(show):
         # Expect ~90 frames @ 60Hz × 1.5s — allow generous lower bound for slow CI.
         assert sim.frames_received >= 60, f"simulator only got {sim.frames_received} frames"
         assert sim.protocol_errors == 0, f"{sim.protocol_errors} protocol errors"
-        # Final state matches engine shadow
-        time.sleep(0.1)  # let last frame settle
-        assert sim.snapshot() == eng.shadow_snapshot()
+
+        # Force a known steady state and verify the simulator agrees with the
+        # engine. We can't compare while a chase is running because the engine
+        # is mutating the shadow continuously and the simulator is one frame
+        # behind by definition.
+        eng.submit("stop_all_chases")
+        eng.submit("snap_scene", scene="warm_idle")
+        time.sleep(0.3)  # let voices settle, give writer thread several ticks
+        assert sim.snapshot() == eng.shadow_snapshot(), (
+            "simulator universe diverged from engine shadow after settle"
+        )
     finally:
         eng.stop()
         iface.close()

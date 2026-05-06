@@ -528,7 +528,35 @@ Time-anchored, not BPM-anchored. Use `length_seconds` chases.
 Lead motif: **slow color walk on pars over 30–60 seconds**. MHs parked,
 dim, very slow tilt drift. No strobing. No fast moves.
 
-### 5.7 Universal genre rules
+### 5.7 Deep-dive concept files
+
+The summaries above are starting points. **For any non-trivial show, call
+`read_genre_concept(<name>)`** to load the full deep-dive concept file
+for that genre. Each is a several-thousand-word document covering:
+
+* Identity & audience perceptual state (in detail)
+* Macro structure with example time-grids
+* Palette philosophy with sub-aesthetic variants
+* Motion vocabulary (allowed and forbidden)
+* Time-grid alignment per genre
+* Hierarchy of fixture roles (with percentages)
+* Section archetypes (named states A1, B, Z1, Z2, …)
+* Drop / peak architecture broken down step by step
+* Reset / breathing patterns
+* Recurring motifs to make consistent across the show
+* Genre-specific anti-patterns
+* Signs the show is working
+* Suggested motif inventory (concrete file naming)
+
+Available names: `techno`, `hardtekk`, `hardstyle`, `rap_trap`, `dnb`,
+`ambient`. Use `list_genre_concepts` if unsure what's installed.
+
+The summary in §5.1–5.6 is enough for a quick scene-trigger task.
+Authoring an entire set without reading the deep-dive concept is the
+second-biggest reason LLM-authored shows fail (after skipping
+`read_authoring_guide` entirely).
+
+### 5.8 Universal genre rules
 
 Across genres:
 
@@ -547,7 +575,7 @@ Across genres:
 Follow this every time. **Skipping the inspect step is the #1 reason
 LLM-authored shows fail.**
 
-### Step 1: Inspect the rig (5 minutes)
+### Step 1: Inspect the rig + load genre concept (5 minutes)
 
 ```python
 # in this order
@@ -556,6 +584,10 @@ list_show()                      # the loaded environment
 list_yaml(prefix="environments/<env>")   # find existing scenes/chases
 read_yaml("environments/<env>/environment.yaml")   # full fixture list
 # read 1–3 existing scenes/chases as reference
+
+# AND THIS — for any non-trivial authoring task:
+list_genre_concepts()
+read_genre_concept("<the genre>")
 ```
 
 Note for yourself:
@@ -985,15 +1017,22 @@ in their attention — and attention is finite.
 ## 11. When the user asks you to author
 
 1. **Read this document fully** if it's not already in your context.
-2. **`list_show`** before anything else. Know the rig.
-3. **Sketch the macro entropy curve** in 5–8 lines of plain prose.
-4. **Pick a palette** (write it down).
-5. **Author scenes → chases → banks → genre preset**, in that order.
-6. **Reload + validate + live-test**.
-7. **Iterate** against §7's checklist.
-8. **When you hand back to the user**, give them a one-paragraph
-   description of what you built, the names of the lead chases, and
-   suggested fire sequences. Don't make them archaeology your YAML.
+2. **`read_genre_concept(<genre>)`** for the genre at hand.
+3. **`list_show`** to know the rig.
+4. **Sketch the macro entropy curve** in 5–8 lines of plain prose,
+   informed by the genre concept's macro-structure section.
+5. **Pick a palette** (write it down) — within the genre's permitted
+   palettes from the concept file.
+6. **Map the genre concept's abstract roles (atmosphere/pulse/beam/
+   accent/lead/spotlight) to the user's actual fixture tags.** This is
+   the bridge from "concept" to "your specific YAML".
+7. **Author scenes → chases → banks → genre preset**, in that order.
+8. **Reload + validate + live-test**.
+9. **Iterate** against §7's checklist plus the "Signs it's working"
+   section of the genre concept.
+10. **When you hand back to the user**, give them a one-paragraph
+    description of what you built, the names of the lead chases, and
+    suggested fire sequences. Don't make them archaeology your YAML.
 
 ---
 

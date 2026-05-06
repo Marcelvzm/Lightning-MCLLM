@@ -112,6 +112,13 @@ class LightningClient:
         text = _http_get(f"{self._base}/api/instruct")
         return text if isinstance(text, str) else json.dumps(text)
 
+    def list_genre_concepts(self) -> Any:
+        return _http_get(f"{self._base}/api/genre_concepts")
+
+    def read_genre_concept(self, name: str) -> str:
+        text = _http_get(f"{self._base}/api/genre_concept/{name}")
+        return text if isinstance(text, str) else json.dumps(text)
+
     def read_yaml(self, path: str) -> str:
         text = _http_get(f"{self._base}/api/yaml?{urlencode({'path': path})}")
         if isinstance(text, str):
@@ -161,6 +168,30 @@ def run_stdio(api_url: str) -> None:
                     "the #1 reason LLM-authored shows fail."
                 ),
                 inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="list_genre_concepts",
+                description=(
+                    "List available genre concept files (deep-dive design proposals per genre). "
+                    "Returns a list of names you can pass to read_genre_concept."
+                ),
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="read_genre_concept",
+                description=(
+                    "Return the deep-dive design proposal for one genre — palette, motion, "
+                    "section archetypes, recurring motifs, anti-patterns, suggested motif "
+                    "inventory. **Call this BEFORE authoring scenes/chases for a specific "
+                    "genre.** It's much more detailed than the short genre playbook in "
+                    "llm_instruct.md §5. Available names: techno, hardtekk, hardstyle, "
+                    "rap_trap, dnb, ambient (list_genre_concepts to get the live set)."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {"name": {"type": "string"}},
+                    "required": ["name"],
+                },
             ),
             Tool(
                 name="status",
@@ -319,6 +350,10 @@ def run_stdio(api_url: str) -> None:
         try:
             if name == "read_authoring_guide":
                 out = client.read_authoring_guide()
+            elif name == "list_genre_concepts":
+                out = client.list_genre_concepts()
+            elif name == "read_genre_concept":
+                out = client.read_genre_concept(arguments["name"])
             elif name == "status":
                 out = client.status()
             elif name == "list_show":

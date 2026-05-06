@@ -55,3 +55,7 @@ section 11 for the exact JSON.
 * **[`llm_instruct.md`](llm_instruct.md)** — authoring guide for any LLM
   (Claude or otherwise) tasked with writing shows through MCP. Reachable
   at runtime via `GET /api/instruct` and via the MCP tool `read_authoring_guide`.
+* **[`genre_concepts/`](genre_concepts/)** — per-genre deep-dive design
+  proposals (techno, hardtekk, hardstyle, rap_trap, dnb, ambient).
+  Reachable at runtime via `GET /api/genre_concept/{name}` and the MCP
+  tool `read_genre_concept`.
