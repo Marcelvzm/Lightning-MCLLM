@@ -100,6 +100,11 @@ class BpmClock:
             self._source = source
             log.info("BPM set to %.2f (%s)", bpm, source)
 
+    def set_source(self, source: str) -> None:
+        """Update the source label without changing BPM (e.g. 'audio (silent)')."""
+        with self._lock:
+            self._source = source
+
     def set_running(self, running: bool) -> None:
         with self._lock:
             self._running = bool(running)

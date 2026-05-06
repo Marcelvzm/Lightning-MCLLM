@@ -34,6 +34,29 @@ def test_pause_freezes_beat_position():
     assert c.beat_position == pos
 
 
+def test_set_source_updates_label_only():
+    c = BpmClock(bpm=128.0)
+    c.set_bpm(128.0, source="audio")
+    assert c.source == "audio"
+    c.set_source("audio (silent)")
+    assert c.source == "audio (silent)"
+    assert c.bpm == 128.0  # unchanged
+
+
+def test_paused_clock_freezes_beat_advance():
+    c = BpmClock(bpm=120.0)
+    c.tick()
+    c.set_running(False)
+    pos = c.beat_position
+    time.sleep(0.2)
+    c.tick()
+    assert c.beat_position == pos  # paused → no advance
+    c.set_running(True)
+    time.sleep(0.2)
+    c.tick()
+    assert c.beat_position > pos  # resumed → advances
+
+
 def test_tap_tempo_locks_after_three_taps():
     c = BpmClock(bpm=120.0)
     # Tap at 100 BPM => 0.6s intervals

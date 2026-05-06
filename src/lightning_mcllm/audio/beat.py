@@ -43,13 +43,17 @@ class AudioBpmDetector:
         confidence_threshold: float = 0.15,
         agreement_frames: int = 3,
         smoothing: float = 0.4,
+        silence_rms_threshold: float = 0.002,
+        silence_pause_after_seconds: float = 2.0,
     ):
         self._clock = clock
         self._samplerate = samplerate
         self._buffer_size = buffer_size
         self._conf_thresh = confidence_threshold
         self._agree_n = agreement_frames
-        self._smooth = smoothing  # exponential smoothing factor for BPM
+        self._smooth = smoothing
+        self._silence_rms = silence_rms_threshold
+        self._silence_timeout = silence_pause_after_seconds
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._recent: deque[float] = deque(maxlen=8)
@@ -112,6 +116,9 @@ class AudioBpmDetector:
 
         log.info("audio BPM running (sr=%d block=%d)", self._samplerate, self._buffer_size)
 
+        silent_since: float | None = None
+        was_paused_by_silence = False
+
         try:
             while not self._stop.is_set():
                 try:
@@ -123,13 +130,42 @@ class AudioBpmDetector:
                     continue
                 samples = np.asarray(data, dtype="float32").flatten()
                 _ = tempo(samples)
-                if tempo.get_confidence() < self._conf_thresh:
+                confidence = tempo.get_confidence()
+                rms = float(np.sqrt(np.mean(samples * samples))) if len(samples) > 0 else 0.0
+                # Silence = either room is genuinely quiet (low RMS) OR aubio
+                # reports no usable beat (low confidence).
+                is_silent = rms < self._silence_rms or confidence < self._conf_thresh
+
+                now = time.monotonic()
+                if is_silent:
+                    if silent_since is None:
+                        silent_since = now
+                    elif (
+                        not was_paused_by_silence
+                        and (now - silent_since) > self._silence_timeout
+                    ):
+                        log.info(
+                            "audio silent for %.1fs — pausing beat clock",
+                            now - silent_since,
+                        )
+                        self._clock.set_running(False)
+                        self._clock.set_source("audio (silent)")
+                        was_paused_by_silence = True
+                    self._recent.clear()
                     continue
+
+                # Audio is back — resume the clock if WE paused it.
+                if silent_since is not None:
+                    silent_since = None
+                    if was_paused_by_silence:
+                        log.info("audio returned — resuming clock")
+                        self._clock.set_running(True)
+                        was_paused_by_silence = False
+
                 bpm = float(tempo.get_bpm())
                 if not (40.0 <= bpm <= 240.0):
                     continue
                 self._recent.append(bpm)
-                # Require N recent reads in a tight band before pushing
                 if len(self._recent) >= self._agree_n:
                     recent = list(self._recent)[-self._agree_n :]
                     spread = max(recent) - min(recent)
