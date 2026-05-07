@@ -57,6 +57,9 @@ palettes:
     description: Warmer Amber-Look (Idle / Atmo)
     facets:
       rgb:    { color/red: 200, color/green: 80,  color/blue: 20,  color/white: 60 }
-      wheel:  { color/wheel: 144 }   # Rot+Weiss aus dem Bar-Wheel — am ehesten "warm"
+      # Bar S120 Color-Wheel hat KEIN echtes Amber/Warmweiß. Werte 140-149 sind
+      # "Rot+Weiß" (split — Pokemon-Ball-Look). Orange (60-69) ist die nächste
+      # warme Option, einheitlich orange statt zweifarbig.
+      wheel:  { color/wheel: 64 }
       cameo:  { color/red: 200, color/green: 80,  color/blue: 20,  effect/macro: 0 }
       rx350:  { effect/macro: 80 }   # gelbe LEDs only
