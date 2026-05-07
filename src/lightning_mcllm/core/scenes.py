@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from lightning_mcllm.core.palettes import PaletteRef
 from lightning_mcllm.core.parameters import ParameterSpec
 from lightning_mcllm.core.selectors import Selector
 
@@ -29,6 +30,9 @@ class SceneTarget(BaseModel):
     values: dict[str, int | str] = Field(default_factory=dict)
     # Optional: preset names (looked up via fixture profile presets)
     presets: dict[str, str] | None = None
+    # Optional: palette+facet reference. Resolves at render time against the
+    # stage's palette library. Explicit `values:` win on role conflicts.
+    palette: PaletteRef | None = None
 
     @field_validator("values")
     @classmethod

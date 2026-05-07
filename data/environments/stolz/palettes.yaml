@@ -1,0 +1,62 @@
+# Color palettes for the stolz rig.
+#
+# Eine Palette ist ein benannter Cross-Fixture-Farb-Definition. Sie hat
+# mehrere "facets" — pro Fixture-Steuerungsmodell ein eigener Werte-Bundle.
+# Eine Scene wählt pro Target sowohl die Palette als auch das passende
+# Facet (das hängt vom Fixture-Typ ab).
+#
+# Facets in diesem Rig:
+#   rgb     — direkte RGB-Pars (Cameo/Showtec/Eurolite PAR-64/Varytec).
+#             Werte für: color/red, color/green, color/blue, optional
+#             color/white. Cameo-Macro-Override wird separat im
+#             cameo-Facet gesetzt (RGB allein reicht bei Cameo nicht
+#             zuverlässig).
+#   wheel   — indexed Color-Wheel (Bar S120 head). Wert für color/wheel.
+#   cameo   — Cameo-spezifisch: RGB + effect/macro auf den passenden
+#             Color-Preset-Wert (umgeht den ch6=0=Blackout-Bug).
+#   rx350   — Involight RX350 in 2CH-Mode: nur effect/macro auf einen
+#             "nur-Farbe-X-LEDs"-Wert.
+#
+# Wenn du eine neue Palette hinzufügst, mindestens rgb + wheel + cameo +
+# rx350 belegen — sonst bleiben Geräte des entsprechenden Typs dunkel.
+
+palettes:
+  - name: rot
+    description: Sattes Bühnenrot
+    facets:
+      rgb:    { color/red: 255, color/green: 0,   color/blue: 0,   color/white: 0 }
+      wheel:  { color/wheel: 14 }
+      cameo:  { color/red: 255, color/green: 0,   color/blue: 0,   effect/macro: 10 }
+      rx350:  { effect/macro: 11 }
+
+  - name: blau
+    description: Tiefes Blau
+    facets:
+      rgb:    { color/red: 0,   color/green: 0,   color/blue: 255, color/white: 0 }
+      wheel:  { color/wheel: 34 }
+      cameo:  { color/red: 0,   color/green: 0,   color/blue: 255, effect/macro: 32 }
+      rx350:  { effect/macro: 57 }
+
+  - name: gruen
+    description: Bühnengrün
+    facets:
+      rgb:    { color/red: 0,   color/green: 255, color/blue: 0,   color/white: 0 }
+      wheel:  { color/wheel: 24 }
+      cameo:  { color/red: 0,   color/green: 255, color/blue: 0,   effect/macro: 21 }
+      rx350:  { effect/macro: 34 }
+
+  - name: weiss
+    description: Voll-Weiss (Peak / Hit)
+    facets:
+      rgb:    { color/red: 0,   color/green: 0,   color/blue: 0,   color/white: 255 }
+      wheel:  { color/wheel: 0 }
+      cameo:  { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 75 }
+      rx350:  { effect/macro: 103 }
+
+  - name: warm
+    description: Warmer Amber-Look (Idle / Atmo)
+    facets:
+      rgb:    { color/red: 200, color/green: 80,  color/blue: 20,  color/white: 60 }
+      wheel:  { color/wheel: 144 }   # Rot+Weiss aus dem Bar-Wheel — am ehesten "warm"
+      cameo:  { color/red: 200, color/green: 80,  color/blue: 20,  effect/macro: 0 }
+      rx350:  { effect/macro: 80 }   # gelbe LEDs only

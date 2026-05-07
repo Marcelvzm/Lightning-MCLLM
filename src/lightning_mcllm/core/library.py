@@ -27,6 +27,7 @@ from lightning_mcllm.core.banks import Bank
 from lightning_mcllm.core.chases import Chase, ReleaseAction, SnapAction, TransitionAction
 from lightning_mcllm.core.environments import EnvironmentManifest
 from lightning_mcllm.core.fixtures import FixtureInstance, FixtureProfile
+from lightning_mcllm.core.palettes import Palette, PaletteList, merge_values
 from lightning_mcllm.core.parameters import resolve_args, resolve_placeholder
 from lightning_mcllm.core.scenes import RenderedScene, Scene
 from lightning_mcllm.core.selectors import Selector, resolve as selector_resolve
@@ -160,6 +161,7 @@ class Stage:
     banks: dict[str, Bank]
     env_dir: Path
     shows: dict[str, "Show"] = field(default_factory=dict)
+    palettes: dict[str, Palette] = field(default_factory=dict)
 
     @property
     def name(self) -> str:
@@ -186,6 +188,24 @@ class Stage:
         out: dict[tuple[int, int], int] = {}
         for target in scene.targets:
             matches = selector_resolve(target.select, self.fixtures)
+            # Resolve palette+facet (if any) into role→int values, then merge
+            # with explicit `values:` (explicit wins on role conflicts).
+            target_values: dict[str, int | str]
+            if target.palette is not None:
+                pal_name = resolve_placeholder(target.palette.name, resolved_args)
+                if not isinstance(pal_name, str):
+                    raise ValueError(
+                        f"scene {scene.name!r}: palette name resolved to {pal_name!r}, expected str"
+                    )
+                if pal_name not in self.palettes:
+                    raise ValueError(
+                        f"scene {scene.name!r}: unknown palette {pal_name!r}"
+                    )
+                pal = self.palettes[pal_name]
+                facet_values = pal.facet(target.palette.facet)
+                target_values = merge_values(facet_values, target.values)
+            else:
+                target_values = dict(target.values)
             for fixture in matches:
                 profile = self.library.get(fixture.profile)
                 if profile is None:
@@ -193,7 +213,7 @@ class Stage:
                                 scene.name, fixture.name, fixture.profile)
                     continue
                 # Inline role values (with placeholder resolution)
-                for role, raw_value in target.values.items():
+                for role, raw_value in target_values.items():
                     offset = profile.role_to_offset(role)
                     if offset is None:
                         continue
@@ -421,6 +441,43 @@ def load_stage(env_dir: Path, library: FixtureLibrary) -> tuple[Stage | None, Lo
             issues.warnings.append(f"{path}: {warn}")
         shows[show.name] = show
 
+    # Load palettes (optional, single file)
+    palettes: dict[str, Palette] = {}
+    palettes_path = env_dir / "palettes.yaml"
+    if palettes_path.exists():
+        try:
+            pdata = load_data(palettes_path) or {}
+            plist = PaletteList.model_validate(pdata)
+            for p in plist.palettes:
+                if p.name in palettes:
+                    issues.errors.append(f"{palettes_path}: duplicate palette {p.name!r}")
+                    continue
+                palettes[p.name] = p
+        except ValidationError as e:
+            issues.errors.append(_format_validation_error(palettes_path, e))
+        except Exception as e:  # noqa: BLE001
+            issues.errors.append(f"{palettes_path}: {e}")
+
+    # Cross-validate scene palette refs against the loaded palette library.
+    # Refs whose name is a `${param}` placeholder are skipped (resolved at
+    # render time).
+    for scene in scenes.values():
+        for tgt_idx, target in enumerate(scene.targets):
+            if target.palette is None:
+                continue
+            name = target.palette.name
+            if name.startswith("$"):
+                continue  # parameter placeholder — defer to render time
+            if name not in palettes:
+                issues.errors.append(
+                    f"scene {scene.name!r} target {tgt_idx}: unknown palette {name!r}"
+                )
+                continue
+            if target.palette.facet not in palettes[name].facets:
+                issues.errors.append(
+                    f"scene {scene.name!r} target {tgt_idx}: palette {name!r} has no facet {target.palette.facet!r}"
+                )
+
     if issues.errors:
         return None, issues
 
@@ -433,6 +490,7 @@ def load_stage(env_dir: Path, library: FixtureLibrary) -> tuple[Stage | None, Lo
         banks=banks,
         env_dir=env_dir,
         shows=shows,
+        palettes=palettes,
     )
     return stage, issues
 

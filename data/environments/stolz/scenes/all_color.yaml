@@ -1,0 +1,69 @@
+# Eine Scene die das gesamte Rig in eine Palette bringt — ersetzt
+# all_red.yaml und all_blue.yaml. Statt vier separate Color-Bundles inline
+# zu duplizieren, referenzieren die Targets eine Palette+Facet.
+#
+# Aufruf-Beispiele:
+#   snap_scene("all_color")                       → defaults: rot
+#   snap_scene("all_color", args={"col": "blau"})  → blau
+#   snap_scene("all_color", args={"col": "weiss"}) → weiß
+#
+# Bank-Slot-Konfiguration: ein Slot pro Farbe mit args-Override.
+
+name: all_color
+description: Gesamtes Rig in einer Palette (rot / blau / gruen / weiss / warm).
+
+parameters:
+  col:
+    type: str
+    default: rot
+    options: [rot, blau, gruen, weiss, warm]
+    description: "Palette-Name aus palettes.yaml."
+
+targets:
+  # Bar-Heads — color-wheel
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/pan_fine: 0
+      position/tilt: 128
+      position/tilt_fine: 0
+      movement/speed: 0
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255
+
+  # Varytec — direkter RGB-Pfad. Ist `tag: par` aber NICHT cameo / showtec.
+  - select: { name: pad-1 }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: 255
+      strobe: 0
+      effect/macro: 0
+
+  # Eurolite PAR-64 (5CH) — RGB
+  - select: { name: par64 }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: 255
+      strobe: 0
+
+  # Cameos — RGB + macro override (Cameo-spezifisch)
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: 255
+      strobe: 0
+
+  # Showtecs — RGB direct, mode auf 0 (RGB-Steuerung)
+  - select: { tag: showtec }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      strobe: 0
+      effect/macro: 0
+
+  # RX350 — Macro auf "Farbe X LEDs only" (2CH mode)
+  - select: { name: rx350 }
+    palette: { name: "${col}", facet: rx350 }
+    values:
+      strobe: 0
