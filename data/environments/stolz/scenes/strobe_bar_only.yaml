@@ -1,0 +1,15 @@
+# Bar-Heads stroboskopieren weiß. Pars unangetastet — können
+# parallel etwas anderes machen.
+name: strobe_bar_only
+description: Strobe nur auf den Bar-Heads, weiß.
+
+parameters:
+  rate: { type: int, default: 200, min: 11, max: 255 }
+
+targets:
+  - select: { tag: bar }
+    palette: { name: weiss, facet: wheel }
+    values:
+      dimmer: 255
+      gobo/wheel: 0
+      strobe: "${rate}"

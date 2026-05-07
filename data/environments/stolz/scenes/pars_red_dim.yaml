@@ -1,0 +1,13 @@
+# Pars in saturated red at low dim. Pair-Scene zu pars_red_full für
+# Snap-then-fade-Patterns (4-on-the-floor pulse).
+name: pars_red_dim
+description: Pars rot bei niedriger Helligkeit (Pulse-off-Position).
+targets:
+  - select: { tag: par }
+    palette: { name: rot, facet: rgb }
+    values: { dimmer: 30, strobe: 0 }
+  - select: { tag: cameo }
+    palette: { name: rot, facet: cameo }
+    values: { dimmer: 30 }
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

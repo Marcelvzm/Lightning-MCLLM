@@ -1,0 +1,27 @@
+# Nur Pars stroboskopieren — Bar bleibt ruhig dabei. Color-parametrisiert
+# damit man "weißer Strobe-Peak" oder "blutroter Strobe" gleichermaßen
+# fahren kann.
+name: strobe_pars_only
+description: Strobe nur auf Pars, Bar unangetastet.
+
+parameters:
+  col: { type: str, default: weiss, options: [rot, blau, gruen, weiss, warm] }
+  rate: { type: int, default: 180, min: 11, max: 255 }
+
+targets:
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: 255
+      strobe: "${rate}"
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: 255
+      strobe: "${rate}"
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0
+      strobe: "${rate}"

@@ -1,0 +1,51 @@
+# Wie all_color, nur mit zusätzlichem Dimmer-Parameter — für Idle/Atmo
+# Sektionen wo das Rig nur leise im Hintergrund glühen soll.
+#
+# Aufruf:
+#   snap_scene("all_color_dim")                                  → rot bei 60 Dim
+#   snap_scene("all_color_dim", args={"col": "blau", "dim": 30}) → blau, sehr dunkel
+name: all_color_dim
+description: Gesamtes Rig in einer Palette mit konfigurierbarem Master-Dimmer.
+
+parameters:
+  col:
+    type: str
+    default: warm
+    options: [rot, blau, gruen, weiss, warm]
+  dim:
+    type: int
+    default: 60
+    min: 0
+    max: 255
+    description: "Master-Dimmer für Pars (Bar nutzt eigenen Dimmer)."
+
+targets:
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 128
+      movement/speed: 0
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: "${dim}"
+
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: "${dim}"
+      strobe: 0
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: "${dim}"
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0
+
+  - select: { tag: beam_bar }
+    palette: { name: "${col}", facet: rx350 }
+    values:
+      strobe: 0

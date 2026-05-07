@@ -1,0 +1,6 @@
+name: back_red
+description: Backlight rot full bright.
+targets:
+  - select: { tag: back }
+    palette: { name: rot, facet: rgb }
+    values: { dimmer: 255, strobe: 0 }

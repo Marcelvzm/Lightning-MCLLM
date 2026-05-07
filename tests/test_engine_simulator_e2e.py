@@ -18,7 +18,9 @@ from lightning_mcllm.engine.runtime import Engine
 
 
 def test_engine_drives_simulator(stage, simulator):
-    iface = EnttecProInterface(simulator.slave_path)
+    # PTY pseudo-terminals don't support 250000 baud (production default);
+    # use 57600 — the simulator is baud-rate-agnostic.
+    iface = EnttecProInterface(simulator.slave_path, baudrate=57600)
     iface.open()
     clock = BpmClock(bpm=120.0)
     eng = Engine(stage=stage, dmx=iface, clock=clock, refresh_hz=30)
@@ -46,7 +48,7 @@ def test_engine_continues_when_simulator_dies_mid_stream(stage):
     sim = EuroliteSimulator()
     sim.start()
     try:
-        iface = EnttecProInterface(sim.slave_path, reconnect_delay=0.05)
+        iface = EnttecProInterface(sim.slave_path, baudrate=57600, reconnect_delay=0.05)
         iface.open()
         clock = BpmClock(bpm=120.0)
         eng = Engine(stage=stage, dmx=iface, clock=clock, refresh_hz=30)

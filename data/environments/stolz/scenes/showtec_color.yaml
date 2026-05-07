@@ -1,0 +1,13 @@
+name: showtec_color
+description: Nur die Showtec-Pars in Palette-Farbe.
+
+parameters:
+  col: { type: str, default: rot, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 255, min: 0, max: 255 }
+
+targets:
+  - select: { tag: showtec }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      effect/macro: 0
+      strobe: 0

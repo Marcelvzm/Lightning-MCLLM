@@ -81,7 +81,7 @@ def main(ctx: click.Context, verbose: bool) -> None:
 @click.option("--env", default=None, help="Environment to load (default: first)")
 @click.option("--null-dmx", is_flag=True, help="Force NullInterface even if a device is present")
 @click.option("--port", default=None, help="Serial port override (e.g. /dev/ttyUSB0, COM4)")
-@click.option("--baud", default=None, type=int, help="Serial baud rate (default 57600)")
+@click.option("--baud", default=None, type=int, help="Serial baud rate (default 250000)")
 @click.option("--host", default=None, help="Web bind host")
 @click.option("--web-port", default=None, type=int, help="Web port (default 7777)")
 @click.option("--bpm", default=120.0, type=float, help="Initial BPM")
@@ -239,7 +239,7 @@ def supervised(restart_cap: int, restart_window: float, run_args: tuple[str, ...
 
 @main.command()
 @click.option("--port", default=None, help="Serial port (default: auto-discover)")
-@click.option("--baud", default=None, type=int, help="Baud rate (default 57600)")
+@click.option("--baud", default=None, type=int, help="Baud rate (default 250000)")
 def probe(port: str | None, baud: int | None) -> None:
     """Probe serial ports for likely DMX adapters."""
     try:

@@ -1,0 +1,14 @@
+# Bar-Heads tilten zur Tanzfläche, warmer Color, mid-bright.
+# Klassisches "Wedding/Party-Reception"-Setup.
+name: dance_floor_warm
+description: Bar-Heads zum Floor, warm bright. Party-Look.
+targets:
+  - select: { tag: bar }
+    palette: { name: warm, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 220
+      movement/speed: 80
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 220

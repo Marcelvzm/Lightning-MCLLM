@@ -1,0 +1,12 @@
+# Bar-Heads tilten alle nach oben — beam shoots up. Theatralisch,
+# "Cathedral"-Look bei Nebel. Color/Dim bleiben wie sie sind (kein
+# Override) — die Voice schreibt nur Position+Speed.
+name: bar_to_ceiling
+description: Bar-Heads tilt up — beams to ceiling.
+
+targets:
+  - select: { tag: bar }
+    values:
+      position/pan: 128
+      position/tilt: 50
+      movement/speed: 80

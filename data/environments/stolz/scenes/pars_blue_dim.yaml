@@ -1,0 +1,11 @@
+name: pars_blue_dim
+description: Pars blue bei niedriger Helligkeit (Pulse-off-Position).
+targets:
+  - select: { tag: par }
+    palette: { name: blau, facet: rgb }
+    values: { dimmer: 30, strobe: 0 }
+  - select: { tag: cameo }
+    palette: { name: blau, facet: cameo }
+    values: { dimmer: 30 }
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

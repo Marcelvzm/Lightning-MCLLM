@@ -1,0 +1,21 @@
+# Nur Front-Fixtures (Tag: front) in einer Palette. Im stolz-Rig sind das
+# Cameos und der Varytec-Pad. Wenn die Varytec entfernt wird, matcht
+# nur noch die Cameo-Reihe.
+name: front_color
+description: Front-Fixtures in Palette-Farbe.
+
+parameters:
+  col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 200, min: 0, max: 255 }
+
+targets:
+  - select: { tags: [par, front] }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: "${dim}"
+      strobe: 0
+
+  - select: { tags: [par, front, cameo] }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: "${dim}"

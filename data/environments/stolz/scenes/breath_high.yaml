@@ -1,0 +1,28 @@
+# Stärkere Breath (90 dim) — präsent aber noch nicht "voll an".
+name: breath_high
+description: Stärker präsenter Glow (90 dim) — Atmo mit Gewicht.
+
+parameters:
+  col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+
+targets:
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 110
+      movement/speed: 200
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 90
+
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values: { dimmer: 90, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values: { dimmer: 90 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

@@ -1,0 +1,24 @@
+# Nur die Pars in einer Palette — Bar bleibt unangetastet (kann parallel
+# eine eigene Voice mit Bewegung/Farbe halten).
+name: pars_color
+description: Pars in Palette-Farbe. Bar wird nicht angefasst.
+
+parameters:
+  col: { type: str, default: rot, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 200, min: 0, max: 255 }
+
+targets:
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: "${dim}"
+      strobe: 0
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: "${dim}"
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0

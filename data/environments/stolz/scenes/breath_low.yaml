@@ -1,0 +1,29 @@
+# Sehr leiser Breath (10 dim) — kaum sichtbar, nur "atmosphärische
+# Präsenz". Für Verses, Bridges, Late-Set-Atmosphäre.
+name: breath_low
+description: Sehr dezenter Glow (10 dim) — kaum mehr als Präsenz.
+
+parameters:
+  col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+
+targets:
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 110
+      movement/speed: 240
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 10
+
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values: { dimmer: 10, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values: { dimmer: 10 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

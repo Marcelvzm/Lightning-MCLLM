@@ -1,0 +1,6 @@
+name: bar_green
+description: Bar-Heads green, full bright.
+targets:
+  - select: { tag: bar }
+    palette: { name: gruen, facet: wheel }
+    values: { dimmer: 255, gobo/wheel: 0, strobe: 0 }

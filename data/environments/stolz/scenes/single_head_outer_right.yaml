@@ -1,0 +1,20 @@
+name: single_head_outer_right
+description: Nur head-4 (rechter äußerer Bar-Kopf) leuchtet.
+
+parameters:
+  col: { type: str, default: weiss, options: [rot, blau, gruen, weiss, warm] }
+
+targets:
+  - select: { tag: bar }
+    values:
+      dimmer: 0
+
+  - select: { tag: head-4 }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 165
+      movement/speed: 100
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255

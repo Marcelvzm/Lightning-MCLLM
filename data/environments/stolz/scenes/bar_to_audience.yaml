@@ -1,0 +1,11 @@
+# Heads alle in Richtung Publikum (zentriert horizontal, mittig vertikal).
+# Aggressive Variante für Drops — Beam direkt ins Publikum.
+name: bar_to_audience
+description: Bar-Heads gerade nach vorn ins Publikum.
+
+targets:
+  - select: { tag: bar }
+    values:
+      position/pan: 128
+      position/tilt: 165
+      movement/speed: 80

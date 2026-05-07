@@ -1,0 +1,5 @@
+name: dim_bar_off
+description: Bar Dimmer auf 0, Rest unverändert.
+targets:
+  - select: { tag: bar }
+    values: { dimmer: 0 }

@@ -1,0 +1,13 @@
+# Heads konvergieren nach innen-unten — als ob sie sich auf einen Punkt
+# in der Mitte des Tanzbereichs konzentrieren.
+name: mh_walk_d
+description: MH waypoint D — konvergent nach innen-unten.
+targets:
+  - select: { name: head-1 }
+    values: { position/pan: 130, position/tilt: 175, movement/speed: 80 }
+  - select: { name: head-2 }
+    values: { position/pan: 128, position/tilt: 175, movement/speed: 80 }
+  - select: { name: head-3 }
+    values: { position/pan: 128, position/tilt: 175, movement/speed: 80 }
+  - select: { name: head-4 }
+    values: { position/pan: 126, position/tilt: 175, movement/speed: 80 }

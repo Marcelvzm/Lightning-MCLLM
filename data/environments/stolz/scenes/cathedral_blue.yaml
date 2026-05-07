@@ -1,0 +1,14 @@
+# Bar-Heads schießen blau in die Decke. Bei Nebel: "Dome of light"-Effekt.
+# Für ambient peaks, breakdowns, theatralische Momente.
+name: cathedral_blue
+description: Bar-Heads in die Decke, blau — Cathedral-Look.
+targets:
+  - select: { tag: bar }
+    palette: { name: blau, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 50
+      movement/speed: 80
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255

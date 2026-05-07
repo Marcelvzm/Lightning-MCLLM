@@ -1,0 +1,20 @@
+# Front rot, hinten blau. Klassisches "Hardstyle Z2 drop"-Pattern oder
+# Komplementärkontrast-Setup. Die Bar nutzt die front-Farbe.
+name: split_red_blue
+description: Front rot, Back blau — komplementärer Tiefen-Effekt.
+targets:
+  - select: { tag: bar }
+    palette: { name: rot, facet: wheel }
+    values: { dimmer: 255, gobo/wheel: 0, strobe: 0 }
+
+  - select: { tags: [par, front] }
+    palette: { name: rot, facet: rgb }
+    values: { dimmer: 255, strobe: 0 }
+
+  - select: { tags: [par, front, cameo] }
+    palette: { name: rot, facet: cameo }
+    values: { dimmer: 255 }
+
+  - select: { tag: back }
+    palette: { name: blau, facet: rgb }
+    values: { dimmer: 200, strobe: 0 }

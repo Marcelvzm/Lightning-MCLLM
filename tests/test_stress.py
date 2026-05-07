@@ -104,7 +104,10 @@ def test_simulator_throughput_at_full_engine_rate(stage):
     capture every frame without protocol errors."""
     sim = EuroliteSimulator()
     sim.start()
-    iface = EnttecProInterface(sim.slave_path)
+    # PTY pseudo-terminals on macOS don't support 250000 baud (the new
+    # production default). Use 57600 — the simulator doesn't care about
+    # actual line rate.
+    iface = EnttecProInterface(sim.slave_path, baudrate=57600)
     iface.open()
     clock = BpmClock(bpm=120.0)
     eng = Engine(stage=stage, dmx=iface, clock=clock, refresh_hz=60)

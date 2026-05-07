@@ -1,0 +1,35 @@
+# "Breath" — sehr dezenter Glow, Atmo-Layer für Verses, Breakdowns,
+# Intros. Niedriger Default-Dim. Kombinier mit einer separaten
+# Dimmer-Pulse-Voice für lebendiges "Atem"-Gefühl.
+name: breath
+description: Sehr leise Atmo-Schicht in Palette-Farbe.
+
+parameters:
+  col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 25, min: 0, max: 255 }
+
+targets:
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 110
+      movement/speed: 200
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: "${dim}"
+
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: "${dim}"
+      strobe: 0
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: "${dim}"
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0

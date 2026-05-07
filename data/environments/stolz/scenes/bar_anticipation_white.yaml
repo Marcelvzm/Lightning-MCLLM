@@ -1,0 +1,12 @@
+name: bar_anticipation_white
+description: Bar-Heads white, frozen — neutral anticipation halt.
+targets:
+  - select: { tag: bar }
+    palette: { name: weiss, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 128
+      movement/speed: 0
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255

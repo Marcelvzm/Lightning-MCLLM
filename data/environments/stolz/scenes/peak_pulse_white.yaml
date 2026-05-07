@@ -1,0 +1,23 @@
+# Repeatable Peak — full white auf der gesamten Bühne, passend für
+# Snap-Patterns. Im Gegensatz zu white_hit ist das hier dazu gedacht,
+# in einem Loop wiederholt zu werden (z.B. quarter-beat hits).
+name: peak_pulse_white
+description: Full white peak — repeatable variant von white_hit.
+targets:
+  - select: { tag: bar }
+    palette: { name: weiss, facet: wheel }
+    values:
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255
+
+  - select: { tag: par }
+    palette: { name: weiss, facet: rgb }
+    values: { dimmer: 255, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: weiss, facet: cameo }
+    values: { dimmer: 255 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

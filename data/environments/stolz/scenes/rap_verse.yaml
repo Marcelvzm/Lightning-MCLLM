@@ -1,0 +1,31 @@
+# Sehr dunkles Setup für Rap-Verses — Performer im Spotlight, Background
+# zurückgenommen. Siehe genre_concepts/rap_trap.md (state R1).
+# (In stolz haben wir keinen dedizierten Spot — die Bar simuliert das
+# am besten via head-2/head-3 in warm-white auf das Publikum gerichtet.)
+name: rap_verse
+description: Rap verse — minimaler Background, "spot"-Effekt durch innere MH-Heads.
+targets:
+  - select: { tag: bar }
+    values:
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 0
+
+  - select: { tag: inner }
+    palette: { name: warm, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 165
+      movement/speed: 100
+      dimmer: 200
+
+  - select: { tag: par }
+    palette: { name: rot, facet: rgb }
+    values: { dimmer: 30, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: rot, facet: cameo }
+    values: { dimmer: 30 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

@@ -1,0 +1,12 @@
+# Diagonale Treppe von links-oben nach rechts-unten.
+name: mh_diagonal_lr
+description: MH staircase — head-1 hoch links, head-4 tief rechts.
+targets:
+  - select: { name: head-1 }
+    values: { position/pan: 50,  position/tilt: 60,  movement/speed: 80 }
+  - select: { name: head-2 }
+    values: { position/pan: 95,  position/tilt: 100, movement/speed: 80 }
+  - select: { name: head-3 }
+    values: { position/pan: 160, position/tilt: 140, movement/speed: 80 }
+  - select: { name: head-4 }
+    values: { position/pan: 210, position/tilt: 180, movement/speed: 80 }

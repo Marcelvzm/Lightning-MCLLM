@@ -1,0 +1,9 @@
+name: bar_to_floor
+description: Bar-Heads tilt down — beams to floor / dance area.
+
+targets:
+  - select: { tag: bar }
+    values:
+      position/pan: 128
+      position/tilt: 220
+      movement/speed: 80

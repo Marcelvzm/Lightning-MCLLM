@@ -92,7 +92,7 @@ class EnttecProInterface(DmxInterface):
         self,
         port: str,
         *,
-        baudrate: int = 57600,
+        baudrate: int = 250000,
         write_timeout: float = 0.05,
         reconnect_delay: float = 1.0,
     ):

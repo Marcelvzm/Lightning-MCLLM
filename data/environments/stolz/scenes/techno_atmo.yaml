@@ -1,0 +1,25 @@
+# Tiefes Blau, niedriger Dimmer, Bewegung verlangsamt. Hypnotische
+# Techno-Grundstimmung — siehe genre_concepts/techno.md (state A).
+name: techno_atmo
+description: Techno-Atmosphäre — tief blau, ruhig, hypnotisch.
+targets:
+  - select: { tag: bar }
+    palette: { name: blau, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 110
+      movement/speed: 220
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 60
+
+  - select: { tag: par }
+    palette: { name: blau, facet: rgb }
+    values: { dimmer: 50, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: blau, facet: cameo }
+    values: { dimmer: 50 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

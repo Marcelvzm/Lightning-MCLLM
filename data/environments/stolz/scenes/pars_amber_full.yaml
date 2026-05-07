@@ -1,0 +1,13 @@
+# Warm amber wash — atmosphärische Grundwärme. Anders als pars_red_full,
+# das Crystal-Klar Gefühl gibt dieser eher Festsaal/Lounge.
+name: pars_amber_full
+description: Pars warm amber, mid-high bright.
+targets:
+  - select: { tag: par }
+    palette: { name: warm, facet: rgb }
+    values: { dimmer: 220, strobe: 0 }
+  - select: { tag: cameo }
+    palette: { name: warm, facet: cameo }
+    values: { dimmer: 220 }
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

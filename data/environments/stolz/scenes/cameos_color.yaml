@@ -1,0 +1,15 @@
+# Nur Cameos (3 Stück) in einer Palette. Praktisch wenn man die Cameos
+# als Akzent-Layer oder Punctuation einsetzen will.
+name: cameos_color
+description: Nur die Cameos in Palette-Farbe.
+
+parameters:
+  col: { type: str, default: rot, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 255, min: 0, max: 255 }
+
+targets:
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: "${dim}"
+      strobe: 0

@@ -1,0 +1,14 @@
+# Hard-coded saturated red on pars at full brightness. Useful from chases
+# (chase args don't propagate to referenced scenes — so for chase-callable
+# scenes, hard-code the values).
+name: pars_red_full
+description: Pars saturated red, full bright. Hard-coded für Chase-Verwendung.
+targets:
+  - select: { tag: par }
+    palette: { name: rot, facet: rgb }
+    values: { dimmer: 255, strobe: 0 }
+  - select: { tag: cameo }
+    palette: { name: rot, facet: cameo }
+    values: { dimmer: 255 }
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

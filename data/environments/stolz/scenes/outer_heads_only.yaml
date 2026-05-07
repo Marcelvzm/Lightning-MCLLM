@@ -1,0 +1,22 @@
+# Nur head-1 + head-4 (äußere Bar-Heads). Wirkt expansiv, "Wings".
+name: outer_heads_only
+description: Nur die beiden äußeren Bar-Heads leuchten.
+
+parameters:
+  col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 200, min: 0, max: 255 }
+
+targets:
+  - select: { tag: bar }
+    values:
+      dimmer: 0
+
+  - select: { tag: outer }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 140
+      movement/speed: 100
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: "${dim}"

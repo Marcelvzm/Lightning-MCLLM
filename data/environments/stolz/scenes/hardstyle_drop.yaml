@@ -1,0 +1,29 @@
+# Voll rot mit Bar im Drop-Stance — Z2 drop pattern.
+# Siehe genre_concepts/hardstyle.md (state Z2).
+name: hardstyle_drop
+description: Hardstyle Drop — full red+white, peak intensity.
+targets:
+  - select: { tag: bar }
+    palette: { name: rot, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 165
+      movement/speed: 0
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255
+
+  - select: { tag: par }
+    palette: { name: rot, facet: rgb }
+    values: { dimmer: 255, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: rot, facet: cameo }
+    values: { dimmer: 255 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }
+
+  - select: { tag: beam_bar }
+    palette: { name: rot, facet: rx350 }
+    values: { strobe: 0 }

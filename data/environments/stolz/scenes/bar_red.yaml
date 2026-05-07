@@ -1,0 +1,6 @@
+name: bar_red
+description: Bar-Heads rot, full bright. Position bleibt wie sie ist.
+targets:
+  - select: { tag: bar }
+    palette: { name: rot, facet: wheel }
+    values: { dimmer: 255, gobo/wheel: 0, strobe: 0 }

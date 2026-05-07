@@ -1,0 +1,7 @@
+# Pars dimmer auf 0, RGB unangetastet. Für "Pars schnell ausblenden"
+# während andere Voices unangetastet weiterlaufen.
+name: dim_pars_off
+description: Pars Dimmer auf 0, Rest unverändert.
+targets:
+  - select: { tag: par }
+    values: { dimmer: 0 }

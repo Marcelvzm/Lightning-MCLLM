@@ -1,0 +1,26 @@
+# Sehr ruhige warme Grundstimmung — fast statisch, niedriger Dim.
+# Wenn als time-anchored Chase gefadet, gibt's das ambient-typische
+# "fühlt sich nach Stunden an, hat sich aber unmerklich gewandelt"-Gefühl.
+name: ambient_drift
+description: Ambient — warm, fast statisch, sehr ruhig.
+targets:
+  - select: { tag: bar }
+    palette: { name: warm, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 80
+      movement/speed: 240
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 25
+
+  - select: { tag: par }
+    palette: { name: warm, facet: rgb }
+    values: { dimmer: 20, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: warm, facet: cameo }
+    values: { dimmer: 20 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

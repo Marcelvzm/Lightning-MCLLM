@@ -1,14 +1,10 @@
-# Eine Scene die das gesamte Rig in eine Palette bringt — ersetzt
-# all_red.yaml und all_blue.yaml. Statt vier separate Color-Bundles inline
-# zu duplizieren, referenzieren die Targets eine Palette+Facet.
+# Gesamtes Rig in einer Palette. Tag-basiert komponiert — entfernst du
+# einzelne Fixtures aus environment.yaml (z.B. die Varytec), funktioniert
+# die Scene weiter, sie matcht einfach die verbleibenden Fixtures.
 #
-# Aufruf-Beispiele:
-#   snap_scene("all_color")                       → defaults: rot
-#   snap_scene("all_color", args={"col": "blau"})  → blau
-#   snap_scene("all_color", args={"col": "weiss"}) → weiß
-#
-# Bank-Slot-Konfiguration: ein Slot pro Farbe mit args-Override.
-
+# Aufruf:
+#   snap_scene("all_color")                 → defaults: rot
+#   snap_scene("all_color", args={"col": "blau"})
 name: all_color
 description: Gesamtes Rig in einer Palette (rot / blau / gruen / weiss / warm).
 
@@ -20,7 +16,7 @@ parameters:
     description: "Palette-Name aus palettes.yaml."
 
 targets:
-  # Bar-Heads — color-wheel
+  # Bar-Heads — color-wheel + zentrale Position + voller Dimmer
   - select: { tag: bar }
     palette: { name: "${col}", facet: wheel }
     values:
@@ -33,37 +29,24 @@ targets:
       strobe: 0
       dimmer: 255
 
-  # Varytec — direkter RGB-Pfad. Ist `tag: par` aber NICHT cameo / showtec.
-  - select: { name: pad-1 }
-    palette: { name: "${col}", facet: rgb }
-    values:
-      dimmer: 255
-      strobe: 0
-      effect/macro: 0
-
-  # Eurolite PAR-64 (5CH) — RGB
-  - select: { name: par64 }
+  # Alle direkt-RGB-Pars (Cameos, Showtecs, Varytec, PAR-64, …) — RGB facet
+  - select: { tag: par }
     palette: { name: "${col}", facet: rgb }
     values:
       dimmer: 255
       strobe: 0
 
-  # Cameos — RGB + macro override (Cameo-spezifisch)
+  # Cameos — zusätzlich macro-Override schreiben (sonst macro=0=Blackout)
   - select: { tag: cameo }
     palette: { name: "${col}", facet: cameo }
-    values:
-      dimmer: 255
-      strobe: 0
 
-  # Showtecs — RGB direct, mode auf 0 (RGB-Steuerung)
+  # Showtecs — explizit Mode 0 = RGB-Direkt
   - select: { tag: showtec }
-    palette: { name: "${col}", facet: rgb }
     values:
-      strobe: 0
       effect/macro: 0
 
-  # RX350 — Macro auf "Farbe X LEDs only" (2CH mode)
-  - select: { name: rx350 }
+  # RX350 (Effect-Bar im 2CH-Mode) — eigenes Macro-Mapping
+  - select: { tag: beam_bar }
     palette: { name: "${col}", facet: rx350 }
     values:
       strobe: 0

@@ -1,0 +1,33 @@
+# Hard-coded Rot-Drop — kein Palette-Parameter, weil das eine bewusst
+# semantisch eindeutige Scene ist (klassischer "Hardstyle drop colour").
+# Wenn du andere Drop-Farben willst, nutze all_color mit args.
+name: red_drop
+description: Saturated red full-power. Drop-Moment.
+
+targets:
+  - select: { tag: bar }
+    palette: { name: rot, facet: wheel }
+    values:
+      dimmer: 255
+      gobo/wheel: 0
+      strobe: 0
+
+  - select: { tag: par }
+    palette: { name: rot, facet: rgb }
+    values:
+      dimmer: 255
+      strobe: 0
+
+  - select: { tag: cameo }
+    palette: { name: rot, facet: cameo }
+    values:
+      dimmer: 255
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0
+
+  - select: { tag: beam_bar }
+    palette: { name: rot, facet: rx350 }
+    values:
+      strobe: 0

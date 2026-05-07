@@ -1,0 +1,30 @@
+# Locked auf "warm"-Palette — kein Color-Parameter. Klassisches
+# "Setup-vor-Act"-Bild: das Rig steht da, leise glüht es warm.
+name: idle_warm
+description: Sehr dezente warme Grundstimmung.
+
+targets:
+  - select: { tag: bar }
+    palette: { name: warm, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 110
+      movement/speed: 200
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 35
+
+  - select: { tag: par }
+    palette: { name: warm, facet: rgb }
+    values:
+      dimmer: 40
+      strobe: 0
+
+  - select: { tag: cameo }
+    palette: { name: warm, facet: cameo }
+    values:
+      dimmer: 40
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0

@@ -1,0 +1,23 @@
+# DnB-Style continuous wave — pars cyan-blau, bar blau, mid-bright.
+# Lebt vom Continuous-Movement-Feeling (separat per Chase angesteuert).
+# Siehe genre_concepts/dnb.md.
+name: dnb_wave
+description: DnB Wave — kühles Blau, mid-bright, continuous-feel.
+targets:
+  - select: { tag: bar }
+    palette: { name: blau, facet: wheel }
+    values:
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 200
+
+  - select: { tag: par }
+    palette: { name: blau, facet: rgb }
+    values: { dimmer: 180, strobe: 0 }
+
+  - select: { tag: cameo }
+    palette: { name: blau, facet: cameo }
+    values: { dimmer: 180 }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

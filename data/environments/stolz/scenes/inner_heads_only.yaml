@@ -1,0 +1,23 @@
+# Nur head-2 + head-3 (innere Bar-Heads) leuchten. Wirkt fokussiert,
+# convergent. Pars unangetastet.
+name: inner_heads_only
+description: Nur die beiden inneren Bar-Heads leuchten.
+
+parameters:
+  col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 200, min: 0, max: 255 }
+
+targets:
+  - select: { tag: bar }
+    values:
+      dimmer: 0
+
+  - select: { tag: inner }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 140
+      movement/speed: 100
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: "${dim}"

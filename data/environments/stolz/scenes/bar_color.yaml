@@ -1,0 +1,17 @@
+# Nur die Bar-Heads in einer Palette. Position bewusst nicht gesetzt —
+# damit eine parallel laufende Bewegungs-Voice (z.B. mh_walk_a) ungestört
+# weiter durchpaintet.
+name: bar_color
+description: Bar-Heads in Palette-Farbe ohne Positions-Override.
+
+parameters:
+  col: { type: str, default: rot, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 255, min: 0, max: 255 }
+
+targets:
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      dimmer: "${dim}"
+      gobo/wheel: 0
+      strobe: 0

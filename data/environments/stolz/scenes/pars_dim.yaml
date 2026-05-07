@@ -1,0 +1,24 @@
+# Pars im sehr gedimmten Modus — Atmosphäre, nicht im Vordergrund.
+# Default 30 statt 60 weil das die "background ambient"-Schicht ist.
+name: pars_dim
+description: Pars dezent gedimmt — Atmo-Layer.
+
+parameters:
+  col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 30, min: 0, max: 255 }
+
+targets:
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: "${dim}"
+      strobe: 0
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values:
+      dimmer: "${dim}"
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0

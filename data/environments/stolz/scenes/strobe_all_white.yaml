@@ -1,0 +1,38 @@
+# Full-rig Strobe weiß. **Use sparingly** — siehe llm_instruct.md §8.5.
+# Strobe-Rate parametrisiert. Default 200 = aggressiv aber nicht
+# Maximum (Fixtures verkraften 255 unterschiedlich).
+name: strobe_all_white
+description: Strobe auf der gesamten Bühne. Peak-Effekt.
+
+parameters:
+  rate:
+    type: int
+    default: 200
+    min: 11
+    max: 255
+    description: "Strobe-Rate auf Pars/Bar. Min 11 weil unter 11 = aus."
+
+targets:
+  - select: { tag: bar }
+    palette: { name: weiss, facet: wheel }
+    values:
+      dimmer: 255
+      gobo/wheel: 0
+      strobe: "${rate}"
+
+  - select: { tag: par }
+    palette: { name: weiss, facet: rgb }
+    values:
+      dimmer: 255
+      strobe: "${rate}"
+
+  - select: { tag: cameo }
+    palette: { name: weiss, facet: cameo }
+    values:
+      dimmer: 255
+      strobe: "${rate}"
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0
+      strobe: "${rate}"

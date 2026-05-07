@@ -1,0 +1,14 @@
+# Nur die Effect-Bars (Involight RX350 etc.) in einer Palette.
+# RX350 hat im 2CH-Mode keinen Master-Dimmer — Helligkeit kommt aus den LED-
+# Gruppen direkt. Daher kein dim-Parameter.
+name: effect_color
+description: Effect-Bars (Involight RX350) auf eine Palette-Farbe.
+
+parameters:
+  col: { type: str, default: rot, options: [rot, blau, gruen, weiss, warm] }
+
+targets:
+  - select: { tag: beam_bar }
+    palette: { name: "${col}", facet: rx350 }
+    values:
+      strobe: 0

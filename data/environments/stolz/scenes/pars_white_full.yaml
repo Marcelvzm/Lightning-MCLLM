@@ -1,0 +1,12 @@
+# Pars white full — peak hit ohne die Bar mitzunehmen.
+name: pars_white_full
+description: Pars white at full bright. Pure peak hit.
+targets:
+  - select: { tag: par }
+    palette: { name: weiss, facet: rgb }
+    values: { dimmer: 255, strobe: 0 }
+  - select: { tag: cameo }
+    palette: { name: weiss, facet: cameo }
+    values: { dimmer: 255 }
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

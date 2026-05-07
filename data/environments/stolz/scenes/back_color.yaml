@@ -1,0 +1,18 @@
+# Nur Backlight-Fixtures (Tag: back) in einer Palette. Im stolz-Rig
+# aktuell nur der PAR-64 — wenn weitere Backlights dazukommen, matchen
+# die automatisch.
+#
+# Klassischer Einsatz: theatralisches Backlit-Gefühl, Pars vorne dunkel.
+name: back_color
+description: Backlight-Fixtures in Palette-Farbe.
+
+parameters:
+  col: { type: str, default: blau, options: [rot, blau, gruen, weiss, warm] }
+  dim: { type: int, default: 200, min: 0, max: 255 }
+
+targets:
+  - select: { tag: back }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: "${dim}"
+      strobe: 0

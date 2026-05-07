@@ -1,0 +1,14 @@
+# Heads auf neutrale Position, dimmen aus. Nutzbar als Reset
+# zwischen Bewegungs-Szenarien.
+name: bar_park_center
+description: Bar-Heads zentriert, Dimmer 0.
+
+targets:
+  - select: { tag: bar }
+    values:
+      position/pan: 128
+      position/tilt: 128
+      movement/speed: 80
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 0

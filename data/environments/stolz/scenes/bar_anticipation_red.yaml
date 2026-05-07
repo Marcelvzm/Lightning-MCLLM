@@ -1,0 +1,15 @@
+# Z1-Pattern: Bar-Heads alle rot, gefroren, voller Dimmer. Wird vor
+# einem Drop für 2-4 Bars eingefroren um die Spannung aufzubauen.
+# Siehe genre_concepts/hardstyle.md (state Z1).
+name: bar_anticipation_red
+description: Bar-Heads rot, frozen — Z1 anticipation halt.
+targets:
+  - select: { tag: bar }
+    palette: { name: rot, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 128
+      movement/speed: 0
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255

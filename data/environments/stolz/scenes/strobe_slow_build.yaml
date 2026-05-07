@@ -1,0 +1,28 @@
+# Langsamer Strobe (Rate ~30-50) — nicht aggressives Geblitze sondern
+# rhythmisches "Pulsen" für Build-Up-Phasen. Klassisch: über 8-16 Bars
+# die Rate verdoppeln (Hardstyle build).
+name: strobe_slow_build
+description: Slow strobe für Build-up-Phasen, Pars + Bar.
+
+parameters:
+  rate: { type: int, default: 40, min: 11, max: 255 }
+  col: { type: str, default: weiss, options: [rot, blau, gruen, weiss, warm] }
+
+targets:
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      dimmer: 200
+      gobo/wheel: 0
+      strobe: "${rate}"
+
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values: { dimmer: 200, strobe: "${rate}" }
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+    values: { dimmer: 200, strobe: "${rate}" }
+
+  - select: { tag: showtec }
+    values: { effect/macro: 0, strobe: "${rate}" }

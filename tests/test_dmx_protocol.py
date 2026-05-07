@@ -59,7 +59,7 @@ def test_simulator_handles_many_frames() -> None:
     sim = EuroliteSimulator()
     sim.start()
     try:
-        iface = EnttecProInterface(sim.slave_path)
+        iface = EnttecProInterface(sim.slave_path, baudrate=57600)  # PTY caps
         iface.open()
         last = b""
         for i in range(200):
@@ -84,7 +84,7 @@ def test_send_after_disconnect_does_not_raise() -> None:
     """
     sim = EuroliteSimulator()
     sim.start()
-    iface = EnttecProInterface(sim.slave_path, reconnect_delay=0.05)
+    iface = EnttecProInterface(sim.slave_path, baudrate=57600, reconnect_delay=0.05)
     iface.open()
     iface.send(0, bytes(512))
     # Now stop the simulator — slave_path becomes invalid

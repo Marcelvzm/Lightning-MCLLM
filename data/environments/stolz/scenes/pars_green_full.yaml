@@ -1,0 +1,11 @@
+name: pars_green_full
+description: Pars saturated green, full bright.
+targets:
+  - select: { tag: par }
+    palette: { name: gruen, facet: rgb }
+    values: { dimmer: 255, strobe: 0 }
+  - select: { tag: cameo }
+    palette: { name: gruen, facet: cameo }
+    values: { dimmer: 255 }
+  - select: { tag: showtec }
+    values: { effect/macro: 0 }

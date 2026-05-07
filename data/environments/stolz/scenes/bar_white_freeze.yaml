@@ -1,0 +1,19 @@
+# Bar-Heads stehen still, alle weiß, voll bright. Klassisches
+# "Anticipation Halt" — kurz vor dem Drop einfrieren als visuelles
+# "Achtung jetzt kommt's"-Signal.
+#
+# Pars werden NICHT angefasst — sie können separat in eine andere Scene
+# gefadet sein (z.B. dunkel als Kontrast).
+name: bar_white_freeze
+description: Bar-Heads in white, frozen. Anticipation Halt.
+
+targets:
+  - select: { tag: bar }
+    palette: { name: weiss, facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: 128
+      movement/speed: 0
+      gobo/wheel: 0
+      strobe: 0
+      dimmer: 255

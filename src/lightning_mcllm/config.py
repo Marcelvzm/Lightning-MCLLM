@@ -60,9 +60,13 @@ class Settings:
     dmx_refresh_hz: int = 30
     web_host: str = "127.0.0.1"
     web_port: int = 7777
-    # Enttec USB Pro spec is 57600 8N1; the MK2 accepts the same protocol.
-    # Override via env if your device prefers 115200 / 250000.
-    serial_baudrate: int = 57600
+    # 250000 baud — needed for the Eurolite USB-DMX512 PRO MK2 to deliver a
+    # full 512-channel universe at >=25Hz. The original Enttec USB Pro spec
+    # used 57600, but at that rate a 513-byte frame takes ~89ms (longer than
+    # one 30Hz tick) → write timeouts → adapter LED stays red and no DMX
+    # makes it to the wire. 250000 covers most modern FTDI-based DMX
+    # adapters. Override via `--baud` if your specific device disagrees.
+    serial_baudrate: int = 250000
     # Default port; if None, auto-discover.
     serial_port: str | None = None
     # If True, engine runs without ever opening serial — null DMX (good for dev).

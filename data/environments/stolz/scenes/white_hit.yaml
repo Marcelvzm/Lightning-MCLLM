@@ -1,0 +1,33 @@
+# Voll-Weiss auf der gesamten Bühne. **Sparingly used** — der Effekt
+# verliert bei häufigem Einsatz seine Wirkung. Klassisch: einmaliger
+# Drop, bewusste Punktierung. Siehe llm_instruct.md §3.2.
+name: white_hit
+description: Full-rig white-hit für Drops / Peak-Momente.
+
+targets:
+  - select: { tag: bar }
+    palette: { name: weiss, facet: wheel }
+    values:
+      dimmer: 255
+      gobo/wheel: 0
+      strobe: 0
+
+  - select: { tag: par }
+    palette: { name: weiss, facet: rgb }
+    values:
+      dimmer: 255
+      strobe: 0
+
+  - select: { tag: cameo }
+    palette: { name: weiss, facet: cameo }
+    values:
+      dimmer: 255
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0
+
+  - select: { tag: beam_bar }
+    palette: { name: weiss, facet: rx350 }
+    values:
+      strobe: 0
