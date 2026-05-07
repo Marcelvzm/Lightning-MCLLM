@@ -1,0 +1,36 @@
+# Bewegungs-Waypoint C — Köpfe in dritter Konstellation.
+name: mh_walk_c
+description: MH waypoint C — wieder andere Konstellation.
+targets:
+  - select: { name: head-1 }
+    values:
+      position/pan: 100
+      position/tilt: 200
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0
+  - select: { name: head-2 }
+    values:
+      position/pan: 230
+      position/tilt: 100
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0
+  - select: { name: head-3 }
+    values:
+      position/pan: 40
+      position/tilt: 50
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0
+  - select: { name: head-4 }
+    values:
+      position/pan: 160
+      position/tilt: 170
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0

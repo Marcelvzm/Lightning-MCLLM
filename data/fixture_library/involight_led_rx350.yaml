@@ -1,0 +1,86 @@
+# =============================================================================
+# Involight LED RX350 — LED beam effect (4-flower bar, 256 RGBWY LEDs, 15° beam)
+# =============================================================================
+#
+# 4-flower beam effect. Hat KEINE freie RGB-Mischung — die LEDs sind in fixen
+# Positionen Rot/Grün/Blau/Gelb/Weiß angeordnet. Du wählst entweder aus
+# 42 Auto-Programmen (3CH-Mode) oder aus festen LED-Gruppen (2CH-Mode).
+#
+# Available DMX modes (selectable on the device — see steps at bottom):
+#   2-CH  : direct LED-group selection + strobe / music   ← THIS PROFILE
+#   3-CH  : 42 auto-programs with adjustable speed + strobe / music
+#
+# Wenn du auf 3CH umstellen willst, nutze das Schwester-Profil
+# `involight_led_rx350_3ch.yaml` (siehe git history für die Variante).
+#
+# 2-CH layout (start address = N):
+#
+#   offset | ch | role          | value range and meaning
+#   -------|----|---------------|-----------------------------------------------
+#   0      | N  | effect/macro  | 000        keine Funktion (undokumentiert).
+#                               | 001-022    nur ROTE LEDs
+#                               | 023-045    nur GRÜNE LEDs
+#                               | 046-068    nur BLAUE LEDs
+#                               | 069-091    nur GELBE LEDs
+#                               | 092-114    nur WEISSE LEDs
+#                               | 115-137    GELB + WEISS
+#                               | 138-160    ROT + GRÜN
+#                               | 161-183    ROT + BLAU
+#                               | 184-206    GRÜN + BLAU
+#                               | 207-229    ROT + GRÜN + BLAU
+#                               | 230-252    ROT + GRÜN + WEISS + GELB + BLAU
+#                               | 253-255    Music-control mode
+#   1      | N+1| strobe        | 000        kein Strobe (Steady oder, im
+#                               |            Music-Mode, untere Empfindlichkeit)
+#                               | 001-255    Strobe-Rate langsam → schnell
+#                               |            (in Music-Mode: Mic-Empfindlichkeit
+#                               |            niedrig → hoch)
+#
+# WICHTIG: Bei Wert 0 auf Kanal 1 macht das Gerät *nichts*. Mindestens 001
+# senden, sonst bleibt's dunkel. Der `off`-Preset ist nominell 0 — taugt nur
+# als "kein DMX-Befehl", für echtes Aus muss eine andere Voice die Channels
+# überschreiben.
+#
+# Setting 2-CH mode + start address (4 buttons: Mode / Setup / Up / Down):
+#   1. Power on. Wait for the display to initialise.
+#   2. Press MODE repeatedly until display shows `d.001` (or `d.xxx`).
+#   3. Press SETUP. Display switches between `d-P1` (3-channel mode) and
+#      `d-P2` (2-channel mode). Use UP/DOWN to select **`d-P2`**.
+#   4. Press MODE again to return to address view (`d.xxx`).
+#   5. Use UP/DOWN to set the start address (e.g. `d.039` for address 39).
+#
+# Sources:
+#   * Involight LED RX350 user manual rev. unknown, pages 5-8
+#     (https://involight.com/wp-content/uploads/2023/07/Involight-RX350.pdf)
+#
+# =============================================================================
+
+name: involight_led_rx350
+description: Involight LED RX350 — 4-flower LED beam effect (2-channel mode = LED-group selector + strobe).
+manufacturer: involight
+model: led_rx350
+
+channels:
+  - offset: 0
+    role: effect/macro
+    default: 0
+    description: "LED-group selector — siehe Kommentar oben für die Werte-Tabelle."
+    presets:
+      off:           0       # keine Funktion (= dunkel falls nichts anderes drüber liegt).
+      red:          11       # Mitte von 001-022.
+      green:        34       # Mitte von 023-045.
+      blue:         57       # Mitte von 046-068.
+      yellow:       80       # Mitte von 069-091.
+      white:       103       # Mitte von 092-114.
+      yellow_white: 126      # Mitte von 115-137.
+      red_green:   149       # Mitte von 138-160.
+      red_blue:    172       # Mitte von 161-183.
+      green_blue:  195       # Mitte von 184-206.
+      rgb:         218       # Mitte von 207-229: rot + grün + blau.
+      all:         241       # Mitte von 230-252: alle Farben gleichzeitig.
+      music:       254       # 253-255: music-control mode.
+  - offset: 1
+    role: strobe
+    default: 0
+    description: "Strobe-Rate. 0 = aus. 1-255 = langsam → schnell. Im music-mode: Mic-Empfindlichkeit."
+    presets: { off: 0, slow: 30, medium: 120, fast: 220 }

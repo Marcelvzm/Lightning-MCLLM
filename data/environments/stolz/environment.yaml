@@ -1,0 +1,90 @@
+# "stolz" — full rig per Belegung.md.
+# Block A (1-41): Eurolite TMH Bar S120 + Involight RX350.
+# Block B (100-150): Pars. Eurolite PAR-64 (107) und Showtecs (130/137/144)
+# sind in Belegung.md gelistet aber hier noch nicht gepatched — Mode + Profil
+# sind noch offen.
+name: stolz
+description: Full rig — TMH Bar + RX350 + Varytec + 3× Cameo (PAR-64 + Showtec tbd).
+universes: [0]
+default_bank: main
+
+fixtures:
+  # ── Block A: complex devices ────────────────────────────────────────────
+  - name: head-1
+    profile: eurolite_tmh_bar_s120_head
+    address: 1
+    universe: 0
+    tags: [moving_head, mh, bar, head-1, left, outer]
+
+  - name: head-2
+    profile: eurolite_tmh_bar_s120_head
+    address: 10
+    universe: 0
+    tags: [moving_head, mh, bar, head-2, left, inner]
+
+  - name: head-3
+    profile: eurolite_tmh_bar_s120_head
+    address: 19
+    universe: 0
+    tags: [moving_head, mh, bar, head-3, right, inner]
+
+  - name: head-4
+    profile: eurolite_tmh_bar_s120_head
+    address: 28
+    universe: 0
+    tags: [moving_head, mh, bar, head-4, right, outer]
+
+  - name: rx350
+    profile: involight_led_rx350
+    address: 39
+    universe: 0
+    tags: [effect, beam_bar]
+
+  # ── Block B: pars ───────────────────────────────────────────────────────
+  - name: pad-1
+    profile: varytec_pad_5_fourty
+    address: 100
+    universe: 0
+    tags: [par, front]
+
+  - name: par64
+    profile: eurolite_led_par_64_rgb_spot
+    address: 107
+    universe: 0
+    tags: [par, spot, back]
+
+  - name: cameo-1
+    profile: cameo_flat_par_tri_3w_ir
+    address: 112
+    universe: 0
+    tags: [par, flat, cameo, front]
+
+  - name: cameo-2
+    profile: cameo_flat_par_tri_3w_ir
+    address: 118
+    universe: 0
+    tags: [par, flat, cameo, front]
+
+  - name: cameo-3
+    profile: cameo_flat_par_tri_3w_ir
+    address: 124
+    universe: 0
+    tags: [par, flat, cameo, front]
+
+  - name: showtec-1
+    profile: showtec_par_6ch
+    address: 130
+    universe: 0
+    tags: [par, showtec]
+
+  - name: showtec-2
+    profile: showtec_par_6ch
+    address: 137
+    universe: 0
+    tags: [par, showtec]
+
+  - name: showtec-3
+    profile: showtec_par_6ch
+    address: 144
+    universe: 0
+    tags: [par, showtec]

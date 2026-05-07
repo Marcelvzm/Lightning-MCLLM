@@ -1,0 +1,65 @@
+# =============================================================================
+# Showtec PAR (generic 6-channel RGB par) — exaktes Modell unbekannt, Layout
+# nach User-Vorgabe (Manual-Auszug 6 Kanäle).
+# =============================================================================
+#
+# Eigenheit: KEIN Master-Dimmer. Die RGB-Werte (Kanal 1-3) regeln die
+# Helligkeit DIREKT. Das ist anders als bei den meisten anderen Pars im Rig.
+# Heißt: für "rot voll" reicht es, color/red = 255 zu schreiben — kein
+# zusätzlicher Dimmer-Channel nötig.
+#
+# Kanal 6 ist die Operation-Mode-Auswahl. Bei Wert 0-63 läuft das Gerät im
+# direkten RGB-Steuerungsmodus, was wir wollen. Höhere Werte aktivieren
+# Auto-Programme. Default 0 = RGB-Direktsteuerung.
+#
+# Layout (start address = N):
+#
+#   offset | ch | role          | value range and meaning
+#   -------|----|---------------|-----------------------------------------------
+#   0      | N  | color/red     | 000-255    Rot 0-100% (= Helligkeit Rot)
+#   1      | N+1| color/green   | 000-255    Grün 0-100%
+#   2      | N+2| color/blue    | 000-255    Blau 0-100%
+#   3      | N+3| color/wheel   | "Volle Farbpalette" — Color-Preset-Wahl.
+#                               | (Genaue Werte-Tabelle nicht im Auszug; Default
+#                               |  0 = inaktiv, RGB direkt.)
+#   4      | N+4| strobe        | 000        aus (steady)
+#                               | 001-255    Strobe-Rate / Geschwindigkeit
+#   5      | N+5| effect/macro  | 000-063    RGB-Steuerung (← Default-Mode)
+#                               | 064-127    Fader 7 Farben (Auto-Fade)
+#                               | 128-191    Änderung 7 Farben (Color-Change)
+#                               | 192-255    Musiktaktung (Sound-Modus)
+#
+# WICHTIG: Damit RGB-Direkt funktioniert, muss Kanal 6 auf 0-63 stehen
+# (default 0). Höhere Werte deaktivieren die RGB-Direktansteuerung — das Gerät
+# läuft dann sein eigenes Programm, ignoriert ch1-3.
+#
+# =============================================================================
+
+name: showtec_par_6ch
+description: Showtec Par (generic 6CH) — RGB direct + palette + strobe + mode.
+manufacturer: showtec
+model: par_6ch_generic
+
+channels:
+  - { offset: 0, role: color/red,   default: 0 }
+  - { offset: 1, role: color/green, default: 0 }
+  - { offset: 2, role: color/blue,  default: 0 }
+  - offset: 3
+    role: color/wheel
+    default: 0
+    description: "Volle Farbpalette — color preset selector. 0 = inaktiv."
+    presets: { off: 0 }
+  - offset: 4
+    role: strobe
+    default: 0
+    description: "0 = aus, 1-255 = Strobe-Rate."
+    presets: { off: 0, slow: 30, medium: 120, fast: 220 }
+  - offset: 5
+    role: effect/macro
+    default: 0
+    description: "Operation-Mode. 0-63 = RGB direkt (Default), 64+ = Auto-Programme."
+    presets:
+      rgb_direct:    0
+      fader_7color:  90    # Mitte 64-127
+      change_7color: 160   # Mitte 128-191
+      sound:         220   # Mitte 192-255

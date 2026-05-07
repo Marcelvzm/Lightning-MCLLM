@@ -26,7 +26,7 @@ from lightning_mcllm.config import load_settings
 from lightning_mcllm.core.library import (
     list_environments,
     load_fixture_library,
-    load_show,
+    load_stage,
 )
 from lightning_mcllm.dmx.enttec_pro import EnttecProInterface, discover_port
 from lightning_mcllm.dmx.interface import DmxInterface
@@ -86,6 +86,14 @@ def main(ctx: click.Context, verbose: bool) -> None:
 @click.option("--web-port", default=None, type=int, help="Web port (default 7777)")
 @click.option("--bpm", default=120.0, type=float, help="Initial BPM")
 @click.option("--audio-bpm", is_flag=True, help="Enable audio-input BPM detection (requires [audio] extras)")
+@click.option(
+    "--refresh-hz",
+    default=None,
+    type=int,
+    help="DMX frame refresh rate (default 30). Lower (e.g. 20) helps with flaky "
+         "Eurolite USB-DMX512 Pro MK2 adapters that flicker at full rate — see "
+         "QLC+ forum t=10855.",
+)
 def run(
     env: str | None,
     null_dmx: bool,
@@ -95,6 +103,7 @@ def run(
     web_port: int | None,
     bpm: float,
     audio_bpm: bool,
+    refresh_hz: int | None,
 ) -> None:
     """Single-process: start engine + web GUI."""
     import uvicorn  # noqa: WPS433 — defer import for fast `lightning --help`
@@ -140,7 +149,8 @@ def run(
 
     # Engine + clock + hot reload
     clock = BpmClock(bpm=bpm)
-    engine = Engine(stage=stage, dmx=dmx, clock=clock, refresh_hz=settings.dmx_refresh_hz)
+    chosen_refresh_hz = refresh_hz or settings.dmx_refresh_hz
+    engine = Engine(stage=stage, dmx=dmx, clock=clock, refresh_hz=chosen_refresh_hz)
     engine.start()
     reloader = HotReloader(engine, settings, env_name)
     reloader.start()

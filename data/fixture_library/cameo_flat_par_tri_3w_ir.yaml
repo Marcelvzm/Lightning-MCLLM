@@ -1,0 +1,95 @@
+# =============================================================================
+# Cameo Flat PAR Can TRI 3W IR — 7×3W RGB TRI-LED par
+# Article codes: CLPFLAT1TRI3WIR (black) / CLPFLAT1TRI3WIRWH (white)
+#
+# A flat low-profile par with seven 3W RGB-TRI LEDs (each LED has R/G/B in one
+# package, so colour mixing is clean — no separated rainbow shadows). 30°
+# beam, RGB direct, IR remote, microphone for sound mode.
+# =============================================================================
+#
+# Available DMX modes (set on the device under MENU → MODE):
+#   2-CH  : dimmer + macro                          (no individual RGB)
+#   3-CH-1: R + G + B                               (no master dimmer)
+#   3-CH-2: dimmer + macro + strobe                 (no individual RGB)
+#   6-CH  : dimmer + strobe + R + G + B + macro    ← THIS PROFILE
+#
+# 6-CH layout (start address = N):
+#
+#   offset | ch | role           | value range and meaning
+#   -------|----|----------------|----------------------------------------------
+#   0      | N  | dimmer         | 000-255   master intensity 0-100% (linear)
+#   1      | N+1| strobe         | 000       open / steady on
+#                                | 001-255   strobe with increasing rate
+#   2      | N+2| color/red      | 000-255   red intensity (0 = off, 255 = full)
+#   3      | N+3| color/green    | 000-255   green intensity
+#   4      | N+4| color/blue     | 000-255   blue intensity
+#   5      | N+5| effect/macro   | 000-004   blackout (overrides RGB!)
+#                                | 005-015   red preset
+#                                | 016-026   green preset
+#                                | 027-037   blue preset
+#                                | 038-048   yellow preset
+#                                | 049-059   magenta preset
+#                                | 060-070   cyan preset
+#                                | 071-080   white preset
+#                                | 081-150   colour jump effect (slow→fast)
+#                                | 151-220   colour fade effect (slow→fast)
+#                                | 221-255   sound control mode (sensitivity)
+#
+# IMPORTANT: Channel 6 (effect/macro) at value 0 is documented as "Blackout"
+# in the Open Fixture Library data. Some printings of the manual describe the
+# 0-4 range as "RGB-only mode" (i.e. no macro override, RGB channels apply).
+# Behaviour is fixture-dependent; if your unit goes black with macro=0, set
+# macro to a value in the white preset range (e.g. 75) and pull master dimmer
+# to control intensity, OR add an inline override macro=0 only when you want
+# the macro layer truly silent. We default macro = 0 here — verify on first
+# light-up.
+#
+# Setting 6-CH mode + start address (display + 4 buttons MENU / ENTER / UP /
+# DOWN):
+#   1. Power on. Wait for the display to stop blinking.
+#   2. Press MENU until display shows `Add` → ENTER → set start address with
+#      UP/DOWN → ENTER to confirm.
+#   3. Press MENU until display shows `CHnd` (or `MODE` on some firmware) →
+#      ENTER → UP/DOWN until `6CH` (or `dr.6`) → ENTER to confirm.
+#   4. (Optional) `SLnd` (no-DMX behaviour) → set to OFF for blackout when
+#      DMX is lost.
+#
+# Sources:
+#   * Cameo CLPFLAT1TRI3WIR user manual (ManualsLib)
+#   * Open Fixture Library: cameo / flat-par-can-tri-7x-3w-ir
+#
+# =============================================================================
+
+name: cameo_flat_par_tri_3w_ir
+description: Cameo Flat PAR Can TRI 3W IR — 7×3W RGB-TRI par (6-channel mode).
+manufacturer: cameo
+model: CLPFLAT1TRI3WIR
+
+channels:
+  - { offset: 0, role: dimmer, default: 0, description: "master dimmer 0-100%" }
+  - offset: 1
+    role: strobe
+    default: 0
+    description: "0 = open / steady on; 1-255 = strobe with increasing rate."
+    presets: { open: 0, slow: 30, medium: 120, fast: 220 }
+  - { offset: 2, role: color/red, default: 0 }
+  - { offset: 3, role: color/green, default: 0 }
+  - { offset: 4, role: color/blue, default: 0 }
+  - offset: 5
+    role: effect/macro
+    default: 0
+    description: "Color macros and effects. See block comment above for ranges."
+    presets:
+      none:        0     # NB: documented as "blackout" in OFL — verify on rig.
+      red:         10
+      green:       21
+      blue:        32
+      yellow:      43
+      magenta:     54
+      cyan:        65
+      white:       75
+      jump_slow:  100
+      jump_fast:  145
+      fade_slow:  170
+      fade_fast:  215
+      sound:      240

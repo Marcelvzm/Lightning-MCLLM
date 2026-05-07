@@ -27,6 +27,9 @@ runtime/
 *.pid
 *.log
 
+# Local working files (manual PDFs, throwaway test scripts, drivers)
+temp/
+
 # OS
 .DS_Store
 Thumbs.db

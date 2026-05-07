@@ -1,0 +1,186 @@
+# =============================================================================
+# Eurolite LED TMH Bar S120 — single moving-head profile
+# =============================================================================
+#
+# The TMH Bar S120 is a 4-head moving-head bar. Each head is identical and
+# uses 9 DMX channels. We model it as a SINGLE-HEAD profile and patch four
+# instances per bar in environment.yaml. This is the cleanest fit for the
+# selector model — each head can be tagged separately (mh-1, mh-2, …) and
+# scenes can target individual heads or all-of-them via tags.
+#
+# Bar DMX modes available (set on the device under MENU → DMX):
+#   3CH   only auto-programs (chaser + speed) — no individual control
+#   5CH   auto-programs + global color
+#   9CH   1× head, controlled together (all 4 heads do the same thing)
+#  11CH   1× head with PAN/TILT 16-bit fine + chaser
+#  17CH   2× independent head groups (heads 1+2 vs 3+4)
+#  21CH   2× independent head groups with PAN/TILT fine
+#  30CH   4× independent heads, 7 channels each + 2 global (NO fine PAN/TILT)
+#  38CH   4× independent heads, 9 channels each + 2 global (THIS PROFILE) ← default
+#
+# 38CH layout (start address = N):
+#   head 1: addresses N+0 … N+8
+#   head 2: addresses N+9 … N+17
+#   head 3: addresses N+18 … N+26
+#   head 4: addresses N+27 … N+35
+#   chaser global:        address N+36   (0-4 idle, 5-34 chaser1-6,
+#                                         35-144 motion macros 1-22,
+#                                         145-249 sound macros 1-22)
+#   chaser speed global:  address N+37   (0-230 = decreasing speed/sensitivity,
+#                                         231-249 = reset, 250-255 = no fn)
+# To patch 4 heads at base address 1:
+#   head 1 → DMX address 1
+#   head 2 → DMX address 10
+#   head 3 → DMX address 19
+#   head 4 → DMX address 28
+#   (the 2 global chaser channels at 37+38 are unused unless you add a
+#    separate 2-channel "controller" fixture — or just leave them at 0)
+#
+# Per-head channel layout (9 channels, offsets 0..8):
+#
+#   offset | channel | role                  | description
+#   -------|---------|-----------------------|----------------------------------
+#   0      | PAN     | position/pan          | horizontal movement, 0..255
+#   1      | PAN fine| position/pan_fine     | 16-bit fine pan; pair w/ PAN
+#   2      | TILT    | position/tilt         | vertical movement, 0..255
+#   3      | TILT fn | position/tilt_fine    | 16-bit fine tilt
+#   4      | speed   | movement/speed        | PAN/TILT motor speed,
+#                                              0 = fastest / instant
+#                                              255 = slowest
+#                                              (NB: inverted vs. intuition)
+#   5      | colour  | color/wheel           | indexed color wheel — see below
+#   6      | gobo    | gobo/wheel            | gobo selection — see below
+#   7      | strobe  | strobe                | 0-10 = off, 11-255 strobe rate
+#   8      | dimmer  | dimmer                | master dimmer 0-100% (0..255)
+#
+# Color wheel (channel 5) value ranges, from the manual:
+#
+#   000-009   Weiß (white / open)
+#   010-019   Rot (red)              ← we want this for "red"
+#   020-029   Grün (green)
+#   030-039   Blau (blue)
+#   040-049   Gelb (yellow)
+#   050-059   Hellblau (light blue / cyan-ish)
+#   060-069   Orange
+#   070-079   Lila (purple / magenta)
+#   080-089   Lila + Orange          (split colour: half lila, half orange)
+#   090-099   Orange + Hellblau
+#   100-109   Hellblau + Gelb
+#   110-119   Gelb + Blau
+#   120-129   Blau + Grün
+#   130-139   Grün + Rot
+#   140-149   Rot + Weiß
+#   150-255   Rainbow effect with increasing speed
+#
+# Gobo wheel (channel 6) value ranges:
+#
+#   000-009   no gobo (open beam)
+#   010-019   Gobo 1
+#   020-029   Gobo 2
+#   030-039   Gobo 3
+#   040-049   Gobo 4
+#   050-059   Gobo 5
+#   060-069   Gobo 6
+#   070-079   Gobo 7
+#   080-089   Gobo 7 shaking, decreasing speed
+#   090-099   Gobo 6 shaking
+#   100-109   Gobo 5 shaking
+#   110-119   Gobo 4 shaking
+#   120-129   Gobo 3 shaking
+#   130-139   Gobo 2 shaking
+#   140-149   Gobo 1 shaking
+#   150-255   Gobo wheel rotation with increasing speed
+#
+# Strobe (channel 7):
+#   000-010   off
+#   011-255   strobe with increasing speed
+#
+# Master dimmer (channel 8):
+#   000-255   linear 0-100% intensity scaling
+#
+# Setting 38CH mode on the device (display + 4 buttons):
+#   1. Power on. Wait for motor reset to finish.
+#   2. Press MENU repeatedly until display shows `DMX`.
+#   3. Press ENTER.
+#   4. Press UP/DOWN until display shows `38CH`.
+#   5. Press ENTER to confirm.
+#   6. Press MENU until display shows `Addr`.
+#   7. Press ENTER.
+#   8. Press UP/DOWN to set the start address (e.g. `001`).
+#   9. Press ENTER to confirm.
+#  10. (Optional) MENU → `Hold` → ENTER → `OFF` → ENTER  (blackout when no DMX
+#      arrives, instead of holding the last frame).
+#
+# Source: Eurolite LED TMH Bar S120 user manual rev. 1.1 (00151723), pages
+# 16-34 (DMX channel mode tables), page 12 (menu structure).
+#
+# =============================================================================
+
+name: eurolite_tmh_bar_s120_head
+description: One moving head of the Eurolite LED TMH Bar S120 (38CH mode, 9 channels per head).
+manufacturer: eurolite
+model: led_tmh_bar_s120
+
+channels:
+  - { offset: 0, role: position/pan, default: 128, description: "horizontal movement, 128 = centre" }
+  - { offset: 1, role: position/pan_fine, default: 0, description: "PAN fine adjust (16-bit pair with PAN)" }
+  - { offset: 2, role: position/tilt, default: 128, description: "vertical movement, 128 = centre" }
+  - { offset: 3, role: position/tilt_fine, default: 0, description: "TILT fine adjust (16-bit pair with TILT)" }
+  - offset: 4
+    role: movement/speed
+    default: 0
+    description: "PAN/TILT motor speed. 0 = fastest (snap), 255 = slowest. Inverted!"
+    presets: { instant: 0, fast: 30, medium: 100, slow: 200 }
+  - offset: 5
+    role: color/wheel
+    default: 0
+    description: "Indexed color wheel — see comment block above for full table."
+    presets:
+      white:           0
+      red:            14   # middle of 010-019 range
+      green:          24
+      blue:           34
+      yellow:         44
+      light_blue:     54
+      orange:         64
+      purple:         74
+      purple_orange:  84
+      orange_lightblue: 94
+      lightblue_yellow: 104
+      yellow_blue:    114
+      blue_green:     124
+      green_red:      134
+      red_white:      144
+      rainbow_slow:   160
+      rainbow_fast:   250
+  - offset: 6
+    role: gobo/wheel
+    default: 0
+    description: "Gobo selection. Open beam = 0. Each gobo occupies a 10-value range."
+    presets:
+      open:    0
+      gobo1:   14
+      gobo2:   24
+      gobo3:   34
+      gobo4:   44
+      gobo5:   54
+      gobo6:   64
+      gobo7:   74
+      gobo1_shake: 144
+      gobo2_shake: 134
+      gobo3_shake: 124
+      gobo4_shake: 114
+      gobo5_shake: 104
+      gobo6_shake:  94
+      gobo7_shake:  84
+      rotate_slow: 160
+      rotate_fast: 250
+  - offset: 7
+    role: strobe
+    default: 0
+    description: "0-10 = off; 11-255 = strobe with increasing rate."
+    presets: { off: 0, slow: 30, medium: 120, fast: 220 }
+  - offset: 8
+    role: dimmer
+    default: 0
+    description: "master dimmer 0-100%"

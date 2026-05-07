@@ -1,0 +1,37 @@
+# Bewegungs-Waypoint B — alle Köpfe nach rechts/oben gewandert,
+# asymmetrisch verteilt.
+name: mh_walk_b
+description: MH waypoint B — verschoben, asymmetrisch.
+targets:
+  - select: { name: head-1 }
+    values:
+      position/pan: 180
+      position/tilt: 60
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0
+  - select: { name: head-2 }
+    values:
+      position/pan: 90
+      position/tilt: 180
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0
+  - select: { name: head-3 }
+    values:
+      position/pan: 220
+      position/tilt: 80
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0
+  - select: { name: head-4 }
+    values:
+      position/pan: 50
+      position/tilt: 200
+      movement/speed: 80
+      color/wheel: 14
+      dimmer: 100
+      strobe: 0
