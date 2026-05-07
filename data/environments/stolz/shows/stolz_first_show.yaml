@@ -1,0 +1,100 @@
+# Erste vollständige Show — 5 Minuten, looped.
+#
+# Struktur (siehe llm_instruct.md §3.6 zu fraktalen Zeitskalen):
+#   0:00-0:30  Intro            warm fade-in, atmospheric
+#   0:30-1:00  Build 1          Bar startet zu driften, Pars rüsten Rot auf
+#   1:00-1:30  Drop 1           4OTF Rot Pulse + Bar Drift Fast
+#   1:30-2:00  Break            Single-beam moment, Pars dunkel
+#   2:00-2:30  Build 2          Bar gefroren Rot, Pars Strobe-Build
+#   2:30-3:30  MAIN DROP        Hardstyle drop + Drift+Blinks + Pulse (60s)
+#   3:30-4:00  Cool down        Color walk durch alle Farben
+#   4:00-4:30  Atmospheric peak Bar tilt cycle, warm amber pars
+#   4:30-5:00  Outro            Slow fade zurück zu warm idle (loop-ready)
+#
+# Total: 9 × 30s + 30s = 300s = 5 min. Sekunden-basiertes Pacing damit das
+# Timing unabhängig von BPM stabil bei 5 Min bleibt — wenn der DJ die BPM
+# ändert, skalieren nur die internen Beat-locked Chases mit, nicht die Show-
+# Sektionen.
+#
+# Loop-Boundary: Outro endet auf idle_warm bei niedrigem Dim. Intro snappt
+# erneut auf idle_warm mit 8s Fade — kaum sichtbarer Übergang weil die
+# Werte fast identisch sind.
+
+name: stolz_first_show
+description: Erste vollständige 5-Minuten-Show — Intro-Build-Drop-Reset-Cycle.
+bpm: 128
+loop: true
+
+keybindings:
+  "1": { kind: scene, name: all_color, label: "Rot" }
+  "2": { kind: scene, name: all_color, label: "Blau" }
+  "3": { kind: scene, name: all_color, label: "Warm" }
+  "S": { kind: chase, name: red_pulse, label: "Pulse" }
+  "B": { kind: blackout, label: "Blackout" }
+  "R": { kind: release_blackout, label: "Release" }
+
+script:
+  # ── 0:00-0:30 — Intro: warm fade-in ─────────────────────────────────
+  - { do: log, message: "intro: warm fade-in" }
+  - { do: snap_scene, scene: idle_warm, fade: 8.0 }
+  - { do: wait, seconds: 30 }
+
+  # ── 0:30-1:00 — Build 1: bar erweckt, pars rüsten rot auf ───────────
+  - { do: log, message: "build 1" }
+  - { do: start_chase, chase: bar_drift_slow }
+  - { do: snap_scene, scene: pars_red_dim, fade: 6.0 }
+  - { do: wait, seconds: 30 }
+
+  # ── 1:00-1:30 — Drop 1: 4OTF Rot + faster bar drift ─────────────────
+  - { do: log, message: "drop 1" }
+  - { do: stop_chase, chase: bar_drift_slow }
+  - { do: start_chase, chase: red_pulse }
+  - { do: start_chase, chase: bar_drift_fast }
+  - { do: wait, seconds: 30 }
+
+  # ── 1:30-2:00 — Break: single beam, alles andere dunkel ─────────────
+  - { do: log, message: "break — single beam moment" }
+  - { do: stop_all_chases }
+  - { do: snap_scene, scene: single_head_outer_left, fade: 3.0 }
+  - { do: wait, seconds: 30 }
+
+  # ── 2:00-2:30 — Build 2: bar gefroren rot, pars strobe-build ────────
+  - { do: log, message: "build 2 — strobe escalation" }
+  - { do: snap_scene, scene: bar_anticipation_red, fade: 1.0 }
+  - { do: start_chase, chase: strobe_build_8bar }
+  - { do: wait, seconds: 30 }
+
+  # ── 2:30-3:30 — MAIN DROP: full peak (60s) ──────────────────────────
+  - { do: log, message: "MAIN DROP" }
+  - { do: stop_all_chases }
+  - { do: snap_scene, scene: hardstyle_drop, fade: 0.0 }
+  - { do: start_chase, chase: mh_drift_blinks }
+  # Ersten 30s: nur drift+blinks — bar bewegt, color hits einzeln
+  - { do: wait, seconds: 30 }
+  # Letzten 30s: zusätzlich 4OTF rot pulse für maximum density
+  - { do: start_chase, chase: red_pulse }
+  - { do: wait, seconds: 30 }
+
+  # ── 3:30-4:00 — Cool down: color walk ───────────────────────────────
+  - { do: log, message: "cool down — color walk" }
+  - { do: stop_all_chases }
+  - { do: snap_scene, scene: cathedral_blue, fade: 4.0 }
+  - { do: start_chase, chase: par_color_walk }
+  - { do: wait, seconds: 30 }
+
+  # ── 4:00-4:30 — Atmospheric peak: bar tilt cycle, warmes amber ──────
+  - { do: log, message: "atmospheric peak" }
+  - { do: stop_chase, chase: par_color_walk }
+  - { do: start_chase, chase: bar_tilt_breathe }
+  - { do: snap_scene, scene: pars_amber_full, fade: 4.0 }
+  - { do: wait, seconds: 30 }
+
+  # ── 4:30-5:00 — Outro: slow fade zurück zu idle_warm ────────────────
+  - { do: log, message: "outro — fade to idle" }
+  - { do: stop_all_chases }
+  - { do: snap_scene, scene: idle_warm, fade: 15.0 }
+  - { do: wait, seconds: 30 }
+
+  # Loop-Restart durch loop:true — intro fadet erneut auf idle_warm,
+  # was nahe am aktuellen State ist. Kein sichtbarer Pop.
+  - { do: log, message: "5min cycle complete, looping" }
