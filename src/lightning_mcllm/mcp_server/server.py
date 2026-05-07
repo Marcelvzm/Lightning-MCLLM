@@ -122,6 +122,10 @@ class LightningClient:
         text = _http_get(f"{self._base}/api/instruct")
         return text if isinstance(text, str) else json.dumps(text)
 
+    def read_programming_guide(self) -> str:
+        text = _http_get(f"{self._base}/api/program")
+        return text if isinstance(text, str) else json.dumps(text)
+
     def list_genre_concepts(self) -> Any:
         return _http_get(f"{self._base}/api/genre_concepts")
 
@@ -171,11 +175,24 @@ def run_stdio(api_url: str) -> None:
             Tool(
                 name="read_authoring_guide",
                 description=(
-                    "Return llm_instruct.md — the authoring guide for writing professional "
-                    "lightshows with this system. **Call this FIRST before authoring any scene, "
-                    "chase, bank, or genre.** It contains the deterministic principles, genre "
-                    "playbook, workflow, YAML cookbook, and anti-patterns. Skipping this step is "
-                    "the #1 reason LLM-authored shows fail."
+                    "Return llm_instruct.md — the design-philosophy guide. Covers the "
+                    "deterministic principles, genre playbook, workflow, anti-patterns. "
+                    "**Call this FIRST before authoring** to ground yourself in how a good "
+                    "show is structured. Pair with `read_programming_guide` for the YAML "
+                    "schema and runtime semantics."
+                ),
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="read_programming_guide",
+                description=(
+                    "Return program.md — the technical YAML schema reference. Covers fixture "
+                    "profiles, environments, selectors, roles, scenes, chases, banks, "
+                    "palettes, parameters/`${...}` substitution, shows, the voice + render "
+                    "model, hot-reload, and a full pitfalls list. **Mandatory reading before "
+                    "writing or editing any YAML in this project** — it is the technical "
+                    "contract. llm_instruct.md tells you WHAT to write; program.md tells you "
+                    "HOW to write it correctly."
                 ),
                 inputSchema={"type": "object", "properties": {}},
             ),
@@ -405,6 +422,8 @@ def run_stdio(api_url: str) -> None:
         try:
             if name == "read_authoring_guide":
                 out = client.read_authoring_guide()
+            elif name == "read_programming_guide":
+                out = client.read_programming_guide()
             elif name == "list_genre_concepts":
                 out = client.list_genre_concepts()
             elif name == "read_genre_concept":

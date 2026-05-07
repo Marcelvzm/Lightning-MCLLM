@@ -355,6 +355,20 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
             raise HTTPException(404, f"llm_instruct.md not found at {candidate}")
         return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
 
+    @app.get("/api/program")
+    async def get_program() -> Any:
+        """Return program.md — the technical YAML schema reference.
+
+        This is the HOW (syntax / semantics / voice model / parameters /
+        palettes / pitfalls) that complements the design principles in
+        llm_instruct.md.
+        """
+        repo_root = settings.paths.data_dir.parent
+        candidate = repo_root / "program.md"
+        if not candidate.is_file():
+            raise HTTPException(404, f"program.md not found at {candidate}")
+        return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
+
     def _genre_concepts_dir() -> Path:
         return settings.paths.data_dir.parent / "genre_concepts"
 

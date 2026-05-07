@@ -69,22 +69,37 @@ data/
 └── environments/
     └── <env>/                         ← one rig (one stage)
         ├── environment.yaml           ← which fixtures, where patched, with what tags
+        ├── palettes.yaml              ← (optional) cross-fixture color definitions
         ├── scenes/*.yaml              ← named static states
         ├── chases/*.yaml              ← timed sequences
         ├── banks/*.yaml               ← launchpad-style trigger layouts
         └── shows/*.yaml               ← scripted choreographies (top-level)
 ```
 
-Read `technical_details.md` once, end-to-end, before authoring. It is the
-spec for the YAML schema, the chase grammar, the voice model, and the
-selector system. **You cannot write good YAML without understanding the
-voice model in §7 and the chase grammar in §6.**
+> 🛠️ **REQUIRED READING — [`program.md`](program.md)**.
+>
+> This document (the one you're reading now) is the WHAT — design principles,
+> genre playbook, anti-patterns. **`program.md` is the HOW** — full YAML
+> schema reference, voice model, parameters, palettes, chase grammar, all
+> the syntax + semantics + pitfalls.
+>
+> Before writing a single line of YAML you must read `program.md` end to end.
+> It is the technical contract — what is and isn't valid, what runtime
+> behaviour you can rely on, what the substitution rules are. Calling
+> yourself "ready to author" without having read it is the surest way to
+> ship YAML that won't load.
+>
+> Also useful: [`technical_details.md`](technical_details.md) for the deeper
+> architecture (process model, hot-reload, hardware, MCP server) — read at
+> least once before non-trivial work.
 
 ### MCP tools you have
 
 | Tool | When to use |
 | --- | --- |
-| `list_stage` | **Always start here.** Fixtures, scenes, chases, banks, shows |
+| `read_programming_guide` | **MANDATORY before writing any YAML.** Returns `program.md` — full schema + voice model + palettes + parameters. |
+| `read_authoring_guide` | This document (design principles). |
+| `list_stage` | Fixtures, scenes, chases, banks, shows of the loaded environment. |
 | `list_shows` | Just the show scripts on the stage |
 | `list_yaml(prefix)` | List existing files |
 | `read_yaml(path)` | Read existing — *prefer adapting an existing scene/chase to writing from scratch* |
@@ -579,11 +594,16 @@ LLM-authored shows fail.**
 ### Step 1: Inspect the rig + load genre concept (5 minutes)
 
 ```python
+# FIRST — if you haven't already this session, read the technical schema:
+read_programming_guide()         # full syntax + voice model + palettes + parameters
+
 # in this order
 list_environments()
 list_show()                      # the loaded environment
 list_yaml(prefix="environments/<env>")   # find existing scenes/chases
 read_yaml("environments/<env>/environment.yaml")   # full fixture list
+# also peek at palettes if the env has them:
+read_yaml("environments/<env>/palettes.yaml")
 # read 1–3 existing scenes/chases as reference
 
 # AND THIS — for any non-trivial authoring task:
