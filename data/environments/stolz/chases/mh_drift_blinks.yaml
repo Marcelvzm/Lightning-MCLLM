@@ -1,117 +1,126 @@
 # Bewegung + zufällig wirkende weiße Blitzer für die Bar S120.
+# Parametrisiert: Farbe (Color-Wheel-Index), Grund-Helligkeit, Drift-Geschwindigkeit.
 #
-# Konstruktion:
-# * 24-Beat-Loop (= ~11s bei 128 BPM). Lang genug dass der Pattern nicht
-#   sofort als wiederholend wahrgenommen wird.
-# * Drei Bewegungs-Waypoints (mh_walk_a/b/c), alle 8 Beats wird gefadet
-#   (3.5s Fade — Köpfe driften langsam, sichtbare Bewegung).
-# * Pro Kopf 4 Weiß-Blitzer auf krummen Beat-Positionen (.3, .6, .7, .9 etc.)
-#   damit's nicht nach Grid aussieht. Jeder Blitzer = snap auf weiß+voll dim,
-#   dann 0.15s Fade zurück auf rot+100 Dimmer (= Baseline aus den walk-Scenes).
+# Default-Aufruf (= ohne args) → rot @ Wheel 14, Dimmer 100, 3.5s Drift.
+# Beispiel-Override: { "baseline_wheel": 34, "baseline_dim": 80, "drift_seconds": 6.0 }
+# → blau, gedimmter, langsamerer Drift.
 #
-# Voice-Mechanik:
-# * Bewegungs-Voices laufen über die ganze Loop und setzen pan/tilt/color/dim
-#   für alle Köpfe.
-# * Blitzer-Voices überschreiben kurz color/wheel + dimmer eines einzelnen
-#   Kopfes — als jüngste Voice gewinnen sie. Nach 0.15s Fade liegen sie bei
-#   color=14 + dim=100 wieder sauber auf der Baseline und stören nicht.
-# * Pan/Tilt/Speed werden von den Blitzern NICHT angefasst — die Bewegung
-#   läuft unter dem Blitz nahtlos durch.
-#
-# Baseline-Annahme: Die Bar steht "rot warm gedimmt" (color/wheel: 14, dimmer:
-# 100). Wenn du eine andere Grundfarbe willst, alle Werte in den Scenes UND
-# in den Blitz-Transitions hier anpassen.
+# Color-Wheel-Werte für die Bar S120 (siehe Profil-Doku):
+#   0 weiß, 14 rot, 24 grün, 34 blau, 44 gelb, 54 hellblau, 64 orange, 74 lila
 
 name: mh_drift_blinks
-description: Bar S120 — driftende Bewegung + zufällig wirkende weiße Blitzer pro Kopf.
+description: Bar S120 — Drift-Bewegung + zufällig wirkende weiße Blitzer pro Kopf (parametrisiert).
 loop: true
 length_beats: 24
 
+parameters:
+  baseline_wheel:
+    type: int
+    default: 14
+    min: 0
+    max: 255
+    description: "Color-Wheel-Wert der Grundfarbe. 14 = rot. Siehe Profil-Tabelle."
+  baseline_dim:
+    type: int
+    default: 100
+    min: 0
+    max: 255
+    description: "Master-Dimmer der Bar zwischen den Blitzern."
+  drift_seconds:
+    type: float
+    default: 3.5
+    min: 0.1
+    max: 30.0
+    description: "Fade-Zeit zwischen den Bewegungs-Waypoints. Höher = langsamerer Drift."
+
 steps:
-  # ── Bewegung: 3 Waypoints alle 8 Beats ───────────────────────────────
+  # ── Baseline + Bewegung: 3 Waypoints alle 8 Beats ────────────────────
   - at_beat: 0
-    note: "drift to A"
+    note: "set baseline color/dim, drift to A"
     actions:
-      - { kind: transition, group: { tag: bar }, scene: mh_walk_a, fade_seconds: 3.5, easing: ease_in_out }
+      - kind: snap
+        group: { tag: bar }
+        values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim}, gobo/wheel: 0, strobe: 0 }
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_a, fade_seconds: ${drift_seconds}, easing: ease_in_out }
 
   - at_beat: 8
     note: "drift to B"
     actions:
-      - { kind: transition, group: { tag: bar }, scene: mh_walk_b, fade_seconds: 3.5, easing: ease_in_out }
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_b, fade_seconds: ${drift_seconds}, easing: ease_in_out }
 
   - at_beat: 16
     note: "drift to C"
     actions:
-      - { kind: transition, group: { tag: bar }, scene: mh_walk_c, fade_seconds: 3.5, easing: ease_in_out }
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_c, fade_seconds: ${drift_seconds}, easing: ease_in_out }
 
   # ── Weiß-Blitzer head-1 (4×) ─────────────────────────────────────────
   - at_beat: 1.3
     actions:
       - { kind: snap,       group: { name: head-1 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-1 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.15 }
+      - { kind: transition, group: { name: head-1 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.15 }
   - at_beat: 7.6
     actions:
       - { kind: snap,       group: { name: head-1 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-1 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.15 }
+      - { kind: transition, group: { name: head-1 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.15 }
   - at_beat: 14.1
     actions:
       - { kind: snap,       group: { name: head-1 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-1 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.15 }
+      - { kind: transition, group: { name: head-1 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.15 }
   - at_beat: 20.5
     actions:
       - { kind: snap,       group: { name: head-1 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-1 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.15 }
+      - { kind: transition, group: { name: head-1 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.15 }
 
   # ── Weiß-Blitzer head-2 (4×) ─────────────────────────────────────────
   - at_beat: 2.8
     actions:
       - { kind: snap,       group: { name: head-2 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-2 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.18 }
+      - { kind: transition, group: { name: head-2 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.18 }
   - at_beat: 9.4
     actions:
       - { kind: snap,       group: { name: head-2 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-2 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.18 }
+      - { kind: transition, group: { name: head-2 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.18 }
   - at_beat: 12.7
     actions:
       - { kind: snap,       group: { name: head-2 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-2 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.18 }
+      - { kind: transition, group: { name: head-2 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.18 }
   - at_beat: 19.2
     actions:
       - { kind: snap,       group: { name: head-2 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-2 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.18 }
+      - { kind: transition, group: { name: head-2 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.18 }
 
   # ── Weiß-Blitzer head-3 (4×) ─────────────────────────────────────────
   - at_beat: 4.1
     actions:
       - { kind: snap,       group: { name: head-3 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-3 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.20 }
+      - { kind: transition, group: { name: head-3 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.20 }
   - at_beat: 10.5
     actions:
       - { kind: snap,       group: { name: head-3 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-3 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.20 }
+      - { kind: transition, group: { name: head-3 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.20 }
   - at_beat: 17.3
     actions:
       - { kind: snap,       group: { name: head-3 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-3 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.20 }
+      - { kind: transition, group: { name: head-3 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.20 }
   - at_beat: 22.6
     actions:
       - { kind: snap,       group: { name: head-3 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-3 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.20 }
+      - { kind: transition, group: { name: head-3 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.20 }
 
   # ── Weiß-Blitzer head-4 (4×) ─────────────────────────────────────────
   - at_beat: 5.7
     actions:
       - { kind: snap,       group: { name: head-4 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-4 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.16 }
+      - { kind: transition, group: { name: head-4 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.16 }
   - at_beat: 11.9
     actions:
       - { kind: snap,       group: { name: head-4 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-4 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.16 }
+      - { kind: transition, group: { name: head-4 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.16 }
   - at_beat: 15.4
     actions:
       - { kind: snap,       group: { name: head-4 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-4 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.16 }
+      - { kind: transition, group: { name: head-4 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.16 }
   - at_beat: 21.8
     actions:
       - { kind: snap,       group: { name: head-4 }, values: { color/wheel: 0, dimmer: 255 } }
-      - { kind: transition, group: { name: head-4 }, values: { color/wheel: 14, dimmer: 100 }, fade_seconds: 0.16 }
+      - { kind: transition, group: { name: head-4 }, values: { color/wheel: ${baseline_wheel}, dimmer: ${baseline_dim} }, fade_seconds: 0.16 }

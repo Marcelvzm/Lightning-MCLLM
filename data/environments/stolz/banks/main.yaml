@@ -4,5 +4,11 @@ description: Minimal launchpad — just enough to test the bar.
 slots:
   - { id: 1, kind: scene, name: all_red,  label: "All Red" }
   - { id: 2, kind: scene, name: all_blue, label: "All Blue" }
-  - { id: 5, kind: chase, name: mh_drift_blinks, label: "MH Drift+Blinks" }
+  - { id: 4, kind: chase, name: mh_drift_blinks, label: "MH Drift Rot" }
+  # Same chase with arg override → blau, langsamerer Drift, gedimmter.
+  - id: 5
+    kind: chase
+    name: mh_drift_blinks
+    label: "MH Drift Blau"
+    args: { baseline_wheel: 34, baseline_dim: 80, drift_seconds: 6.0 }
   - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }

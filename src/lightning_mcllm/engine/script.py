@@ -20,6 +20,8 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 
+from typing import Any
+
 from lightning_mcllm.core.chases import (
     Chase,
     ReleaseAction,
@@ -28,6 +30,7 @@ from lightning_mcllm.core.chases import (
     TransitionAction,
 )
 from lightning_mcllm.core.library import Stage
+from lightning_mcllm.core.parameters import resolve_args, resolve_placeholder
 from lightning_mcllm.engine.clock import BpmClock
 from lightning_mcllm.engine.voice import Voice
 
@@ -55,6 +58,11 @@ class ChaseRunner:
     instance_id: str
     """Unique key per running instance (e.g. 'chase:techno_basic:1')."""
 
+    args: dict[str, Any] = field(default_factory=dict)
+    """Caller-provided argument overrides for the chase's declared parameters.
+    Resolved against `chase.parameters` defaults at construction time.
+    """
+
     elapsed_seconds: float = 0.0
     """For time-anchored chases."""
 
@@ -64,6 +72,11 @@ class ChaseRunner:
     _started: bool = False
     _completed: bool = False
     _pending_first_fire: list[Step] = field(default_factory=list)
+    _resolved_args: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        # Validate args against the chase's parameter spec, fill in defaults.
+        self._resolved_args = resolve_args(self.chase.parameters, self.args)
 
     def stop(self) -> None:
         self._completed = True
@@ -134,11 +147,12 @@ class ChaseRunner:
             base_key = f"{self.instance_id}:s{step_idx}:a{action_idx}"
             if isinstance(action, TransitionAction):
                 targets = self._resolve_targets(action.group, action.scene, action.values)
+                duration = self._resolve_duration(action.fade_seconds)
                 out.append(
                     FiredAction(
                         voice_key=f"{base_key}:{action.group.describe()}",
                         targets=targets,
-                        duration=action.fade_seconds,
+                        duration=duration,
                         easing=action.easing,
                     )
                 )
@@ -172,13 +186,26 @@ class ChaseRunner:
             if scene is None:
                 log.warning("chase %r references missing scene %r", self.chase.name, scene_name)
                 return {}
+            # Note: chase args are NOT propagated into referenced scenes — each
+            # scene resolves with its own parameter defaults. Inline values
+            # in chase actions DO see chase args (below).
             rendered = self.stage.render_scene(scene)
-            # Filter to channels that belong to fixtures matching the selector
             allowed = self.stage.channels_for(selector)
             return {k: v for k, v in rendered.values.items() if k in allowed}
         if inline_values is not None:
-            return self.stage.render_inline_values(selector, inline_values)
+            return self.stage.render_inline_values(selector, inline_values, self._resolved_args)
         return {}
+
+    def _resolve_duration(self, raw: float | str) -> float:
+        """Resolve a fade_seconds field — may be a literal float or a placeholder."""
+        v = resolve_placeholder(raw, self._resolved_args)
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            raise ValueError(
+                f"chase {self.chase.name!r}: fade_seconds resolved to {v!r}, expected number"
+            )
+        if v < 0:
+            raise ValueError(f"chase {self.chase.name!r}: fade_seconds {v} must be >= 0")
+        return float(v)
 
 
 def make_voice(fired: FiredAction, shadow_snapshot: dict[tuple[int, int], int]) -> Voice:

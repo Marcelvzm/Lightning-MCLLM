@@ -10,7 +10,7 @@ A `blackout` slot kind clears all voices and snaps every channel to 0. A
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -25,6 +25,9 @@ class SceneSlot(BaseModel):
     name: str
     label: str | None = None
     fade_seconds: float = Field(ge=0, default=0.0)
+    # Optional argument overrides forwarded to the scene's parameters at
+    # trigger time. Empty dict / omitted = use scene defaults.
+    args: dict[str, Any] = Field(default_factory=dict)
 
 
 class ChaseSlot(BaseModel):
@@ -34,6 +37,7 @@ class ChaseSlot(BaseModel):
     kind: Literal["chase"]
     name: str
     label: str | None = None
+    args: dict[str, Any] = Field(default_factory=dict)
 
 
 class BlackoutSlot(BaseModel):

@@ -278,7 +278,7 @@ class Engine:
         name = cmd.name
         a = cmd.args
         if name == "snap_scene":
-            self._cmd_snap_scene(a["scene"], fade=a.get("fade", 0.0))
+            self._cmd_snap_scene(a["scene"], fade=a.get("fade", 0.0), args=a.get("args"))
         elif name == "blackout":
             # With `group`, per-fixture blackout (snap selected channels to 0).
             # Without, global blackout latch (overrides everything in render).
@@ -290,7 +290,7 @@ class Engine:
             self._blackout = False
             self._blackout_fade_seconds = 0.0
         elif name == "start_chase":
-            self._cmd_start_chase(a["chase"])
+            self._cmd_start_chase(a["chase"], args=a.get("args"))
         elif name == "stop_chase":
             self._cmd_stop_chase(a["chase"])
         elif name == "stop_all_chases":
@@ -339,7 +339,13 @@ class Engine:
         else:
             self._record_error(f"unknown command {name!r}")
 
-    def _cmd_snap_scene(self, scene_name: str, *, fade: float = 0.0) -> None:
+    def _cmd_snap_scene(
+        self,
+        scene_name: str,
+        *,
+        fade: float = 0.0,
+        args: dict[str, Any] | None = None,
+    ) -> None:
         with self._stage_lock:
             stage = self._stage
         if stage is None:
@@ -348,7 +354,11 @@ class Engine:
         if scene is None:
             self._record_error(f"snap_scene: unknown scene {scene_name!r}")
             return
-        rendered = stage.render_scene(scene)
+        try:
+            rendered = stage.render_scene(scene, args=args)
+        except (ValueError, KeyError) as e:
+            self._record_error(f"snap_scene {scene_name!r}: {e}")
+            return
         v = Voice(
             key=f"scene:{scene_name}",
             targets=dict(rendered.values),
@@ -417,7 +427,9 @@ class Engine:
         self._blackout_fade_seconds = max(0.0, fade)
         self._blackout_started_at = time.monotonic()
 
-    def _cmd_start_chase(self, name: str) -> None:
+    def _cmd_start_chase(
+        self, name: str, *, args: dict[str, Any] | None = None
+    ) -> None:
         with self._stage_lock:
             stage = self._stage
         if stage is None:
@@ -439,9 +451,14 @@ class Engine:
                 v for v in self._voices
                 if not any(v.key.startswith(p) for p in old_prefixes)
             ]
-        self._chase_runners[instance_id] = ChaseRunner(
-            chase=chase, stage=stage, instance_id=instance_id
-        )
+        try:
+            runner = ChaseRunner(
+                chase=chase, stage=stage, instance_id=instance_id, args=args or {}
+            )
+        except ValueError as e:
+            self._record_error(f"start_chase {name!r}: {e}")
+            return
+        self._chase_runners[instance_id] = runner
 
     def _cmd_stop_chase(self, name: str) -> None:
         prefixes_dropped: list[str] = []
@@ -470,9 +487,11 @@ class Engine:
             self._record_error(f"fire_slot: bank {bank_name!r} has no slot {slot_id}")
             return
         if isinstance(slot, SceneSlot):
-            self._cmd_snap_scene(slot.name, fade=slot.fade_seconds)
+            self._cmd_snap_scene(
+                slot.name, fade=slot.fade_seconds, args=slot.args or None
+            )
         elif isinstance(slot, ChaseSlot):
-            self._cmd_start_chase(slot.name)
+            self._cmd_start_chase(slot.name, args=slot.args or None)
         elif isinstance(slot, BlackoutSlot):
             self._cmd_blackout(fade=slot.fade_seconds)
         elif isinstance(slot, ReleaseSlot):

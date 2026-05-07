@@ -1,38 +1,13 @@
-# Bewegungs-Waypoint A — Köpfe weit gespreizt, leichter Aufwärts-Sweep.
-# Baseline: Color-Wheel rot (14), Dimmer 100 (= mittlere Grundhelligkeit).
-# Speed: 80 (mittlere Geschwindigkeit, sichtbarer Sweep).
+# Bewegungs-Waypoint A — nur Positionen, keine Farbe / kein Dimmer.
+# Color/Dim setzt der mh_drift_blinks-Chase inline (parametrisiert).
 name: mh_walk_a
-description: MH waypoint A — gespreizt, mittlere Höhe.
+description: MH waypoint A — Positionen pro Kopf, color/dim agnostisch.
 targets:
   - select: { name: head-1 }
-    values:
-      position/pan: 50
-      position/tilt: 90
-      movement/speed: 80
-      color/wheel: 14
-      dimmer: 100
-      strobe: 0
+    values: { position/pan: 50,  position/tilt: 90,  movement/speed: 80 }
   - select: { name: head-2 }
-    values:
-      position/pan: 110
-      position/tilt: 130
-      movement/speed: 80
-      color/wheel: 14
-      dimmer: 100
-      strobe: 0
+    values: { position/pan: 110, position/tilt: 130, movement/speed: 80 }
   - select: { name: head-3 }
-    values:
-      position/pan: 145
-      position/tilt: 110
-      movement/speed: 80
-      color/wheel: 14
-      dimmer: 100
-      strobe: 0
+    values: { position/pan: 145, position/tilt: 110, movement/speed: 80 }
   - select: { name: head-4 }
-    values:
-      position/pan: 205
-      position/tilt: 95
-      movement/speed: 80
-      color/wheel: 14
-      dimmer: 100
-      strobe: 0
+    values: { position/pan: 205, position/tilt: 95,  movement/speed: 80 }

@@ -27,11 +27,33 @@ from lightning_mcllm.core.banks import Bank
 from lightning_mcllm.core.chases import Chase, ReleaseAction, SnapAction, TransitionAction
 from lightning_mcllm.core.environments import EnvironmentManifest
 from lightning_mcllm.core.fixtures import FixtureInstance, FixtureProfile
+from lightning_mcllm.core.parameters import resolve_args, resolve_placeholder
 from lightning_mcllm.core.scenes import RenderedScene, Scene
 from lightning_mcllm.core.selectors import Selector, resolve as selector_resolve
 from lightning_mcllm.yaml_io import load_data
 
 log = logging.getLogger(__name__)
+
+
+def _coerce_channel_value(value: object, context: str, role: str) -> int:
+    """Validate that a resolved scene/chase value is an int in 0..255.
+
+    Used after parameter substitution. If the placeholder resolved to a
+    non-int or out-of-range value, raise — callers catch and add to the
+    engine error log so the show keeps running.
+    """
+    if isinstance(value, bool):
+        raise ValueError(f"{context}: role {role!r} resolved to bool {value!r}, expected int 0..255")
+    if isinstance(value, int):
+        if not (0 <= value <= 255):
+            raise ValueError(f"{context}: role {role!r} resolved to {value}, must be 0..255")
+        return value
+    if isinstance(value, float) and value.is_integer():
+        v = int(value)
+        if not (0 <= v <= 255):
+            raise ValueError(f"{context}: role {role!r} resolved to {v}, must be 0..255")
+        return v
+    raise ValueError(f"{context}: role {role!r} resolved to {value!r}, must be int 0..255")
 
 
 @dataclass
@@ -152,8 +174,15 @@ class Stage:
     def fixtures_for(self, selector: Selector) -> list[FixtureInstance]:
         return selector_resolve(selector, self.fixtures)
 
-    def render_scene(self, scene: Scene) -> RenderedScene:
-        """Resolve a scene against this stage's fixtures into (universe, addr) -> value."""
+    def render_scene(
+        self, scene: Scene, args: dict[str, object] | None = None
+    ) -> RenderedScene:
+        """Resolve a scene against this stage's fixtures into (universe, addr) -> value.
+
+        `args` overrides the scene's declared parameter defaults. Passing
+        unknown args raises; missing args fall back to defaults.
+        """
+        resolved_args = resolve_args(scene.parameters, args)
         out: dict[tuple[int, int], int] = {}
         for target in scene.targets:
             matches = selector_resolve(target.select, self.fixtures)
@@ -163,12 +192,14 @@ class Stage:
                     log.warning("scene %r: fixture %r references unknown profile %r",
                                 scene.name, fixture.name, fixture.profile)
                     continue
-                # Inline role values
-                for role, value in target.values.items():
+                # Inline role values (with placeholder resolution)
+                for role, raw_value in target.values.items():
                     offset = profile.role_to_offset(role)
                     if offset is None:
                         continue
-                    out[(fixture.universe, fixture.address - 1 + offset)] = int(value)
+                    value = resolve_placeholder(raw_value, resolved_args)
+                    iv = _coerce_channel_value(value, scene.name, role)
+                    out[(fixture.universe, fixture.address - 1 + offset)] = iv
                 # Preset values (resolved via profile.presets)
                 if target.presets:
                     for role, preset_name in target.presets.items():
@@ -184,19 +215,30 @@ class Stage:
         return RenderedScene(name=scene.name, values=out)
 
     def render_inline_values(
-        self, selector: Selector, role_values: dict[str, int]
+        self,
+        selector: Selector,
+        role_values: dict[str, int | str],
+        args: dict[str, object] | None = None,
     ) -> dict[tuple[int, int], int]:
-        """Resolve inline (role -> value) for a selector — used by chase actions."""
+        """Resolve inline (role -> value) for a selector — used by chase actions.
+
+        `args` resolves any `${param}` placeholders. Caller (the chase runner)
+        is responsible for already validating args against its own parameter
+        spec.
+        """
+        args = args or {}
         out: dict[tuple[int, int], int] = {}
         for fixture in self.fixtures_for(selector):
             profile = self.library.get(fixture.profile)
             if profile is None:
                 continue
-            for role, value in role_values.items():
+            for role, raw_value in role_values.items():
                 offset = profile.role_to_offset(role)
                 if offset is None:
                     continue
-                out[(fixture.universe, fixture.address - 1 + offset)] = int(value)
+                value = resolve_placeholder(raw_value, args)
+                iv = _coerce_channel_value(value, "<inline>", role)
+                out[(fixture.universe, fixture.address - 1 + offset)] = iv
         return out
 
     def channels_for(self, selector: Selector) -> set[tuple[int, int]]:
