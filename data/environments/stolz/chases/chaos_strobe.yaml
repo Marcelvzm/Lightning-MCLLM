@@ -1,0 +1,107 @@
+# Pure chaos — alle Pars + Bar-Heads stroboskopieren via Hardware-strobe-Channel,
+# Heads thrashen alle 0.5 Beats zu pseudozufälligen Positionen.
+#
+# Parametrisiert via Palette: snap-actions referenzieren `palette: { name:
+# ${col}, facet: <fixture-type> }`. Alle Fixtures-Typen kriegen den richtigen
+# Color-Bundle (rgb / cameo / wheel / rx350) je nach Selector. Default: weiß.
+#
+# Beispiele:
+#   start_chase("chaos_strobe")                       → weiß strobing
+#   start_chase("chaos_strobe", args={"col": "rot"})  → rot strobing
+#   start_chase("chaos_strobe", args={"col": "blau"}) → blau strobing
+
+name: chaos_strobe
+description: Chaos — all-fixture hardware strobe + thrashing heads (palette-parametrisiert).
+loop: true
+length_beats: 4
+
+parameters:
+  col:
+    type: str
+    default: weiss
+    options: [rot, blau, gruen, weiss, warm]
+    description: "Strobe-Farbe aus palettes.yaml."
+
+steps:
+  # Setup + Position-Set 1 (alles auf strobe, heads to random positions)
+  - at_beat: 0
+    actions:
+      # Pars (RGB-direct fixtures) — palette + override dimmer/strobe
+      - kind: snap
+        group: { tag: par }
+        palette: { name: "${col}", facet: rgb }
+        values: { dimmer: 255, strobe: 220 }
+      # Cameos — palette mit cameo-facet (hat den macro-override)
+      - kind: snap
+        group: { tag: cameo }
+        palette: { name: "${col}", facet: cameo }
+        values: { dimmer: 255, strobe: 220 }
+      # Showtecs — RGB-mode + strobe
+      - kind: snap
+        group: { tag: showtec }
+        palette: { name: "${col}", facet: rgb }
+        values: { effect/macro: 0, strobe: 220 }
+      # Bar — color-wheel facet + strobe
+      - kind: snap
+        group: { tag: bar }
+        palette: { name: "${col}", facet: wheel }
+        values: { dimmer: 255, gobo/wheel: 0, strobe: 220 }
+      # RX350 — palette macro
+      - kind: snap
+        group: { tag: beam_bar }
+        palette: { name: "${col}", facet: rx350 }
+        values: { strobe: 220 }
+      # Heads zu Position 1
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 50,  position/tilt: 80,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 200, position/tilt: 130, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 80,  position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 230, position/tilt: 60,  movement/speed: 0 } }
+
+  - at_beat: 0.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 180, position/tilt: 60,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 30,  position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 220, position/tilt: 100, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 100, position/tilt: 170, movement/speed: 0 } }
+
+  - at_beat: 1.0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 220, position/tilt: 170, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 100, position/tilt: 50,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 50,  position/tilt: 130, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 180, position/tilt: 220, movement/speed: 0 } }
+
+  - at_beat: 1.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 30,  position/tilt: 110, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 230, position/tilt: 80,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 130, position/tilt: 220, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 80,  position/tilt: 60,  movement/speed: 0 } }
+
+  - at_beat: 2.0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 200, position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 80,  position/tilt: 110, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 230, position/tilt: 50,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 30,  position/tilt: 170, movement/speed: 0 } }
+
+  - at_beat: 2.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 100, position/tilt: 230, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 180, position/tilt: 50,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 60,  position/tilt: 100, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 200, position/tilt: 130, movement/speed: 0 } }
+
+  - at_beat: 3.0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 230, position/tilt: 80,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 50,  position/tilt: 220, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 180, position/tilt: 130, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 130, position/tilt: 50,  movement/speed: 0 } }
+
+  - at_beat: 3.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 130, position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 220, position/tilt: 100, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 30,  position/tilt: 180, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 100, position/tilt: 110, movement/speed: 0 } }

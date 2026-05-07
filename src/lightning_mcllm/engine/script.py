@@ -146,7 +146,7 @@ class ChaseRunner:
         for action_idx, action in enumerate(step.actions):
             base_key = f"{self.instance_id}:s{step_idx}:a{action_idx}"
             if isinstance(action, TransitionAction):
-                targets = self._resolve_targets(action.group, action.scene, action.values)
+                targets = self._resolve_targets(action.group, action.scene, action.values, action.palette)
                 duration = self._resolve_duration(action.fade_seconds)
                 out.append(
                     FiredAction(
@@ -157,7 +157,7 @@ class ChaseRunner:
                     )
                 )
             elif isinstance(action, SnapAction):
-                targets = self._resolve_targets(action.group, action.scene, action.values)
+                targets = self._resolve_targets(action.group, action.scene, action.values, action.palette)
                 out.append(
                     FiredAction(
                         voice_key=f"{base_key}:{action.group.describe()}",
@@ -180,7 +180,7 @@ class ChaseRunner:
                 )
         return out
 
-    def _resolve_targets(self, selector, scene_name, inline_values):  # type: ignore[no-untyped-def]
+    def _resolve_targets(self, selector, scene_name, inline_values, palette_ref=None):  # type: ignore[no-untyped-def]
         if scene_name is not None:
             scene = self.stage.scenes.get(scene_name)
             if scene is None:
@@ -192,9 +192,27 @@ class ChaseRunner:
             rendered = self.stage.render_scene(scene)
             allowed = self.stage.channels_for(selector)
             return {k: v for k, v in rendered.values.items() if k in allowed}
+
+        # Inline path: resolve optional palette+facet, merge with explicit values.
+        merged: dict[str, int | str] = {}
+        if palette_ref is not None:
+            pal_name = resolve_placeholder(palette_ref.name, self._resolved_args)
+            if not isinstance(pal_name, str):
+                raise ValueError(
+                    f"chase {self.chase.name!r}: palette name resolved to {pal_name!r}, expected str"
+                )
+            if pal_name not in self.stage.palettes:
+                raise ValueError(
+                    f"chase {self.chase.name!r}: unknown palette {pal_name!r}"
+                )
+            pal = self.stage.palettes[pal_name]
+            facet_values = pal.facet(palette_ref.facet)
+            merged.update(facet_values)
         if inline_values is not None:
-            return self.stage.render_inline_values(selector, inline_values, self._resolved_args)
-        return {}
+            merged.update(inline_values)  # explicit overrides palette
+        if not merged:
+            return {}
+        return self.stage.render_inline_values(selector, merged, self._resolved_args)
 
     def _resolve_duration(self, raw: float | str) -> float:
         """Resolve a fade_seconds field — may be a literal float or a placeholder."""

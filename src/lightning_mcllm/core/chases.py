@@ -28,6 +28,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from lightning_mcllm.core.palettes import PaletteRef
 from lightning_mcllm.core.parameters import ParameterSpec
 from lightning_mcllm.core.selectors import Selector
 
@@ -58,13 +59,21 @@ class TransitionAction(BaseModel):
     group: Selector
     scene: str | None = None
     values: dict[str, int | str] | None = None
+    # Optional palette+facet — resolves at fire time. Merges with `values:`
+    # (explicit values win on role conflicts). Mutually exclusive with `scene`.
+    palette: PaletteRef | None = None
     fade_seconds: float | str = 0.5
     easing: Literal["linear", "ease_in", "ease_out", "ease_in_out"] = "linear"
 
     @model_validator(mode="after")
-    def _scene_xor_values(self) -> "TransitionAction":
-        if (self.scene is None) == (self.values is None):
-            raise ValueError("transition action must specify exactly one of `scene` or `values`")
+    def _scene_xor_inline(self) -> "TransitionAction":
+        # Either reference a scene, or provide inline values/palette. Not both.
+        has_scene = self.scene is not None
+        has_inline = self.values is not None or self.palette is not None
+        if has_scene == has_inline:
+            raise ValueError(
+                "transition action must specify exactly one of: `scene`, OR (`values` / `palette`)"
+            )
         return self
 
     @field_validator("values")
@@ -89,11 +98,16 @@ class SnapAction(BaseModel):
     group: Selector
     scene: str | None = None
     values: dict[str, int | str] | None = None
+    palette: PaletteRef | None = None
 
     @model_validator(mode="after")
-    def _scene_xor_values(self) -> "SnapAction":
-        if (self.scene is None) == (self.values is None):
-            raise ValueError("snap action must specify exactly one of `scene` or `values`")
+    def _scene_xor_inline(self) -> "SnapAction":
+        has_scene = self.scene is not None
+        has_inline = self.values is not None or self.palette is not None
+        if has_scene == has_inline:
+            raise ValueError(
+                "snap action must specify exactly one of: `scene`, OR (`values` / `palette`)"
+            )
         return self
 
     @field_validator("values")
