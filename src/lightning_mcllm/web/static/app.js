@@ -53,11 +53,8 @@ function onStatus(s) {
   state.status = s;
   $("bpm-value").textContent = s.bpm.toFixed(1);
   $("bpm-source").textContent = s.bpm_source;
-  // Show beat-within-bar so the counter doesn't visually run to infinity
-  // during long sets. Internal beat_position remains monotonic.
-  const beatInBar = ((s.beat_position % 4) + 4) % 4;
-  const bar = Math.floor(s.beat_position / 4);
-  $("beat-pos").textContent = `${beatInBar.toFixed(2)} (bar ${bar})`;
+  $("beat-pos").textContent = s.beat_position.toFixed(2);
+  // Red when the clock is paused (manual pause or audio-silence auto-pause).
   $("beat-pos").style.color = s.bpm_source.includes("silent") || !s.running ? "var(--red)" : "";
   $("master-value").textContent = s.master.toFixed(2);
   $("dmx-status").textContent = (s.dmx_connected ? "✓ " : "✗ ") + s.dmx_description;

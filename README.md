@@ -53,6 +53,8 @@ section 11 for the exact JSON.
 * **[`ARCHITEKTUR.md`](ARCHITEKTUR.md)** — wie eine Show programmiert
   wird. Bausteine (Profile → Environment → Scenes → Chases → Banks),
   Voice-Modell, Authoring-Loop, BPM-Clock-Verhalten.
+* **[`gui_manual.md`](gui_manual.md)** — wie man die Web-GUI live
+  bedient. Bank-Pad, Tastatur-Shortcuts, Chase-Liste, BPM-Tap.
 * **[`technical_details.md`](technical_details.md)** — architecture, YAML
   schemas, chase grammar, hardware-setup notes, testing strategy, roadmap.
 * **[`llm_instruct.md`](llm_instruct.md)** — authoring guide for any LLM

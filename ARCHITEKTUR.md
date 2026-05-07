@@ -390,17 +390,11 @@ wenn du eine BPM gesetzt hast, ist das deine Entscheidung.
 
 ## GUI-Display: Beat-Position
 
-Intern wächst `beat_position` monoton (für Loop-Modulo-Berechnungen
-brauchen wir das). Das Display zeigt aber **Beat-im-Takt** plus
-**Bar-Nummer**, sonst läuft die Anzeige optisch ins Unendliche:
-
-```
-Beat: 2.34 (bar 4711)
-```
-
-Bei pausierter Clock (Audio-Stille oder manuelle Pause) wird der
-Beat-Wert rot dargestellt — sofortige visuelle Bestätigung, dass nichts
-mehr läuft.
+`beat_position` wächst monoton (Beats seit Clock-Start, gebraucht für
+Loop-Modulo-Berechnungen in Chases). Bei pausierter Clock —
+Audio-Stille oder manuelle Pause via `set_running(False)` — wird der
+Wert in der GUI **rot** dargestellt. Sofortige visuelle Bestätigung,
+dass die Clock steht.
 
 ---
 
