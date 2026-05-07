@@ -1,8 +1,8 @@
 # GUI-Bedienung
 
 Die GUI ist auf einem Bildschirm (Laptop, Tablet, Phone) bedienbar.
-Browser auf `http://localhost:7777` nach `lightning run`. Vier Bereiche
-von oben nach unten plus Tastatur-Shortcuts.
+Browser auf `http://localhost:7777` nach `lightning run`. Sechs Bereiche
+plus Tastatur-Shortcuts.
 
 ---
 
@@ -16,15 +16,15 @@ LightningMCLLM    ● env: default  [default ▼]  [Reload]
   rein. Rot = Verbindung weg (sollte automatisch nach 1 Sek wieder grün
   werden).
 * **`env: …` + Dropdown**: aktuelle Umgebung. Dropdown wechseln →
-  atomarer Switch zur anderen Umgebung. Voices werden gedroppt, neue
-  Show wird geladen, kein Engine-Neustart.
-* **`Reload`-Button**: forciert Re-Read von `data/`. Brauchst du nur,
-  wenn du außerhalb des Watchers (z. B. `git checkout`) Files geändert
-  hast — File-Watcher reloadet sonst automatisch.
+  atomarer Switch zur anderen Umgebung. Voices werden gedroppt, neuer
+  Stage wird geladen, kein Engine-Neustart.
+* **`Reload`**: forciert Re-Read von `data/`. Brauchst du nur, wenn du
+  außerhalb des Watchers (z. B. `git checkout`) Files geändert hast —
+  File-Watcher reloadet sonst automatisch.
 
 ---
 
-## Status-Panel (links oben)
+## Status-Panel
 
 ```
 BPM: 128.0    Source: manual    Beat: 18847.45    Master: 1.00
@@ -34,140 +34,165 @@ DMX: ✓ null   Voices: 3         NonZero ch: 16    Tick: 33.3 ms / 30 Hz
 | Feld | Bedeutung |
 | --- | --- |
 | **BPM** | Aktuelles Tempo |
-| **Source** | `manual` / `tap` / `audio` / `audio (silent)` — wer steuert die Clock |
-| **Beat** | Beat-Position seit Clock-Start (Beats, monoton wachsend). **Rot** wenn Clock pausiert oder Audio stumm. |
+| **Source** | `manual` / `tap` / `audio` / `audio (silent)` / `show` |
+| **Beat** | Beat-Position seit Clock-Start. **Rot** wenn Clock pausiert oder Audio stumm. |
 | **Master** | Globaler Dimmer 0…1 |
-| **DMX** | `✓ <name>` grün wenn Hardware/Null verbunden, sonst rot |
-| **Voices** | Wie viele aktive Paintbrushes gerade Channels schreiben |
-| **NonZero ch** | Wie viele Channels gerade > 0 sind (gute Schnellprüfung "geht überhaupt was raus?") |
-| **Tick** | Gemessene Frame-Zeit. Sollte nahe 33 ms (30 Hz) liegen. Dauerhaft >50 ms = System überlastet. |
+| **DMX** | Hardware-Verbindungs-Status |
+| **Voices** | Aktive Paintbrushes |
+| **NonZero ch** | Wie viele Channels gerade > 0 sind |
+| **Tick** | Frame-Zeit. Sollte ~33 ms (30 Hz) sein |
 
-Drunter zwei Slider-Reihen plus Genre-Reihe und Errors-Bereich.
+Drunter:
 
-### BPM-Reihe
-
-* **Slider 40–240** — direkt ziehen, BPM wird live gesetzt
-  (`source: manual`)
-* **Zahlenfeld** — präzise eingeben + Enter
-* **`Tap`-Button** — drei oder mehr Mal im Beat klopfen, ab dem dritten
-  Tap lockt die BPM auf den Durchschnitt der Inter-Tap-Intervalle
-  (`source: tap`). Tastatur: **`T`**.
-
-### Master-Reihe
-
-* **Master-Slider 0–1** — globaler Dimmer
-* **`BLACKOUT`** (rot) — sofort alles auf 0. Latcht (bleibt aktiv).
-  Tastatur: **`Leertaste`**.
-* **`Release`** — Blackout-Latch lösen, Voices darunter werden wieder
-  sichtbar. Chases laufen unter dem Blackout weiter — beim Release
-  setzen sie sofort dort fort, wo sie wären. Tastatur: **`Esc`**.
-* **`Stop chases`** — alle laufenden Chases beenden. Snap-Scenes
-  (warm_idle etc.) bleiben unter den Chase-Voices liegen und werden
-  wieder sichtbar.
-
-### Genre-Reihe
-
-* Dropdown wählen (`techno`, `house`, etc.) → **`Apply`** → setzt die
-  BPM aus dem Genre-Preset und startet den Lead-Chase. Bestehende
-  Chases werden vorher gestoppt.
-
-### Errors-Bereich
-
-Wenn die Engine Fehler protokolliert (kaputtes YAML, fehlende
-Scene-Reference), erscheinen sie hier in Rot. Maximal die letzten 8.
-
----
-
-## Bank-Panel (rechts oben)
-
-```
-Bank: [starter ▼]
-
-┌──────────┬──────────┬──────────┐
-│ 1  Idle  │ 2  Red.. │ 3  MH B. │
-│ scene    │ scene    │ scene    │
-├──────────┼──────────┼──────────┤
-│ 4  MH A. │ 5  Red P.│ 6  MH S. │
-│ scene    │ chase    │ chase    │
-├──────────┼──────────┼──────────┤
-│ 7  Color │ 8   —    │ 9 BLACK. │
-│ chase    │          │ blackout │
-└──────────┴──────────┴──────────┘
-```
-
-* **Dropdown**: welche Bank aktiv ist (falls mehrere existieren).
-* **3×3-Pad**: jeder belegte Slot ist klickbar.
-  * Scene-Slot → snap_scene
-  * Chase-Slot → start_chase (aktive Chase-Slots werden gelb hinterlegt)
-  * Blackout-Slot → blackout (rot eingefärbt)
-  * Release-Slot → Voices der Selektion droppen
-* **Tastatur**: **`1`–`9`** feuert den jeweiligen Slot. Das ist der
-  Hauptweg, live zu spielen.
+* **BPM-Reihe**: Slider, Zahlenfeld, **`Tap`** (Tastatur: `T`) — drei
+  oder mehr Mal im Beat klopfen, ab dem dritten Tap lockt die BPM.
+* **Master-Reihe**: Master-Slider, **`BLACKOUT`** (rot, Tastatur:
+  Leertaste), **`Release`** (Tastatur: Esc), **`Stop chases`**.
+* **Errors-Bereich**: zeigt die letzten 8 Engine-Errors in Rot.
 
 ---
 
 ## Show-Panel
 
-Drei Spalten — alles was die geladene Show kennt:
+Hier liegt die Hauptaktion: scripted Auto-Shows starten und steuern.
 
-* **Scenes** — Liste aller Scenes. Klick = snap_scene.
-* **Chases** — Liste mit Länge + Step-Anzahl. Klick togglet
-  **start ↔ stop**. Aktive Chases werden gelb hinterlegt.
-* **Fixtures** — readonly: Name, DMX-Adresse, Footprint, Tags. Zur
-  Orientierung.
+```
+Show  [techno_60min ▼]  [▶ Play] [⏸] [▶ Resume] [↺ Reset] [■ Stop]
+[ Play Mode: OFF ]   When ON, the show's keybindings drive the keyboard.
+┌──────────────────────────────────────────────────────────────┐
+│ RUNNING  techno_60min  elapsed: 12:34.5  action: wait 30s   │
+└──────────────────────────────────────────────────────────────┘
+```
 
-Diese drei Spalten ermöglichen sehr feinkörniges Triggern, das die
-9er-Bank nicht abdeckt.
+* **Show-Dropdown**: alle in `data/environments/<env>/shows/*.yaml`
+  definierten Shows. Auswahl bestimmt nur, was beim Klick auf Play läuft
+  und welche Keybindings im Play-Mode aktiv sind.
+* **▶ Play**: startet die ausgewählte Show **von vorn** (resettet
+  internen State).
+* **⏸ Pause**: pausiert das Skript. Laufende Chases laufen weiter.
+* **▶ Resume**: läuft pausiertes Skript weiter.
+* **↺ Reset**: setzt das Skript auf den Anfang und läuft weiter.
+* **■ Stop**: stoppt das Skript komplett. Chases bleiben weiter laufen.
+* **Play Mode Toggle**: umschalten zwischen Default-Tastatur und
+  Show-Keybindings (siehe Tastatur-Shortcuts).
+* **Status-Box** unten zeigt `RUNNING/PAUSED/COMPLETED`, Show-Name,
+  Skript-Position (verstrichene Sekunden), aktuelle Action,
+  Wait-Beschreibung.
+
+---
+
+## Triggers-Panel — drei scrollbare Listen
+
+Replaces the old 3×3 bank pad. Scrollbare Listen, weil bei einer großen
+Show schnell 30+ Chases und 50+ Scenes existieren können.
+
+```
+[ filter… ]                      click = fire · click chase again = stop
+┌─────────────┐  ┌──────────────┐  ┌──────────────┐
+│ Scenes (12) │  │ Chases (8)   │  │ Fixtures (4) │
+├─────────────┤  ├──────────────┤  ├──────────────┤
+│ blackout    │  │ red_pulse    │  │ par-l        │
+│ warm_idle   │  │ mh_sweep     │  │ par-r        │
+│ red_full    │  │ par_walk     │  │ mh-l         │
+│ ...         │  │ ...          │  │ mh-r         │
+└─────────────┘  └──────────────┘  └──────────────┘
+```
+
+* **Filter-Feld** oben: Live-Suche über alle drei Listen
+* **Scenes**: Klick = `snap_scene`
+* **Chases**: Klick togglet **start ↔ stop**. Aktive Chases werden gelb
+  hinterlegt.
+* **Fixtures**: readonly, zeigt Name, DMX-Adresse, Footprint, Tags
+* Wenn **Play Mode** aktiv ist: jedes Listen-Item, das in den
+  Keybindings der laufenden Show vorkommt, bekommt ein
+  **Tasten-Badge** ([ K ]) eingeblendet
+
+---
+
+## Banks-Panel
+
+Banks bleiben erhalten, aber als Sekundär-UI: dropdown + horizontale
+Reihe mit allen Slots der ausgewählten Bank.
+
+```
+Bank: [starter ▼]   [1 Idle] [5 Red Pulse] [9 BLACKOUT]
+```
+
+Klick = Slot feuern. Im **Default-Modus** (Play Mode aus) feuert
+Tastatur `1`–`9` die ersten neun Slots der ausgewählten Bank.
 
 ---
 
 ## Universe-Visualizer
 
-Ein 1024×64-Canvas, das die letzten 512 DMX-Channels als Pixel-Streifen
-zeigt. Jeder Channel = 2 Pixel breit. Helligkeit = Channel-Wert
-(0…255). Updated 5×/Sek über die Status-Updates.
-
-Brauchst du, um:
-
-* zu prüfen, ob Lichter überhaupt rausgehen (auch ohne Hardware)
-* zu sehen, welche Bereiche aktiv sind (Pars an Adresse 1–7 / 8–14
-  etc.)
-* Chase-Bewegungen visuell zu verifizieren
+Unverändert. 1024×64-Canvas, 512 Channels nebeneinander, Helligkeit =
+Channel-Wert. Updated 5×/Sek.
 
 ---
 
 ## Tastatur-Shortcuts
 
+### Default-Modus (Play Mode AUS)
+
 | Taste | Aktion |
 | --- | --- |
-| `1` … `9` | Bank-Slot feuern |
+| `1` … `9` | Bank-Slot 1–9 der aktiven Bank feuern |
 | `Leertaste` | BLACKOUT (latcht) |
 | `Esc` | Blackout lösen |
 | `T` | Tap-Tempo |
 
-Wenn ein Input-Feld fokussiert ist, sind die Shortcuts deaktiviert — du
-kannst also normal in BPM-Zahlen tippen, ohne dass die Leertaste das
-Blackout auslöst.
+### Play Mode AN
+
+Aus dem **YAML der laufenden Show** werden die Keybindings angewendet:
+
+```yaml
+keybindings:
+  "1": { kind: chase, name: red_pulse,    label: "Pulse" }
+  "Q": { kind: scene, name: warm_idle,    label: "Idle" }
+  "B": { kind: blackout,                  label: "Blackout" }
+```
+
+Tastendruck löst die zugewiesene Aktion aus. Default-Tasten (1-9 für
+Bank-Slots, T für Tap) **sind deaktiviert** — du hast die Show-eigene
+Tastenbelegung explizit gewählt.
+
+**Universelle Sicherheit funktioniert immer**:
+
+* `Leertaste` → Blackout
+* `Esc` → Release Blackout
+
+(Damit du in jeder Situation einen Notaus hast, auch wenn die
+Show-Bindings keine Blackout-Taste definieren.)
+
+Wenn ein Input-Feld fokussiert ist, sind Shortcuts deaktiviert — du
+kannst also normal in BPM-Zahlen tippen.
 
 ---
 
 ## Typischer Live-Ablauf
 
-1. Engine starten: `lightning run`
-2. Browser auf `http://localhost:7777`
-3. Genre wählen → Apply → BPM und Lead-Chase laufen
-4. Mit Bank-Slots (`1`…`9`) zwischen Scenes/Chases live wechseln
-5. Bei Build / Drop: `7` für Strobe-Build, dann `5` für Hauptchase
-6. Übergang zwischen Tracks: `Leertaste` für Blackout, neuen Slot
-   wählen, `Esc` zum Aufgehen
-7. Wenn das Tempo wechselt: BPM-Slider oder `T` mehrmals tippen
-8. Wenn ein Chase nicht passt: Klick auf seinen Namen in der
-   Chase-Liste = stop, anderen klicken = start
+### Vor der Party (Aufbau / Setup)
 
----
+1. Engine starten: `lightning run --host 0.0.0.0`
+2. Browser auf `http://<rechner-ip>:7777` (Phone als Backup-Steuerung)
+3. Im Show-Dropdown die Show wählen, die du programmiert hast
+4. ▶ Play
+5. Play Mode an
+6. Bier holen — die Show läuft autonom, du kannst per Keybindings
+   Akzente setzen
 
-## Vom Phone / iPad steuern
+### Während der Party
 
-`lightning run --host 0.0.0.0` — bindet die GUI auf alle Interfaces.
-Phone im selben WLAN auf `http://<rechner-ip>:7777` öffnen. Layout
-faltet bei <800 px in eine Spalte; Bank-Pad bleibt 2-spaltig.
+Du arbeitest mit Keybindings (laut Show-YAML), feuerst zwischendurch
+Scenes/Chases manuell aus den Listen, oder lässt einfach die Show
+laufen.
+
+* Track passt nicht zur Show? → ⏸ Pause, neue Show wählen, ▶ Play
+* DJ hat einen Drop angekündigt? → manuell entweder mit dem Show-Key
+  oder per Klick auf den Chase in der Liste feuern
+* Es wird zu hektisch? → BLACKOUT (Leertaste), nach 1 Bar Esc
+
+### Vom Phone / iPad
+
+`lightning run --host 0.0.0.0` bindet auf alle Interfaces. Layout
+faltet bei <800 px in eine Spalte.

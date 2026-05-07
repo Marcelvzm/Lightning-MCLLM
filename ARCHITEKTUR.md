@@ -66,7 +66,7 @@ In-Memory-State. Drei Gründe:
 
 ---
 
-## Die fünf Bausteine
+## Die sechs Bausteine
 
 Die Domänenobjekte bauen aufeinander auf — von hardware-nah zu
 künstlerisch:
@@ -78,12 +78,16 @@ Fixture-Instance (wo gepatcht, welche Tags)     }
     ↓
 Scene            (Snapshot — Werte je Rolle)    }  künstlerisch
     ↓
-Chase            (Sequenz von Übergängen)
+Chase            (Phrase — wiederholendes Muster)
     ↓
-Bank             (Layout für die GUI)
+Bank             (Trigger-Layout für die GUI)
     ↓
-Genre            (BPM + Lead-Chase-Preset)
+Show             (Skript — choreographierte Komposition über Minuten/Stunden)
 ```
+
+Alles davon zusammen lebt als **Stage** im Engine-Speicher — der
+Laufzeit-Container, der ein Environment vollständig geladen
+repräsentiert.
 
 Jede Ebene **referenziert nur die Ebene direkt darunter** — nicht
 hardware-Details. Eine Scene schreibt `select: { tag: par }`, nicht
@@ -254,17 +258,95 @@ slots:
 In der GUI sind die als Tasten 1–9 gemappt. Drückst du `5`, startet
 `red_pulse`. Drückst du `9`, blackout.
 
-### 6. Genre (optional)
+### 6. Show — choreographierte Komposition
 
-Quick-preset für ein Set:
+Ein **Show** ist die Top-Ebene: ein YAML-Skript, das Scenes, Chases und
+Banks **über die Zeit orchestriert**. Damit baut man echte Sets — eine
+einminütige Demo bis hin zu einer 60-Minuten-Auto-Show. Lebt unter
+`data/environments/<env>/shows/*.yaml`.
 
 ```yaml
-genres:
-  - { name: techno, bpm: 128, lead_chase: red_pulse,
-      recommended_chases: [red_pulse, mh_alternating_sweep] }
+name: techno_60min
+description: Hour-long techno set
+bpm: 128
+loop: true                     # nach Skript-Ende von vorn
+
+keybindings:                   # für GUI-Play-Mode
+  "1": { kind: scene, name: warm_idle, label: "Idle" }
+  "2": { kind: chase, name: red_pulse, label: "Pulse" }
+  "B": { kind: blackout,                 label: "Blackout" }
+  ...
+
+script:
+  - { do: snap_scene, scene: warm_idle, fade: 4.0 }
+  - { do: wait, seconds: 300 }              # 5 min
+  - { do: start_chase, chase: red_pulse }   # async — läuft weiter
+  - { do: wait, bars: 32 }                  # bar-anchored
+  - { do: blackout, fade: 0.0 }             # globaler Latch
+  - { do: wait, beats: 1 }
+  - { do: release_blackout }
+  - do: loop                                # Sub-Block
+    times: 4
+    actions:
+      - { do: snap_scene, scene: red_pulse_on }
+      - { do: wait, seconds: 0.5 }
+      - { do: snap_scene, scene: red_pulse_off }
+      - { do: wait, seconds: 0.5 }
+  - { do: wait_chase, chase: red_pulse }    # bis Chase einen Loop voll hat
+  - { do: blackout, group: { tag: par }, fade: 0.5 }   # gruppen-blackout
+  - { do: stop_all_chases }
 ```
 
-Dropdown in der GUI → "Apply" setzt BPM und startet `lead_chase`.
+#### Action-Typen im Skript
+
+| Action | Effekt |
+| --- | --- |
+| `snap_scene { scene, fade? }` | Wendet eine Scene an (sofort oder mit Fade) |
+| `start_chase { chase }` | Startet Chase (async; Skript läuft weiter) |
+| `stop_chase { chase }` | Stoppt Chase |
+| `stop_all_chases` | Alle Chases stoppen |
+| `fire_slot { bank, slot }` | Bank-Slot auslösen |
+| `blackout { group?, fade? }` | Ohne `group` = globaler Latch. Mit `group` = Selector-Channels auf 0 (kein Latch). |
+| `release_blackout` | Globalen Latch lösen |
+| `set_values { group, values, fade? }` | Inline-Werte auf Selektor schreiben |
+| `set_bpm { bpm }` | BPM ändern |
+| `wait { seconds | beats | bars }` | Genau eines davon. Beats/Bars folgen der BPM-Clock. |
+| `wait_chase { chase }` | Wartet bis Chase einen Loop-Iteration komplett hat |
+| `wait_group { group }` | Wartet bis keine Voice mehr im Übergang auf Selektor-Channels ist |
+| `loop { times, actions }` | Sub-Block N-mal wiederholen (Verschachtelung erlaubt) |
+| `log { message }` | Schreibt ins `last_errors`-Log (Debug) |
+
+#### Wie das ausgeführt wird
+
+Ein **`ShowRunner`** läuft im Engine-Tick (30 Hz, dieselbe Schleife wie
+Chases). Pro Tick werden Actions sequentiell abgearbeitet, bis eine
+Wait-Action installiert wird oder das per-Tick-Budget (default 200
+Actions) erschöpft ist. Async-Actions (`start_chase`, `set_values` mit
+fade) blockieren nicht — sie feuern und das Skript läuft weiter.
+
+#### Steuerung
+
+Die Engine kennt fünf Show-Commands:
+
+* `play_show` — Skript von vorn starten (Reset + Play)
+* `pause_show` — Skript einfrieren (laufende Chases gehen weiter)
+* `resume_show` — Pause aufheben
+* `reset_show` — auf Anfang setzen + weiterlaufen
+* `stop_show` — Skript stoppen + Runner droppen
+
+In der GUI als `▶ Play / ⏸ / ▶ Resume / ↺ Reset / ■ Stop` Buttons
+exponiert. Über MCP über die gleichnamigen Tools.
+
+#### Keybindings + Play-Mode
+
+Eine Show definiert optional `keybindings: { "K": { kind, name, label } }`.
+Wenn der **Play-Mode** in der GUI aktiviert ist, mappt die Tastatur
+direkt auf diese Bindings (statt auf Default-Bank-Slots). Mehrere Shows
+können unterschiedliche Bindings haben — jede Show kommt mit ihrer
+eigenen "Tastatur-Belegung" für den Live-Operator.
+
+Universelle Sicherheits-Shortcuts (Leertaste = Blackout, Esc = Release)
+funktionieren immer, auch im Play-Mode.
 
 ---
 
@@ -288,7 +370,9 @@ data/environments/my_set/
 │   └── build_strobe.yaml
 ├── banks/
 │   └── live.yaml             # 1 Datei: das Trigger-Layout
-└── genres.yaml               # optional: BPM-Preset
+└── shows/
+    ├── live_60min.yaml       # die Choreographie für ein Set
+    └── ambient_warmup.yaml
 ```
 
 Die Engine spielt dabei nicht *eine* Sache, sondern **stapelt** alles,

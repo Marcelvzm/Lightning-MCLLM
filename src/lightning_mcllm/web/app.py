@@ -1,24 +1,33 @@
 """FastAPI app: REST + WebSocket + static GUI.
 
-This is the single user-facing surface. The browser GUI talks to it; the MCP
-server (run separately by Claude Desktop / Claude Code) also talks to it via
-HTTP from another process. One uvicorn instance handles both.
+The single user-facing surface. Browser GUI talks to it; the MCP server
+(separate Claude-spawned process) also talks to it via HTTP. One uvicorn
+instance serves both.
 
 Endpoints:
-    GET  /                       static GUI (index.html)
-    GET  /api/status             engine status snapshot
-    GET  /api/show               full show summary (fixtures, scenes, chases, banks)
-    GET  /api/shadow             current 512-byte shadow universe (b64)
-    GET  /api/environments       list environments + current
-    POST /api/environments/{name}   switch environment
-    POST /api/reload             force reload from disk
-    POST /api/cmd/{op}           submit engine command (json body = args)
-    GET  /api/yaml?path=...      read a YAML file from data/ (sandboxed)
-    PUT  /api/yaml               write a YAML file (sandboxed)
-    GET  /api/instruct           return llm_instruct.md (authoring guide for LLMs)
-    GET  /api/genres             list genre presets
-    POST /api/genres/{name}      apply a genre (BPM + start lead chase)
-    WS   /api/ws                 5Hz status updates pushed to clients
+    GET  /                              static GUI (index.html)
+    GET  /api/status                    engine status snapshot
+    GET  /api/stage                     full stage summary (fixtures, scenes,
+                                        chases, banks, shows)
+    GET  /api/shadow                    current 512-byte shadow universe (b64)
+    GET  /api/environments              list environments + current
+    POST /api/environments/{name}       switch environment
+    POST /api/reload                    force reload from disk
+    GET  /api/shows                     list shows + their keybindings
+    POST /api/show/{name}/play          start a show from the beginning
+    POST /api/show/pause                pause active show
+    POST /api/show/resume               resume paused show
+    POST /api/show/reset                restart active show from beginning
+    POST /api/show/stop                 stop and unload the active show
+    POST /api/cmd/{op}                  submit engine command (json body = args)
+    GET  /api/yaml?path=...             read a YAML file (data/-sandboxed)
+    PUT  /api/yaml                      write a YAML file (data/-sandboxed)
+    DELETE /api/yaml?path=...           delete a YAML file
+    GET  /api/yaml/list?prefix=...      list YAML files
+    GET  /api/instruct                  llm_instruct.md
+    GET  /api/genre_concepts            list genre concept files
+    GET  /api/genre_concept/{name}      one genre concept (markdown)
+    WS   /api/ws                        5Hz status push + command intake
 """
 
 from __future__ import annotations
@@ -28,13 +37,12 @@ import base64
 import dataclasses
 import json
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
+from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from lightning_mcllm.config import Settings
@@ -50,13 +58,13 @@ def _engine_status_dict(engine: Engine) -> dict[str, Any]:
     return dataclasses.asdict(engine.status())
 
 
-def _show_summary(engine: Engine) -> dict[str, Any]:
-    show = engine.show()
-    if show is None:
+def _stage_summary(engine: Engine) -> dict[str, Any]:
+    stage = engine.stage()
+    if stage is None:
         return {"loaded": False}
     return {
         "loaded": True,
-        "name": show.name,
+        "name": stage.name,
         "fixtures": [
             {
                 "name": f.name,
@@ -65,14 +73,14 @@ def _show_summary(engine: Engine) -> dict[str, Any]:
                 "universe": f.universe,
                 "tags": list(f.tags),
                 "footprint": (
-                    show.library.get(f.profile).footprint
-                    if show.library.get(f.profile)
+                    stage.library.get(f.profile).footprint
+                    if stage.library.get(f.profile)
                     else 0
                 ),
             }
-            for f in show.fixtures
+            for f in stage.fixtures
         ],
-        "scenes": sorted(show.scenes.keys()),
+        "scenes": sorted(stage.scenes.keys()),
         "chases": [
             {
                 "name": c.name,
@@ -81,7 +89,7 @@ def _show_summary(engine: Engine) -> dict[str, Any]:
                 "length_seconds": c.length_seconds,
                 "step_count": len(c.steps),
             }
-            for c in show.chases.values()
+            for c in stage.chases.values()
         ],
         "banks": [
             {
@@ -96,11 +104,25 @@ def _show_summary(engine: Engine) -> dict[str, Any]:
                     for s in b.slots
                 ],
             }
-            for b in show.banks.values()
+            for b in stage.banks.values()
         ],
-        "genres": [
-            {"name": g.name, "bpm": g.bpm, "lead_chase": g.lead_chase}
-            for g in show.genres.values()
+        "shows": [
+            {
+                "name": s.name,
+                "description": s.description,
+                "bpm": s.bpm,
+                "loop": s.loop,
+                "keybindings": {
+                    k: {
+                        "kind": v.kind,
+                        "name": v.name,
+                        "label": v.label,
+                    }
+                    for k, v in s.keybindings.items()
+                },
+                "script_length": len(s.script),
+            }
+            for s in stage.shows.values()
         ],
     }
 
@@ -163,87 +185,16 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
     async def get_status() -> Any:
         return _engine_status_dict(engine)
 
-    @app.get("/api/show")
-    async def get_show() -> Any:
-        return _show_summary(engine)
-
-    @app.get("/api/instruct")
-    async def get_instruct() -> Any:
-        """Return llm_instruct.md if present in the repo root.
-
-        This is the authoring guide that an LLM should read before writing
-        any scene/chase/bank YAML. The MCP server forwards this verbatim.
-        """
-        # Resolve repo root: data_dir's parent (since data_dir = <repo>/data).
-        repo_root = settings.paths.data_dir.parent
-        candidate = repo_root / "llm_instruct.md"
-        if not candidate.is_file():
-            raise HTTPException(404, f"llm_instruct.md not found at {candidate}")
-        return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
-
-    def _genre_concepts_dir() -> Path:
-        return settings.paths.data_dir.parent / "genre_concepts"
-
-    @app.get("/api/genre_concepts")
-    async def list_genre_concepts() -> Any:
-        """List available genre concept files (one .md per genre)."""
-        d = _genre_concepts_dir()
-        if not d.is_dir():
-            return {"concepts": []}
-        names = sorted(p.stem for p in d.glob("*.md") if p.stem.lower() != "readme")
-        return {"concepts": names}
-
-    @app.get("/api/genre_concept/{name}")
-    async def read_genre_concept(name: str) -> Any:
-        """Return one genre concept file (markdown). Sandboxed to genre_concepts/."""
-        # Sanitize: only filename, no path traversal
-        safe = Path(name).name
-        if not safe or safe.startswith(".") or "/" in name or "\\" in name:
-            raise HTTPException(400, "invalid name")
-        candidate = _genre_concepts_dir() / f"{safe}.md"
-        if not candidate.is_file():
-            raise HTTPException(404, f"genre concept {name!r} not found")
-        return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
-
-    @app.get("/api/genres")
-    async def get_genres() -> Any:
-        show = engine.show()
-        if show is None:
-            return {"genres": []}
-        return {
-            "genres": [
-                {
-                    "name": g.name,
-                    "description": g.description,
-                    "bpm": g.bpm,
-                    "lead_chase": g.lead_chase,
-                    "recommended_chases": list(g.recommended_chases),
-                    "recommended_scenes": list(g.recommended_scenes),
-                }
-                for g in show.genres.values()
-            ]
-        }
-
-    @app.post("/api/genres/{name}")
-    async def apply_genre(name: str) -> Any:
-        show = engine.show()
-        if show is None:
-            raise HTTPException(404, "no show loaded")
-        g = show.genres.get(name)
-        if g is None:
-            raise HTTPException(404, f"unknown genre {name!r}")
-        engine.submit("set_bpm", bpm=g.bpm, source="manual")
-        if g.lead_chase and g.lead_chase in show.chases:
-            engine.submit("stop_all_chases")
-            engine.submit("start_chase", chase=g.lead_chase)
-        return {"ok": True, "applied": name, "bpm": g.bpm, "lead_chase": g.lead_chase}
+    @app.get("/api/stage")
+    async def get_stage() -> Any:
+        return _stage_summary(engine)
 
     @app.get("/api/shadow")
     async def get_shadow() -> Any:
         frame = engine.shadow_snapshot()
         return {"universe": 0, "frame_b64": base64.b64encode(frame).decode()}
 
-    # ----------------------------------------------------------- environments
+    # ---------------------------------------------------------- environments
 
     @app.get("/api/environments")
     async def get_envs() -> Any:
@@ -254,21 +205,73 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
 
     @app.post("/api/environments/{name}")
     async def switch_env(name: str) -> Any:
-        show, issues = reloader.switch_environment(name)
+        stage, issues = reloader.switch_environment(name)
         return {
-            "ok": show is not None,
+            "ok": stage is not None,
             "errors": issues.errors,
             "warnings": issues.warnings,
         }
 
     @app.post("/api/reload")
     async def force_reload() -> Any:
-        show, issues = reloader.reload_now()
+        stage, issues = reloader.reload_now()
         return {
-            "ok": show is not None,
+            "ok": stage is not None,
             "errors": issues.errors,
             "warnings": issues.warnings,
         }
+
+    # ----------------------------------------------------------------- shows
+
+    @app.get("/api/shows")
+    async def get_shows() -> Any:
+        stage = engine.stage()
+        if stage is None:
+            return {"shows": []}
+        return {
+            "shows": [
+                {
+                    "name": s.name,
+                    "description": s.description,
+                    "bpm": s.bpm,
+                    "loop": s.loop,
+                    "script_length": len(s.script),
+                    "keybindings": {
+                        k: {"kind": v.kind, "name": v.name, "label": v.label}
+                        for k, v in s.keybindings.items()
+                    },
+                }
+                for s in stage.shows.values()
+            ]
+        }
+
+    @app.post("/api/show/{name}/play")
+    async def play_show(name: str) -> Any:
+        stage = engine.stage()
+        if stage is None or name not in stage.shows:
+            raise HTTPException(404, f"unknown show {name!r}")
+        engine.submit("play_show", show=name)
+        return {"ok": True, "show": name}
+
+    @app.post("/api/show/pause")
+    async def pause_show() -> Any:
+        engine.submit("pause_show")
+        return {"ok": True}
+
+    @app.post("/api/show/resume")
+    async def resume_show() -> Any:
+        engine.submit("resume_show")
+        return {"ok": True}
+
+    @app.post("/api/show/reset")
+    async def reset_show() -> Any:
+        engine.submit("reset_show")
+        return {"ok": True}
+
+    @app.post("/api/show/stop")
+    async def stop_show() -> Any:
+        engine.submit("stop_show")
+        return {"ok": True}
 
     # --------------------------------------------------------------- commands
 
@@ -287,13 +290,15 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
                 args = json.loads(body) or {}
             except Exception as e:  # noqa: BLE001
                 raise HTTPException(status_code=400, detail=f"bad json: {e}") from e
-        # Only Engine ops handled here; reload/list_show/etc have dedicated routes
-        if op in ("status", "shadow", "list_environments", "switch_environment", "list_show", "reload"):
+        if op in (
+            "status", "shadow", "list_environments", "switch_environment",
+            "list_stage", "reload",
+        ):
             raise HTTPException(status_code=400, detail=f"use the dedicated route for {op!r}")
         engine.submit(op, **args)
         return {"ok": True, "submitted": op}
 
-    # ----------------------------------------------------------------- yaml
+    # ---------------------------------------------------------------- yaml
 
     @app.get("/api/yaml")
     async def get_yaml(path: str) -> Any:
@@ -313,7 +318,6 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
         text = body.decode("utf-8")
         target = _resolve_data_path(settings, path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        # Atomic write
         tmp = target.with_suffix(target.suffix + ".tmp")
         tmp.write_text(text, encoding="utf-8")
         tmp.replace(target)
@@ -341,6 +345,37 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
             out.append(str(p.relative_to(settings.paths.data_dir)))
         return {"files": out}
 
+    # ---------------------------------------------------------------- instruct
+
+    @app.get("/api/instruct")
+    async def get_instruct() -> Any:
+        repo_root = settings.paths.data_dir.parent
+        candidate = repo_root / "llm_instruct.md"
+        if not candidate.is_file():
+            raise HTTPException(404, f"llm_instruct.md not found at {candidate}")
+        return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
+
+    def _genre_concepts_dir() -> Path:
+        return settings.paths.data_dir.parent / "genre_concepts"
+
+    @app.get("/api/genre_concepts")
+    async def list_genre_concepts() -> Any:
+        d = _genre_concepts_dir()
+        if not d.is_dir():
+            return {"concepts": []}
+        names = sorted(p.stem for p in d.glob("*.md") if p.stem.lower() != "readme")
+        return {"concepts": names}
+
+    @app.get("/api/genre_concept/{name}")
+    async def read_genre_concept(name: str) -> Any:
+        safe = Path(name).name
+        if not safe or safe.startswith(".") or "/" in name or "\\" in name:
+            raise HTTPException(400, "invalid name")
+        candidate = _genre_concepts_dir() / f"{safe}.md"
+        if not candidate.is_file():
+            raise HTTPException(404, f"genre concept {name!r} not found")
+        return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
+
     # ------------------------------------------------------------------- ws
 
     @app.websocket("/api/ws")
@@ -348,12 +383,10 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
         await ws_.accept()
         active_websockets.add(ws_)
         try:
-            # Push initial snapshot
             await ws_.send_json({"type": "status", "data": _engine_status_dict(engine)})
-            await ws_.send_json({"type": "show", "data": _show_summary(engine)})
+            await ws_.send_json({"type": "stage", "data": _stage_summary(engine)})
             while True:
                 msg = await ws_.receive_text()
-                # Allow client-initiated commands via WS (low-latency)
                 try:
                     payload = json.loads(msg)
                     op = payload.get("op")

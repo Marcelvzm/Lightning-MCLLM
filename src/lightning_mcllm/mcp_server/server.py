@@ -89,8 +89,18 @@ class LightningClient:
     def status(self) -> Any:
         return _http_get(f"{self._base}/api/status")
 
-    def show(self) -> Any:
-        return _http_get(f"{self._base}/api/show")
+    def stage(self) -> Any:
+        return _http_get(f"{self._base}/api/stage")
+
+    def shows(self) -> Any:
+        return _http_get(f"{self._base}/api/shows")
+
+    def play_show(self, name: str) -> Any:
+        return _http_post(f"{self._base}/api/show/{name}/play")
+
+    def show_control(self, action: str) -> Any:
+        # action in {pause, resume, reset, stop}
+        return _http_post(f"{self._base}/api/show/{action}")
 
     def environments(self) -> Any:
         return _http_get(f"{self._base}/api/environments")
@@ -199,8 +209,53 @@ def run_stdio(api_url: str) -> None:
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
-                name="list_show",
-                description="Return the loaded show: fixtures, scenes, chases, banks. Use to learn what's available before editing.",
+                name="list_stage",
+                description=(
+                    "Return the loaded stage: fixtures, scenes, chases, banks, and shows. "
+                    "Use this to learn what's available before authoring. (A `Stage` is the "
+                    "runtime composite of one environment; a `Show` is one scripted "
+                    "choreography that runs on it.)"
+                ),
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="list_shows",
+                description=(
+                    "Return the shows defined for the loaded stage. Each show has a name, "
+                    "BPM, optional description, optional keybindings, and a script of length N."
+                ),
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="play_show",
+                description=(
+                    "Start a show from the beginning. The script runs in the engine's main "
+                    "loop; chases and scenes can still be triggered manually while it runs."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {"name": {"type": "string"}},
+                    "required": ["name"],
+                },
+            ),
+            Tool(
+                name="pause_show",
+                description="Pause the active show (running chases continue underneath).",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="resume_show",
+                description="Resume a paused show from where it stopped.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="reset_show",
+                description="Restart the active show from the first action.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="stop_show",
+                description="Halt and unload the active show. Chases continue.",
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
@@ -356,8 +411,14 @@ def run_stdio(api_url: str) -> None:
                 out = client.read_genre_concept(arguments["name"])
             elif name == "status":
                 out = client.status()
-            elif name == "list_show":
-                out = client.show()
+            elif name == "list_stage":
+                out = client.stage()
+            elif name == "list_shows":
+                out = client.shows()
+            elif name == "play_show":
+                out = client.play_show(arguments["name"])
+            elif name in {"pause_show", "resume_show", "reset_show", "stop_show"}:
+                out = client.show_control(name.removesuffix("_show"))
             elif name == "list_environments":
                 out = client.environments()
             elif name == "switch_environment":

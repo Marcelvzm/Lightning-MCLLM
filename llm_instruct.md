@@ -72,7 +72,7 @@ data/
         ├── scenes/*.yaml              ← named static states
         ├── chases/*.yaml              ← timed sequences
         ├── banks/*.yaml               ← launchpad-style trigger layouts
-        └── genres.yaml                ← BPM + lead-chase presets
+        └── shows/*.yaml               ← scripted choreographies (top-level)
 ```
 
 Read `technical_details.md` once, end-to-end, before authoring. It is the
@@ -84,7 +84,8 @@ voice model in §7 and the chase grammar in §6.**
 
 | Tool | When to use |
 | --- | --- |
-| `list_show` | **Always start here.** Fixtures, scenes, chases, banks, genres |
+| `list_stage` | **Always start here.** Fixtures, scenes, chases, banks, shows |
+| `list_shows` | Just the show scripts on the stage |
 | `list_yaml(prefix)` | List existing files |
 | `read_yaml(path)` | Read existing — *prefer adapting an existing scene/chase to writing from scratch* |
 | `write_yaml(path, content)` | Create or replace a YAML file |
@@ -656,17 +657,34 @@ Banks are the user's launchpad layout. Slots 1–9 (the GUI grid). Group
 them by section: e.g. slot 1–3 for the "warm" section, 4–6 for the
 "build", 7–8 for the "peak", 9 = blackout (always).
 
-### Step 7: Author the genre preset (if applicable)
+### Step 7: Author the show (the top-level choreography)
+
+A **Show** is *the* deliverable for a 60-minute set or a 5-minute track.
+It scripts the sequence of scenes, chases, blackouts, and waits over
+time, and (optionally) defines keybindings for live operator overrides.
 
 ```yaml
-genres:
-  - name: techno_set_a
-    description: 128 BPM techno, blue palette, hypnotic
-    bpm: 128
-    lead_chase: techno_a_pulse
-    recommended_chases: [techno_a_pulse, techno_a_sweep]
-    recommended_scenes: [techno_a_idle, techno_a_peak]
+# data/environments/<env>/shows/<name>.yaml
+name: techno_60min_a
+description: 60-minute techno set, deep-blue palette
+bpm: 128
+loop: true
+
+keybindings:
+  "1": { kind: scene, name: techno_a_idle,  label: "Idle" }
+  "2": { kind: chase, name: techno_a_pulse, label: "Pulse" }
+  "3": { kind: chase, name: techno_a_sweep, label: "MH Sweep" }
+  "B": { kind: blackout, label: "Blackout" }
+
+script:
+  - { do: snap_scene, scene: techno_a_idle, fade: 4.0 }
+  - { do: wait, seconds: 240 }
+  - { do: start_chase, chase: techno_a_pulse }
+  - { do: wait, seconds: 600 }
+  ...
 ```
+
+See §5.5 for the full action grammar.
 
 ### Step 8: Reload, validate, fix
 

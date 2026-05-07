@@ -18,9 +18,9 @@ from lightning_mcllm.web.app import create_app
 
 
 @pytest.fixture()
-def web(show, null_dmx, settings):
+def web(stage, null_dmx, settings):
     clock = BpmClock(bpm=120.0)
-    eng = Engine(show=show, dmx=null_dmx, clock=clock, refresh_hz=60)
+    eng = Engine(stage=stage, dmx=null_dmx, clock=clock, refresh_hz=60)
     eng.start()
     rel = HotReloader(eng, settings, "default", auto_resume=False)
     app = create_app(eng, rel, settings)
@@ -35,12 +35,12 @@ def test_status_endpoint(web):
     assert r.status_code == 200
     body = r.json()
     assert body["running"] is True
-    assert body["show_name"] == "default"
+    assert body["stage_name"] == "default"
 
 
-def test_show_endpoint(web):
+def test_stage_endpoint(web):
     client, _, _ = web
-    r = client.get("/api/show")
+    r = client.get("/api/stage")
     body = r.json()
     assert body["loaded"] is True
     assert body["name"] == "default"
@@ -120,7 +120,7 @@ def test_reload_endpoint_after_yaml_write(web, settings):
 
 
 def test_websocket_initial_handshake_and_command(web):
-    """The WS sends two initial messages (status + show) on connect, then
+    """The WS sends two initial messages (status + stage) on connect, then
     accepts commands. The continuous broadcaster runs in production but isn't
     asserted here — TestClient's asyncio task scheduling is finicky."""
     client, eng, _ = web
@@ -128,7 +128,7 @@ def test_websocket_initial_handshake_and_command(web):
         first = ws.receive_json()
         second = ws.receive_json()
         kinds = {first["type"], second["type"]}
-        assert "status" in kinds and "show" in kinds
+        assert "status" in kinds and "stage" in kinds
         # Send a command via WS — engine should see it
         ws.send_json({"op": "snap_scene", "args": {"scene": "warm_idle"}})
     # After the WS context closes, verify the snap landed

@@ -1,0 +1,120 @@
+# Auto-show "techno_60min" — a 60-minute set that runs autonomously.
+#
+# Macro entropy curve:
+#   00:00 - 05:00  warm-up — atmosphere only, no kick
+#   05:00 - 15:00  groove establishes — par pulse + slow MH
+#   15:00 - 20:00  break + return
+#   20:00 - 35:00  mid-set peak (more saturation, faster MH)
+#   35:00 - 40:00  break + reset
+#   40:00 - 55:00  late-set peak (more aggression, occasional strobing)
+#   55:00 - 60:00  wind-down
+#
+# The script uses time-anchored waits (seconds) rather than beats, because we
+# want absolute timing across a one-hour set. Beat-anchored waits would drift
+# if the user retempos the clock mid-set (or if audio mode auto-pauses on
+# silence).
+#
+# loop: true so the show wraps if it's still playing past 60 minutes.
+
+name: techno_60min
+description: Hour-long techno set for set-and-forget operation.
+bpm: 128
+loop: true
+
+# Custom keybindings — in Play-Mode, these override the default 1-9 bank pad.
+keybindings:
+  "1": { kind: scene, name: warm_idle,             label: "Idle" }
+  "2": { kind: chase, name: red_pulse,             label: "Pulse" }
+  "3": { kind: chase, name: mh_alternating_sweep,  label: "MH Sweep" }
+  "4": { kind: chase, name: par_color_walk,        label: "Color Walk" }
+  "Q": { kind: scene, name: red_pulse_on,          label: "Red full" }
+  "W": { kind: scene, name: mh_beam_open_blue,     label: "MH Blue" }
+  "E": { kind: scene, name: mh_beam_open_amber,    label: "MH Amber" }
+  "B": { kind: blackout,                            label: "Blackout" }
+  "R": { kind: release_blackout,                    label: "Release" }
+  "X": { kind: stop_all_chases,                     label: "Stop chases" }
+
+script:
+  # ---------- 00:00 - 05:00  Warm-up (atmosphere only) ----------
+  - { do: log, message: "warm-up" }
+  - { do: snap_scene, scene: warm_idle, fade: 4.0 }
+  - { do: start_chase, chase: par_color_walk }
+  - { do: wait, seconds: 300 }    # 5 min
+
+  # ---------- 05:00 - 15:00  Groove establishes ----------
+  - { do: log, message: "groove on" }
+  - { do: stop_chase, chase: par_color_walk }
+  - { do: start_chase, chase: red_pulse }
+  - { do: wait, seconds: 300 }    # 5 min into the groove
+
+  - { do: log, message: "add MH sweep" }
+  - { do: start_chase, chase: mh_alternating_sweep }
+  - { do: wait, seconds: 300 }    # 5 min more
+
+  # ---------- 15:00 - 20:00  Break + return ----------
+  - { do: log, message: "first break" }
+  - { do: stop_all_chases }
+  - { do: snap_scene, scene: warm_idle, fade: 3.0 }
+  - { do: wait, seconds: 60 }
+
+  - { do: log, message: "return" }
+  - { do: snap_scene, scene: mh_beam_open_blue, fade: 2.0 }
+  - { do: wait, seconds: 30 }
+  - { do: start_chase, chase: red_pulse }
+  - { do: start_chase, chase: mh_alternating_sweep }
+  - { do: wait, seconds: 210 }    # 3:30 — fills out the 5-min window
+
+  # ---------- 20:00 - 35:00  Mid-set peak ----------
+  - { do: log, message: "mid-set peak" }
+  - { do: set_values, group: { tag: par }, values: { dimmer: 220, color/red: 200, color/green: 50, color/blue: 220, color/white: 30 }, fade: 4.0 }
+  - { do: wait, seconds: 120 }
+
+  # 4× pulse cycles, separated by quick breaks
+  - do: loop
+    times: 4
+    actions:
+      - { do: blackout, fade: 0.0 }
+      - { do: wait, beats: 1 }
+      - { do: release_blackout }
+      - { do: wait, seconds: 180 }   # 3 min between break-cuts
+
+  # By here we're at ~35 min total
+
+  # ---------- 35:00 - 40:00  Break + reset ----------
+  - { do: log, message: "second break" }
+  - { do: stop_all_chases }
+  - { do: snap_scene, scene: warm_idle, fade: 4.0 }
+  - { do: wait, seconds: 90 }
+  - { do: snap_scene, scene: mh_beam_open_amber, fade: 2.0 }
+  - { do: wait, seconds: 210 }    # ~5 min total break
+
+  # ---------- 40:00 - 55:00  Late-set peak (more aggressive) ----------
+  - { do: log, message: "late-set peak" }
+  - { do: start_chase, chase: red_pulse }
+  - { do: start_chase, chase: mh_alternating_sweep }
+  - { do: wait, seconds: 300 }   # 5 min
+
+  - { do: log, message: "saturation push" }
+  - { do: set_values, group: { tag: par }, values: { dimmer: 255, color/red: 255, color/green: 0, color/blue: 80, color/white: 0 }, fade: 8.0 }
+  - { do: wait, seconds: 300 }   # 5 min
+
+  - { do: log, message: "punctuation cuts" }
+  - do: loop
+    times: 5
+    actions:
+      - { do: blackout, fade: 0.05 }
+      - { do: wait, beats: 1 }
+      - { do: release_blackout }
+      - { do: wait, seconds: 60 }
+
+  # ---------- 55:00 - 60:00  Wind-down ----------
+  - { do: log, message: "wind-down" }
+  - { do: stop_all_chases }
+  - { do: start_chase, chase: par_color_walk }
+  - { do: snap_scene, scene: warm_idle, fade: 6.0 }
+  - { do: wait, seconds: 240 }   # 4 min
+
+  - { do: log, message: "fade to black" }
+  - { do: blackout, fade: 30.0 }
+  - { do: wait, seconds: 30 }
+  - { do: log, message: "lap complete — show is set to loop, restarting" }

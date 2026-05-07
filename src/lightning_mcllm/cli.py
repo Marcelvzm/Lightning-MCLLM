@@ -125,12 +125,12 @@ def run(
             click.echo(f"  {e}", err=True)
         sys.exit(2)
 
-    show, show_issues = load_show(settings.paths.environments / env_name, lib)
-    for w in show_issues.warnings:
-        log.warning("show: %s", w)
-    if show is None:
+    stage, stage_issues = load_stage(settings.paths.environments / env_name, lib)
+    for w in stage_issues.warnings:
+        log.warning("stage: %s", w)
+    if stage is None:
         click.echo(f"Environment {env_name!r} failed to load:", err=True)
-        for e in show_issues.errors:
+        for e in stage_issues.errors:
             click.echo(f"  {e}", err=True)
         sys.exit(2)
 
@@ -140,7 +140,7 @@ def run(
 
     # Engine + clock + hot reload
     clock = BpmClock(bpm=bpm)
-    engine = Engine(show=show, dmx=dmx, clock=clock, refresh_hz=settings.dmx_refresh_hz)
+    engine = Engine(stage=stage, dmx=dmx, clock=clock, refresh_hz=settings.dmx_refresh_hz)
     engine.start()
     reloader = HotReloader(engine, settings, env_name)
     reloader.start()

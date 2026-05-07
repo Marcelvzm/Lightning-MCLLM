@@ -44,7 +44,7 @@ def test_reload_with_broken_yaml_keeps_previous_show(engine, settings, tmp_data_
     # New show failed; engine retains the prior show
     assert show is None
     assert issues.errors
-    assert engine.show() is not None
+    assert engine.stage() is not None
     # Engine still functional
     engine.submit("snap_scene", scene="warm_idle")
     assert _wait(lambda: engine.shadow_snapshot()[0] == 140)

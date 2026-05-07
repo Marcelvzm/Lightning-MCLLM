@@ -5,11 +5,14 @@ const $ = (id) => document.getElementById(id);
 
 const state = {
   status: null,
-  show: null,
+  stage: null,
   envs: [],
   currentEnv: null,
   ws: null,
+  selectedShow: null,
   selectedBank: null,
+  playMode: false,
+  filter: "",
 };
 
 // ---------------------------------------------------------------- websocket
@@ -27,7 +30,7 @@ function connectWs() {
     try {
       const msg = JSON.parse(ev.data);
       if (msg.type === "status") onStatus(msg.data);
-      if (msg.type === "show") onShow(msg.data);
+      if (msg.type === "stage") onStage(msg.data);
     } catch (e) {
       console.error("bad ws msg", e);
     }
@@ -46,6 +49,7 @@ async function api(method, path, body) {
 }
 const cmd = (op, args = {}) => api("POST", `/api/cmd/${op}`, args);
 const get = (path) => api("GET", path);
+const post = (path, body) => api("POST", path, body);
 
 // ----------------------------------------------------------------- handlers
 
@@ -54,7 +58,6 @@ function onStatus(s) {
   $("bpm-value").textContent = s.bpm.toFixed(1);
   $("bpm-source").textContent = s.bpm_source;
   $("beat-pos").textContent = s.beat_position.toFixed(2);
-  // Red when the clock is paused (manual pause or audio-silence auto-pause).
   $("beat-pos").style.color = s.bpm_source.includes("silent") || !s.running ? "var(--red)" : "";
   $("master-value").textContent = s.master.toFixed(2);
   $("dmx-status").textContent = (s.dmx_connected ? "✓ " : "✗ ") + s.dmx_description;
@@ -69,110 +72,171 @@ function onStatus(s) {
     li.classList.toggle("active", s.active_chases.some(k => k === `chase:${name}` || k.startsWith(`chase:${name}:`)));
   });
 
-  // active slot highlight (heuristic: chase slot with active chase)
-  document.querySelectorAll(".slot[data-chase]").forEach(el => {
+  // bank slot active highlight
+  document.querySelectorAll(".bank-slot-row .slot[data-chase]").forEach(el => {
     el.classList.toggle("active", s.active_chases.some(k => k.startsWith(`chase:${el.dataset.chase}:`)));
   });
+
+  // show state display
+  renderShowState(s.show);
 
   // errors
   const errs = $("errors");
   errs.innerHTML = "";
   for (const e of (s.last_errors || [])) {
-    const d = document.createElement("div"); d.textContent = e; errs.appendChild(d);
+    const d = document.createElement("div");
+    d.textContent = e;
+    errs.appendChild(d);
   }
 
   refreshShadow();
 }
 
-function onShow(sh) {
-  state.show = sh;
-  // genres
-  const gsel = $("genre-select");
-  gsel.innerHTML = '<option value="">— pick —</option>';
-  for (const g of (sh.genres || [])) {
-    const o = document.createElement("option");
-    o.value = g.name;
-    o.textContent = `${g.name} (${g.bpm} BPM)`;
-    gsel.appendChild(o);
+function renderShowState(showState) {
+  const el = $("show-state");
+  if (!showState) {
+    el.innerHTML = '<span class="state-label">no show running</span>';
+    return;
   }
+  const stateClass = "state-" + showState.state;
+  const elapsed = showState.elapsed_seconds || 0;
+  const mins = Math.floor(elapsed / 60);
+  const secs = (elapsed % 60).toFixed(1);
+  el.innerHTML = `
+    <span class="${stateClass}">${showState.state.toUpperCase()}</span>
+    <span><b>${escapeHtml(showState.name)}</b></span>
+    <span>elapsed: ${mins}:${secs.padStart(4, "0")}</span>
+    <span>action: ${escapeHtml(showState.current_action || "—")}</span>
+    ${showState.waiting ? `<span class="muted-hint">${escapeHtml(showState.waiting)}</span>` : ""}
+  `;
+}
+
+function onStage(st) {
+  state.stage = st;
+  if (!st || !st.loaded) {
+    $("scenes-list").innerHTML = "";
+    $("chases-list").innerHTML = "";
+    $("fixtures-list").innerHTML = "";
+    return;
+  }
+
+  // shows dropdown
+  const showSel = $("show-select");
+  showSel.innerHTML = '<option value="">— select show —</option>';
+  for (const sh of (st.shows || [])) {
+    const o = document.createElement("option");
+    o.value = sh.name;
+    o.textContent = `${sh.name} (${sh.bpm} BPM, ${sh.script_length} actions)`;
+    showSel.appendChild(o);
+  }
+  if (state.selectedShow && !st.shows.find(s => s.name === state.selectedShow)) {
+    state.selectedShow = null;
+  }
+  if (state.selectedShow) showSel.value = state.selectedShow;
+
   // scenes
   const scenes = $("scenes-list");
   scenes.innerHTML = "";
-  for (const name of (sh.scenes || [])) {
+  for (const name of (st.scenes || [])) {
     const li = document.createElement("li");
-    li.textContent = name;
     li.dataset.name = name;
+    li.dataset.kind = "scene";
+    const kbdBadge = makeKbdBadgeForName("scene", name);
+    li.innerHTML = `${kbdBadge}<span class="item-name">${escapeHtml(name)}</span>`;
     li.onclick = () => cmd("snap_scene", { scene: name });
     scenes.appendChild(li);
   }
+  $("scenes-count").textContent = `(${(st.scenes || []).length})`;
+
   // chases
   const chases = $("chases-list");
   chases.innerHTML = "";
-  for (const c of (sh.chases || [])) {
+  for (const c of (st.chases || [])) {
     const li = document.createElement("li");
-    const len = c.length_beats != null ? `${c.length_beats}b` : `${c.length_seconds}s`;
-    li.textContent = `${c.name} (${len}, ${c.step_count} steps)`;
     li.dataset.name = c.name;
+    li.dataset.kind = "chase";
+    const len = c.length_beats != null ? `${c.length_beats}b` : `${c.length_seconds}s`;
+    const kbdBadge = makeKbdBadgeForName("chase", c.name);
+    li.innerHTML = `${kbdBadge}<span class="item-name">${escapeHtml(c.name)}</span><span class="item-meta">${len} · ${c.step_count}st</span>`;
     li.onclick = () => {
-      // toggle: if active, stop, else start
       const isActive = state.status?.active_chases?.some(k => k.startsWith(`chase:${c.name}:`));
       cmd(isActive ? "stop_chase" : "start_chase", { chase: c.name });
     };
     chases.appendChild(li);
   }
-  // fixtures
+  $("chases-count").textContent = `(${(st.chases || []).length})`;
+
+  // fixtures (read-only)
   const fxs = $("fixtures-list");
   fxs.innerHTML = "";
-  for (const f of (sh.fixtures || [])) {
+  for (const f of (st.fixtures || [])) {
     const li = document.createElement("li");
-    li.textContent = `${f.name}  @${f.address.toString().padStart(3, "0")}+${f.footprint}  [${f.tags.join(",")}]`;
+    li.innerHTML = `<span class="item-name">${escapeHtml(f.name)}</span><span class="item-meta">@${f.address.toString().padStart(3, "0")}+${f.footprint} [${(f.tags || []).join(",")}]</span>`;
     fxs.appendChild(li);
   }
-  // banks select
+  $("fixtures-count").textContent = `(${(st.fixtures || []).length})`;
+
+  // banks
   const bankSel = $("bank-select");
   bankSel.innerHTML = "";
-  for (const b of (sh.banks || [])) {
+  for (const b of (st.banks || [])) {
     const o = document.createElement("option"); o.value = b.name; o.textContent = b.name;
     bankSel.appendChild(o);
   }
-  if ((sh.banks || []).length > 0) {
-    if (!state.selectedBank || !sh.banks.find(b => b.name === state.selectedBank)) {
-      state.selectedBank = sh.banks[0].name;
+  if ((st.banks || []).length > 0) {
+    if (!state.selectedBank || !st.banks.find(b => b.name === state.selectedBank)) {
+      state.selectedBank = st.banks[0].name;
     }
     bankSel.value = state.selectedBank;
-    renderSlots();
+    renderBankSlots();
   }
+
+  applyFilter();
 }
 
-function renderSlots() {
-  const grid = $("slots-grid");
-  grid.innerHTML = "";
-  if (!state.show?.banks) return;
-  const bank = state.show.banks.find(b => b.name === state.selectedBank);
+function makeKbdBadgeForName(kind, name) {
+  // In Play-Mode: find a keybinding pointing at this scene/chase
+  if (!state.playMode || !state.selectedShow) return "";
+  const sh = (state.stage?.shows || []).find(s => s.name === state.selectedShow);
+  if (!sh) return "";
+  for (const [key, b] of Object.entries(sh.keybindings || {})) {
+    if (b.kind === kind && b.name === name) {
+      return `<span class="kbd-badge">${escapeHtml(key)}</span>`;
+    }
+  }
+  return "";
+}
+
+function renderBankSlots() {
+  const row = $("bank-slot-row");
+  row.innerHTML = "";
+  if (!state.stage?.banks) return;
+  const bank = state.stage.banks.find(b => b.name === state.selectedBank);
   if (!bank) return;
-  // Generate 3x3 grid (slots 1..9)
-  for (let id = 1; id <= 9; id++) {
-    const slot = bank.slots.find(s => s.id === id);
+  for (const slot of bank.slots) {
     const el = document.createElement("div");
     el.className = "slot";
-    if (slot) {
-      el.classList.toggle("blackout", slot.kind === "blackout");
-      if (slot.kind === "chase") el.dataset.chase = slot.name;
-      el.innerHTML = `
-        <div class="id">${slot.id}</div>
-        <div class="label">${slot.label || slot.name || slot.kind}</div>
-        <div class="kind">${slot.kind}</div>
-      `;
-      el.onclick = () => cmd("fire_slot", { bank: state.selectedBank, slot_id: slot.id });
-    } else {
-      el.innerHTML = `<div class="id">${id}</div><div class="label" style="color:#444">—</div>`;
-      el.style.cursor = "default";
-    }
-    grid.appendChild(el);
+    el.classList.toggle("blackout", slot.kind === "blackout");
+    if (slot.kind === "chase") el.dataset.chase = slot.name;
+    el.innerHTML = `<span class="id">${slot.id}</span> ${escapeHtml(slot.label || slot.name || slot.kind)}`;
+    el.onclick = () => cmd("fire_slot", { bank: state.selectedBank, slot_id: slot.id });
+    row.appendChild(el);
   }
 }
 
-// ----------------------------------------------------------------- shadow visualizer
+// ----------------------------------------------------------------- filter
+
+function applyFilter() {
+  const f = state.filter.trim().toLowerCase();
+  for (const list of ["scenes-list", "chases-list", "fixtures-list"]) {
+    document.querySelectorAll(`#${list} li`).forEach(li => {
+      const name = (li.dataset.name || li.textContent).toLowerCase();
+      li.classList.toggle("hidden", f !== "" && !name.includes(f));
+    });
+  }
+}
+
+// ----------------------------------------------------------------- shadow
 
 let shadowFetching = false;
 async function refreshShadow() {
@@ -182,8 +246,7 @@ async function refreshShadow() {
     const r = await fetch("/api/shadow");
     if (!r.ok) return;
     const data = await r.json();
-    const bytes = atob(data.frame_b64);
-    drawShadow(bytes);
+    drawShadow(atob(data.frame_b64));
   } finally {
     shadowFetching = false;
   }
@@ -195,7 +258,6 @@ function drawShadow(byteString) {
   const w = canvas.width, h = canvas.height;
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, w, h);
-  // 512 channels in 1024 width => 2px per channel
   for (let i = 0; i < 512; i++) {
     const v = byteString.charCodeAt(i);
     ctx.fillStyle = `rgb(${v}, ${v}, ${v})`;
@@ -203,7 +265,7 @@ function drawShadow(byteString) {
   }
 }
 
-// ----------------------------------------------------------------- env loading
+// ----------------------------------------------------------------- env
 
 async function refreshEnvs() {
   const data = await get("/api/environments");
@@ -219,9 +281,69 @@ async function refreshEnvs() {
   $("env-label").textContent = `env: ${state.currentEnv}`;
 }
 
-async function refreshShow() {
-  const sh = await get("/api/show");
-  onShow(sh);
+async function refreshStage() {
+  const st = await get("/api/stage");
+  onStage(st);
+}
+
+// ----------------------------------------------------------------- play mode
+
+function setPlayMode(on) {
+  state.playMode = !!on;
+  $("play-mode-toggle").textContent = `Play Mode: ${on ? "ON" : "OFF"}`;
+  $("play-mode-toggle").classList.toggle("on", on);
+  $("play-mode-indicator").style.display = on ? "" : "none";
+  $("play-mode-hint").textContent = on
+    ? `Active. Show: ${state.selectedShow || "(none)"}. Custom keys override default shortcuts.`
+    : "When ON, the show's keybindings drive the keyboard.";
+  // Re-render lists to update kbd badges
+  if (state.stage) onStage(state.stage);
+}
+
+// ----------------------------------------------------------------- key handler
+
+function handleKey(e) {
+  const tag = e.target.tagName;
+  if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+
+  // Universal safety: BLACKOUT and Esc always work
+  if (e.key === " ") { e.preventDefault(); cmd("blackout"); return; }
+  if (e.key === "Escape") { cmd("release_blackout"); return; }
+
+  if (state.playMode && state.selectedShow) {
+    // Lookup show keybindings
+    const sh = (state.stage?.shows || []).find(s => s.name === state.selectedShow);
+    if (sh) {
+      const lookupKey = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+      const binding = (sh.keybindings || {})[lookupKey];
+      if (binding) {
+        e.preventDefault();
+        firePlayBinding(binding);
+        return;
+      }
+    }
+    // In play mode, do NOT fall through to default 1-9 bank-slot bindings —
+    // the user opted into the show's vocabulary.
+    return;
+  }
+
+  // Default keyboard mode
+  if (e.key >= "1" && e.key <= "9") {
+    const id = parseInt(e.key);
+    cmd("fire_slot", { bank: state.selectedBank, slot_id: id });
+  }
+  if (e.key === "t" || e.key === "T") cmd("tap");
+}
+
+function firePlayBinding(b) {
+  if (b.kind === "scene") cmd("snap_scene", { scene: b.name });
+  else if (b.kind === "chase") {
+    const isActive = state.status?.active_chases?.some(k => k.startsWith(`chase:${b.name}:`));
+    cmd(isActive ? "stop_chase" : "start_chase", { chase: b.name });
+  }
+  else if (b.kind === "blackout") cmd("blackout");
+  else if (b.kind === "release_blackout") cmd("release_blackout");
+  else if (b.kind === "stop_all_chases") cmd("stop_all_chases");
 }
 
 // ----------------------------------------------------------------- bindings
@@ -242,37 +364,45 @@ function bind() {
   $("blackout-btn").onclick = () => cmd("blackout");
   $("release-blackout-btn").onclick = () => cmd("release_blackout");
   $("stop-all-btn").onclick = () => cmd("stop_all_chases");
+
   $("reload-btn").onclick = async () => {
-    const r = await api("POST", "/api/reload");
+    const r = await post("/api/reload");
     if (!r.ok) alert("Reload failed:\n" + (r.errors || []).join("\n"));
-    await refreshShow();
+    await refreshStage();
   };
   $("env-select").onchange = async (e) => {
-    const r = await api("POST", `/api/environments/${encodeURIComponent(e.target.value)}`);
+    const r = await post(`/api/environments/${encodeURIComponent(e.target.value)}`);
     if (!r.ok) alert("Switch failed:\n" + (r.errors || []).join("\n"));
     state.currentEnv = e.target.value;
     $("env-label").textContent = `env: ${state.currentEnv}`;
-    await refreshShow();
-  };
-  $("bank-select").onchange = (e) => { state.selectedBank = e.target.value; renderSlots(); };
-  $("genre-apply").onclick = async () => {
-    const g = $("genre-select").value;
-    if (!g) return;
-    const r = await api("POST", `/api/genres/${encodeURIComponent(g)}`);
-    $("genre-hint").textContent = r.lead_chase ? `applied: ${g} (lead: ${r.lead_chase})` : `applied: ${g}`;
+    await refreshStage();
   };
 
-  // Keyboard: 1-9 fire bank slots, Space = blackout
-  document.addEventListener("keydown", (e) => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
-    if (e.key >= "1" && e.key <= "9") {
-      const id = parseInt(e.key);
-      cmd("fire_slot", { bank: state.selectedBank, slot_id: id });
-    }
-    if (e.key === " ") { e.preventDefault(); cmd("blackout"); }
-    if (e.key === "Escape") cmd("release_blackout");
-    if (e.key === "t" || e.key === "T") cmd("tap");
-  });
+  // Show controls
+  $("show-select").onchange = (e) => {
+    state.selectedShow = e.target.value || null;
+    if (state.stage) onStage(state.stage);
+    setPlayMode(state.playMode);  // refresh hint
+  };
+  $("show-play-btn").onclick = async () => {
+    if (!state.selectedShow) { alert("Pick a show first."); return; }
+    await post(`/api/show/${encodeURIComponent(state.selectedShow)}/play`);
+  };
+  $("show-pause-btn").onclick = () => post("/api/show/pause");
+  $("show-resume-btn").onclick = () => post("/api/show/resume");
+  $("show-reset-btn").onclick = () => post("/api/show/reset");
+  $("show-stop-btn").onclick = () => post("/api/show/stop");
+  $("play-mode-toggle").onclick = () => setPlayMode(!state.playMode);
+
+  $("bank-select").onchange = (e) => { state.selectedBank = e.target.value; renderBankSlots(); };
+  $("trigger-filter").oninput = (e) => { state.filter = e.target.value; applyFilter(); };
+
+  document.addEventListener("keydown", handleKey);
+}
+
+function escapeHtml(s) {
+  if (s == null) return "";
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
 // ----------------------------------------------------------------- boot
@@ -280,6 +410,6 @@ function bind() {
 (async () => {
   bind();
   await refreshEnvs();
-  await refreshShow();
+  await refreshStage();
   connectWs();
 })();

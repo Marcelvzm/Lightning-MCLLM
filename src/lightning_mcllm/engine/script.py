@@ -1,6 +1,6 @@
 """Chase runner — converts chase YAML semantics into voice spawns over time.
 
-Given a `Chase` and a `Show`, the runner advances a "position" each tick. When
+Given a `Chase` and a `Stage`, the runner advances a "position" each tick. When
 the position crosses a step's anchor, the runner fires that step's actions:
 
   * `transition` -> spawn a Voice with a captured source state and a target.
@@ -27,7 +27,7 @@ from lightning_mcllm.core.chases import (
     Step,
     TransitionAction,
 )
-from lightning_mcllm.core.library import Show
+from lightning_mcllm.core.library import Stage
 from lightning_mcllm.engine.clock import BpmClock
 from lightning_mcllm.engine.voice import Voice
 
@@ -51,7 +51,7 @@ class FiredAction:
 @dataclass
 class ChaseRunner:
     chase: Chase
-    show: Show
+    stage: Stage
     instance_id: str
     """Unique key per running instance (e.g. 'chase:techno_basic:1')."""
 
@@ -168,16 +168,16 @@ class ChaseRunner:
 
     def _resolve_targets(self, selector, scene_name, inline_values):  # type: ignore[no-untyped-def]
         if scene_name is not None:
-            scene = self.show.scenes.get(scene_name)
+            scene = self.stage.scenes.get(scene_name)
             if scene is None:
                 log.warning("chase %r references missing scene %r", self.chase.name, scene_name)
                 return {}
-            rendered = self.show.render_scene(scene)
+            rendered = self.stage.render_scene(scene)
             # Filter to channels that belong to fixtures matching the selector
-            allowed = self.show.channels_for(selector)
+            allowed = self.stage.channels_for(selector)
             return {k: v for k, v in rendered.values.items() if k in allowed}
         if inline_values is not None:
-            return self.show.render_inline_values(selector, inline_values)
+            return self.stage.render_inline_values(selector, inline_values)
         return {}
 
 

@@ -43,46 +43,63 @@
       <button id="release-blackout-btn">Release</button>
       <button id="stop-all-btn">Stop chases</button>
     </div>
-    <div class="control-row">
-      <label>Genre</label>
-      <select id="genre-select"><option value="">— pick —</option></select>
-      <button id="genre-apply">Apply</button>
-      <span id="genre-hint" class="muted-hint"></span>
-    </div>
     <div id="errors" class="errors"></div>
   </section>
 
-  <section class="panel" id="bank-panel">
-    <h2>Bank slots</h2>
-    <div class="bank-select-row">
-      <label>Bank:</label>
-      <select id="bank-select"></select>
+  <section class="panel" id="show-panel">
+    <h2>Show <span id="play-mode-indicator" class="mode-tag" style="display:none">PLAY MODE</span></h2>
+    <div class="show-row">
+      <label>Show:</label>
+      <select id="show-select"></select>
+      <button id="show-play-btn" title="Play (start from beginning)">▶ Play</button>
+      <button id="show-pause-btn" title="Pause">⏸</button>
+      <button id="show-resume-btn" title="Resume">▶ Resume</button>
+      <button id="show-reset-btn" title="Reset (restart from beginning)">↺ Reset</button>
+      <button id="show-stop-btn" class="danger-light" title="Stop the show">■ Stop</button>
     </div>
-    <div id="slots-grid" class="slots-grid"></div>
+    <div class="show-row">
+      <button id="play-mode-toggle" class="toggle">Play Mode: OFF</button>
+      <span class="muted-hint" id="play-mode-hint">When ON, the show's keybindings drive the keyboard.</span>
+    </div>
+    <div id="show-state" class="show-state">
+      <span class="state-label">no show running</span>
+    </div>
   </section>
 
-  <section class="panel" id="show-panel">
-    <h2>Show</h2>
+  <section class="panel" id="triggers-panel">
+    <h2>Triggers</h2>
+    <div class="trigger-row">
+      <input type="text" id="trigger-filter" placeholder="filter scenes / chases…">
+      <span class="muted-hint">click = fire · click chase again = stop</span>
+    </div>
     <div class="cols">
       <div>
-        <h3>Scenes</h3>
-        <ul id="scenes-list" class="link-list"></ul>
+        <h3>Scenes <span class="count" id="scenes-count"></span></h3>
+        <ul id="scenes-list" class="scroll-list"></ul>
       </div>
       <div>
-        <h3>Chases</h3>
-        <ul id="chases-list" class="link-list"></ul>
+        <h3>Chases <span class="count" id="chases-count"></span></h3>
+        <ul id="chases-list" class="scroll-list"></ul>
       </div>
       <div>
-        <h3>Fixtures</h3>
-        <ul id="fixtures-list" class="link-list"></ul>
+        <h3>Fixtures <span class="count" id="fixtures-count"></span></h3>
+        <ul id="fixtures-list" class="scroll-list readonly"></ul>
       </div>
+    </div>
+  </section>
+
+  <section class="panel" id="banks-panel">
+    <h2>Banks</h2>
+    <div class="bank-row">
+      <select id="bank-select"></select>
+      <div id="bank-slot-row" class="bank-slot-row"></div>
     </div>
   </section>
 
   <section class="panel" id="universe-panel">
     <h2>Universe 0</h2>
     <canvas id="universe-canvas" width="1024" height="64"></canvas>
-    <div class="universe-hint">Each pixel = one DMX channel (1..512). Brightness = channel value.</div>
+    <div class="universe-hint">Each pixel-pair = one DMX channel (1..512). Brightness = channel value.</div>
   </section>
 </main>
 

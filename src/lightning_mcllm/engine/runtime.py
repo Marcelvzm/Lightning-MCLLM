@@ -27,7 +27,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from lightning_mcllm.core.banks import BlackoutSlot, ChaseSlot, ReleaseSlot, SceneSlot
-from lightning_mcllm.core.library import Show
+from lightning_mcllm.core.library import Stage
 from lightning_mcllm.core.selectors import Selector
 from lightning_mcllm.dmx.interface import UNIVERSE_SIZE, DmxInterface
 from lightning_mcllm.engine.clock import BpmClock, ClockSnapshot
@@ -37,6 +37,17 @@ from lightning_mcllm.engine.voice import Voice
 log = logging.getLogger(__name__)
 
 UNIVERSE = 0  # single-universe build for now
+
+
+def _coerce_selector(value: Any) -> Selector:
+    """Accept a Selector, a dict, or a JSON-deserialised dict from IPC and
+    return a Selector. Used at the dispatch boundary so external callers can
+    pass either form."""
+    if isinstance(value, Selector):
+        return value
+    if isinstance(value, dict):
+        return Selector.model_validate(value)
+    raise ValueError(f"cannot coerce {value!r} to Selector")
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +69,7 @@ class _Cmd:
 @dataclass
 class EngineStatus:
     running: bool
-    show_name: str | None
+    stage_name: str | None
     bpm: float
     bpm_source: str
     beat_position: float
@@ -72,6 +83,7 @@ class EngineStatus:
     last_errors: list[str]
     tick_rate_hz: float
     actual_dt_ms: float
+    show: dict[str, Any] | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -82,13 +94,13 @@ class EngineStatus:
 class Engine:
     def __init__(
         self,
-        show: Show | None,
+        stage: Stage | None,
         dmx: DmxInterface,
         clock: BpmClock,
         *,
         refresh_hz: int = 30,
     ):
-        self._show = show
+        self._stage = stage
         self._dmx = dmx
         self._clock = clock
         self._refresh_hz = refresh_hz
@@ -108,8 +120,10 @@ class Engine:
         self._last_errors: list[str] = []
         self._max_errors: int = 16
         self._actual_dt_ms: float = 0.0
-        # Lock guards self._show swap during hot reload
-        self._show_lock = threading.Lock()
+        # Lock guards self._stage swap during hot reload
+        self._stage_lock = threading.Lock()
+        # ShowRunner — at most one show at a time; None means no script active
+        self._show_runner = None  # type: ignore[var-annotated]
 
     # ----------------------------------------------------------------- lifecycle
 
@@ -128,18 +142,20 @@ class Engine:
         self._thread = None
         log.info("engine stopped")
 
-    # ------------------------------------------------------------------- show
+    # ------------------------------------------------------------------- stage
 
-    def replace_show(self, show: Show | None) -> None:
-        with self._show_lock:
-            self._show = show
-            # Drop chase runners; their show reference is stale.
+    def replace_stage(self, stage: Stage | None) -> None:
+        with self._stage_lock:
+            self._stage = stage
+            # Drop chase runners; their stage reference is stale.
             self._chase_runners.clear()
+            # Drop any active show — its action references may be stale.
+            self._show_runner = None
             # Voices keep their captured targets — they'll fade out naturally.
 
-    def show(self) -> Show | None:
-        with self._show_lock:
-            return self._show
+    def stage(self) -> Stage | None:
+        with self._stage_lock:
+            return self._stage
 
     # --------------------------------------------------------------- commands
 
@@ -149,14 +165,26 @@ class Engine:
     # ---------------------------------------------------------------- status
 
     def status(self) -> EngineStatus:
-        with self._show_lock:
-            show = self._show
-            show_name = show.name if show else None
+        with self._stage_lock:
+            stage = self._stage
+            stage_name = stage.name if stage else None
         nonzero = sum(1 for b in self._shadow if b)
         snap: ClockSnapshot = self._clock.snapshot()
+        # Show-runner state, if any
+        runner = self._show_runner
+        if runner is not None:
+            show_state = {
+                "name": runner.show_name,
+                "state": runner.state,
+                "elapsed_seconds": runner.elapsed_seconds,
+                "current_action": runner.current_action_description,
+                "waiting": runner.waiting_description,
+            }
+        else:
+            show_state = None
         return EngineStatus(
             running=self._thread is not None and self._thread.is_alive(),
-            show_name=show_name,
+            stage_name=stage_name,
             bpm=snap.bpm,
             bpm_source=snap.source,
             beat_position=snap.beat_position,
@@ -170,6 +198,7 @@ class Engine:
             last_errors=list(self._last_errors[-8:]),
             tick_rate_hz=self._refresh_hz,
             actual_dt_ms=self._actual_dt_ms,
+            show=show_state,
         )
 
     def shadow_snapshot(self) -> bytes:
@@ -194,6 +223,11 @@ class Engine:
                 self._clock.tick()
             except Exception as e:  # noqa: BLE001
                 self._record_error(f"clock tick: {e}")
+
+            try:
+                self._tick_show_runner(dt)
+            except Exception as e:  # noqa: BLE001
+                self._record_error(f"show tick: {e}")
 
             try:
                 self._tick_chase_runners(dt)
@@ -246,7 +280,12 @@ class Engine:
         if name == "snap_scene":
             self._cmd_snap_scene(a["scene"], fade=a.get("fade", 0.0))
         elif name == "blackout":
-            self._cmd_blackout(fade=a.get("fade", 0.0))
+            # With `group`, per-fixture blackout (snap selected channels to 0).
+            # Without, global blackout latch (overrides everything in render).
+            if a.get("group") is not None:
+                self._cmd_blackout_group(_coerce_selector(a["group"]), fade=a.get("fade", 0.0))
+            else:
+                self._cmd_blackout(fade=a.get("fade", 0.0))
         elif name == "release_blackout":
             self._blackout = False
             self._blackout_fade_seconds = 0.0
@@ -255,8 +294,6 @@ class Engine:
         elif name == "stop_chase":
             self._cmd_stop_chase(a["chase"])
         elif name == "stop_all_chases":
-            # Drop runners and the voices they painted — channels return to whatever
-            # earlier voices (scenes, manual snaps) were holding underneath.
             self._chase_runners.clear()
             self._voices = [v for v in self._voices if not v.key.startswith("chase:")]
         elif name == "set_master":
@@ -268,9 +305,8 @@ class Engine:
         elif name == "fire_slot":
             self._cmd_fire_slot(a["bank"], a["slot_id"])
         elif name == "set_value":
-            # Direct override — sets a single channel as a snap voice
             uni = int(a.get("universe", 0))
-            addr = int(a["address"])  # 1-512
+            addr = int(a["address"])
             val = int(a["value"])
             self._add_voice(
                 Voice(
@@ -279,25 +315,97 @@ class Engine:
                     duration=0.0,
                 )
             )
+        elif name == "set_values_group":
+            self._cmd_set_values_group(
+                _coerce_selector(a["group"]),
+                values=a["values"],
+                fade=float(a.get("fade", 0.0)),
+            )
+        elif name == "play_show":
+            self._cmd_play_show(a["show"])
+        elif name == "pause_show":
+            if self._show_runner is not None:
+                self._show_runner.pause()
+        elif name == "resume_show":
+            if self._show_runner is not None:
+                self._show_runner.resume()
+        elif name == "reset_show":
+            if self._show_runner is not None:
+                self._show_runner.reset()
+        elif name == "stop_show":
+            self._show_runner = None
+        elif name == "log":
+            self._record_error(str(a.get("message", "")))
         else:
             self._record_error(f"unknown command {name!r}")
 
     def _cmd_snap_scene(self, scene_name: str, *, fade: float = 0.0) -> None:
-        with self._show_lock:
-            show = self._show
-        if show is None:
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
             return
-        scene = show.scenes.get(scene_name)
+        scene = stage.scenes.get(scene_name)
         if scene is None:
             self._record_error(f"snap_scene: unknown scene {scene_name!r}")
             return
-        rendered = show.render_scene(scene)
+        rendered = stage.render_scene(scene)
         v = Voice(
             key=f"scene:{scene_name}",
             targets=dict(rendered.values),
             duration=max(0.0, fade),
         )
         self._add_voice(v)
+
+    def _cmd_blackout_group(self, selector: Selector, *, fade: float = 0.0) -> None:
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
+            return
+        targets = {ch: 0 for ch in stage.channels_for(selector)}
+        if not targets:
+            return
+        self._add_voice(
+            Voice(
+                key=f"blackout_group:{selector.describe()}",
+                targets=targets,
+                duration=max(0.0, fade),
+            )
+        )
+
+    def _cmd_set_values_group(
+        self, selector: Selector, *, values: dict[str, int], fade: float
+    ) -> None:
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
+            return
+        targets = stage.render_inline_values(selector, values)
+        if not targets:
+            return
+        roles_key = ",".join(sorted(values.keys()))
+        self._add_voice(
+            Voice(
+                key=f"set_values:{selector.describe()}:{roles_key}",
+                targets=targets,
+                duration=max(0.0, fade),
+            )
+        )
+
+    def _cmd_play_show(self, show_name: str) -> None:
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
+            return
+        show = stage.shows.get(show_name)
+        if show is None:
+            self._record_error(f"play_show: unknown show {show_name!r}")
+            return
+        # Lazy import to avoid circular dependency
+        from lightning_mcllm.engine.show_runner import ShowRunner
+
+        # Replace any previous runner — a fresh play resets state
+        self._show_runner = ShowRunner(show=show, engine=self, clock=self._clock)
+        self._show_runner.play()
 
     def _cmd_blackout(self, *, fade: float = 0.0) -> None:
         # Use a render-time latch instead of a voice. A voice can be overridden
@@ -310,11 +418,11 @@ class Engine:
         self._blackout_started_at = time.monotonic()
 
     def _cmd_start_chase(self, name: str) -> None:
-        with self._show_lock:
-            show = self._show
-        if show is None:
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
             return
-        chase = show.chases.get(name)
+        chase = stage.chases.get(name)
         if chase is None:
             self._record_error(f"start_chase: unknown chase {name!r}")
             return
@@ -332,7 +440,7 @@ class Engine:
                 if not any(v.key.startswith(p) for p in old_prefixes)
             ]
         self._chase_runners[instance_id] = ChaseRunner(
-            chase=chase, show=show, instance_id=instance_id
+            chase=chase, stage=stage, instance_id=instance_id
         )
 
     def _cmd_stop_chase(self, name: str) -> None:
@@ -349,11 +457,11 @@ class Engine:
             ]
 
     def _cmd_fire_slot(self, bank_name: str, slot_id: int) -> None:
-        with self._show_lock:
-            show = self._show
-        if show is None:
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
             return
-        bank = show.banks.get(bank_name)
+        bank = stage.banks.get(bank_name)
         if bank is None:
             self._record_error(f"fire_slot: unknown bank {bank_name!r}")
             return
@@ -383,11 +491,11 @@ class Engine:
         self._voices.append(voice)
 
     def _release_voices_for(self, selector: Selector) -> None:
-        with self._show_lock:
-            show = self._show
-        if show is None:
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
             return
-        affected = show.channels_for(selector)
+        affected = stage.channels_for(selector)
         # Drop voices whose targets are entirely within `affected`.
         # Voices touching other channels too are kept (rare edge case; keep simple).
         keep: list[Voice] = []
@@ -404,6 +512,49 @@ class Engine:
         # mental model of "scenes paint and stay until repainted".
         for v in self._voices:
             v.tick(dt)
+
+    def _tick_show_runner(self, dt: float) -> None:
+        if self._show_runner is None:
+            return
+        try:
+            self._show_runner.tick(dt)
+        except Exception as e:  # noqa: BLE001
+            self._record_error(f"show runner: {e}")
+            self._show_runner = None
+
+    # ----------------------------------------------------------- show helpers
+    # Used by ShowRunner to evaluate wait_chase / wait_group conditions.
+
+    def chase_loop_position(self, chase_name: str) -> tuple[float, float] | None:
+        """Return (current_position_in_loop, total_length) for a running chase
+        instance, or None if no chase by that name is active."""
+        for key, runner in self._chase_runners.items():
+            if not key.startswith(f"chase:{chase_name}:"):
+                continue
+            length = (
+                runner.chase.length_beats
+                if runner.chase.beat_anchored
+                else runner.chase.length_seconds
+            ) or 1.0
+            return runner.last_position, float(length)
+        return None
+
+    def is_transitioning_in(self, selector: Selector) -> bool:
+        """Whether any voice currently in active transition (progress < 1, duration > 0)
+        writes channels owned by `selector`. False if no such voice."""
+        with self._stage_lock:
+            stage = self._stage
+        if stage is None:
+            return False
+        affected = stage.channels_for(selector)
+        if not affected:
+            return False
+        for v in self._voices:
+            if v.duration <= 0 or v.elapsed >= v.duration:
+                continue
+            if any(k in affected for k in v.targets):
+                return True
+        return False
 
     # ---------------------------------------------------------- chase runners
 

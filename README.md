@@ -29,7 +29,7 @@ Authoring is file-based (YAML, comments preserved). LLM edits files; engine hot-
 
 ## Status
 
-Pre-alpha. Built overnight 2026-05-06. **50/50 tests green**, including a full end-to-end pipeline against a virtual Eurolite Pro on a PTY pseudo-terminal — same `pyserial` code path as production. First hardware-on-stage test is yours to run.
+Pre-alpha. Initial build overnight 2026-05-06; major Show-script refactor 2026-05-07. **68/68 tests green**, including a full end-to-end pipeline against a virtual Eurolite Pro on a PTY pseudo-terminal — same `pyserial` code path as production. First hardware-on-stage test is yours to run.
 
 ## Quickstart
 

@@ -47,12 +47,19 @@ ENGINE_OPS: tuple[str, ...] = (
     "tap",
     "fire_slot",
     "set_value",
-    # special — handled in IPC server, not Engine.submit
+    "set_values_group",
+    "play_show",
+    "pause_show",
+    "resume_show",
+    "reset_show",
+    "stop_show",
+    "log",
+    # special — handled in IPC server / web router, not via Engine.submit
     "status",
     "shadow",
     "list_environments",
     "switch_environment",
-    "list_show",
+    "list_stage",
     "reload",
 )
 

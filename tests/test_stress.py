@@ -99,7 +99,7 @@ def test_engine_survives_buggy_chase_action_loop(engine):
     assert _wait(lambda: engine.shadow_snapshot()[0] == 140)
 
 
-def test_simulator_throughput_at_full_engine_rate(show):
+def test_simulator_throughput_at_full_engine_rate(stage):
     """Run engine at 60Hz for 1.5s into a real serial PTY — simulator should
     capture every frame without protocol errors."""
     sim = EuroliteSimulator()
@@ -107,7 +107,7 @@ def test_simulator_throughput_at_full_engine_rate(show):
     iface = EnttecProInterface(sim.slave_path)
     iface.open()
     clock = BpmClock(bpm=120.0)
-    eng = Engine(show=show, dmx=iface, clock=clock, refresh_hz=60)
+    eng = Engine(stage=stage, dmx=iface, clock=clock, refresh_hz=60)
     eng.start()
     try:
         eng.submit("start_chase", chase="red_pulse")

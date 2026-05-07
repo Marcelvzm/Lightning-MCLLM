@@ -1,0 +1,74 @@
+# A minimal demo show that exercises every action type in the grammar.
+# Suitable as a "does the engine actually run scripts?" smoke check.
+#
+# Walk-through:
+#   1. snap_scene warm_idle
+#   2. wait 2 seconds
+#   3. start_chase red_pulse, wait 4 bars
+#   4. blackout for 1 beat (a punctuation cut)
+#   5. release_blackout
+#   6. start_chase mh_alternating_sweep, wait 4 bars
+#   7. set_values inline on pars (test set_values action)
+#   8. wait_chase red_pulse — wait until red_pulse completes a loop iteration
+#   9. blackout group of pars (per-group blackout, no global latch)
+#  10. small loop block: 4× snap red_pulse_on / wait 0.5s / snap red_pulse_off / wait 0.5s
+#  11. stop_all_chases, snap warm_idle, fade out
+#  12. log "done"
+#
+# Loop = false → runs once. Set loop: true to autoloop.
+
+name: techno_minimal
+description: Smoke-test show — exercises every script action exactly once.
+bpm: 128
+loop: false
+
+keybindings:
+  "1": { kind: scene, name: warm_idle,        label: "Idle" }
+  "2": { kind: chase, name: red_pulse,        label: "Red Pulse" }
+  "3": { kind: chase, name: mh_alternating_sweep, label: "MH Sweep" }
+  "4": { kind: chase, name: par_color_walk,   label: "Color Walk" }
+  "B": { kind: blackout,         label: "Blackout" }
+  "R": { kind: release_blackout, label: "Release" }
+
+script:
+  - { do: log, message: "intro" }
+  - { do: snap_scene, scene: warm_idle, fade: 0.5 }
+  - { do: wait, seconds: 2 }
+
+  - { do: log, message: "start red_pulse" }
+  - { do: start_chase, chase: red_pulse }
+  - { do: wait, bars: 4 }
+
+  - { do: log, message: "1-beat punctuation cut" }
+  - { do: blackout, fade: 0.0 }
+  - { do: wait, beats: 1 }
+  - { do: release_blackout }
+
+  - { do: start_chase, chase: mh_alternating_sweep }
+  - { do: wait, bars: 4 }
+
+  - { do: log, message: "inline set_values on pars" }
+  - { do: set_values, group: { tag: par }, values: { dimmer: 200, color/red: 50, color/green: 200, color/blue: 50, color/white: 0 }, fade: 1.5 }
+  - { do: wait, seconds: 1.5 }
+
+  - { do: log, message: "wait for red_pulse to complete a loop" }
+  - { do: wait_chase, chase: red_pulse }
+
+  - { do: log, message: "blackout pars only (group blackout, no latch)" }
+  - { do: blackout, group: { tag: par }, fade: 0.5 }
+  - { do: wait, seconds: 2 }
+
+  - do: loop
+    times: 4
+    actions:
+      - { do: snap_scene, scene: red_pulse_on }
+      - { do: wait, seconds: 0.5 }
+      - { do: snap_scene, scene: red_pulse_off }
+      - { do: wait, seconds: 0.5 }
+
+  - { do: log, message: "fade out" }
+  - { do: stop_all_chases }
+  - { do: snap_scene, scene: warm_idle, fade: 2.0 }
+  - { do: wait, seconds: 2 }
+
+  - { do: log, message: "done" }

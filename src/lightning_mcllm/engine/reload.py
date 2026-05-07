@@ -1,15 +1,15 @@
-"""Hot reload — file watcher + show rebuild without dropping the show.
+"""Hot reload — file watcher + stage rebuild without dropping the show.
 
 Strategy:
     1. `watchfiles` watches the data dir for changes.
-    2. On change, rebuild the FixtureLibrary + Show in a worker thread.
-    3. If the rebuild succeeds, atomically swap the Engine's show.
-    4. If it fails, log errors but keep running with the *previous* show.
+    2. On change, rebuild the FixtureLibrary + Stage in a worker thread.
+    3. If the rebuild succeeds, atomically swap the Engine's stage.
+    4. If it fails, log errors but keep running with the *previous* stage.
 
 The engine swap is just a reference swap. Voices that were spawned by the old
-show keep their channel targets (they're plain dicts already resolved). Active
+stage keep their channel targets (they're plain dicts already resolved). Active
 chase runners are dropped because their internal references would point at
-stale Show fields. Re-trigger chases manually after a reload, OR enable
+stale Stage fields. Re-trigger chases manually after a reload, OR enable
 `auto_resume` (default) which restarts whatever was running.
 
 This module also exposes a manual `reload()` callable for the MCP server to
@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from lightning_mcllm.config import Settings
-from lightning_mcllm.core.library import LoadIssues, Show, load_fixture_library, load_show
+from lightning_mcllm.core.library import LoadIssues, Stage, load_fixture_library, load_stage
 from lightning_mcllm.engine.runtime import Engine
 
 log = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class HotReloader:
         settings: Settings,
         environment_name: str,
         *,
-        on_reload: Callable[[Show | None, LoadIssues], None] | None = None,
+        on_reload: Callable[[Stage | None, LoadIssues], None] | None = None,
         auto_resume: bool = True,
     ):
         self._engine = engine
@@ -81,12 +81,12 @@ class HotReloader:
 
     # -------------------------------------------------------------- public ops
 
-    def reload_now(self) -> tuple[Show | None, LoadIssues]:
-        """Synchronous reload — returns the new show + issues. Used by MCP."""
+    def reload_now(self) -> tuple[Stage | None, LoadIssues]:
+        """Synchronous reload — returns the new stage + issues. Used by MCP."""
         with self._lock:
             return self._do_reload()
 
-    def switch_environment(self, name: str) -> tuple[Show | None, LoadIssues]:
+    def switch_environment(self, name: str) -> tuple[Stage | None, LoadIssues]:
         with self._lock:
             self._env_name = name
             return self._do_reload()
@@ -121,7 +121,7 @@ class HotReloader:
 
     # ---------------------------------------------------------------- reload op
 
-    def _do_reload(self) -> tuple[Show | None, LoadIssues]:
+    def _do_reload(self) -> tuple[Stage | None, LoadIssues]:
         # Capture currently-running chase names BEFORE replacing
         active = list(self._engine.status().active_chases)
         # Strip 'chase:<name>:<n>' down to <name> for re-triggering
@@ -142,16 +142,16 @@ class HotReloader:
                 self._on_reload(None, issues)
             return None, issues
 
-        show, show_issues = load_show(env_dir, lib)
+        stage, stage_issues = load_stage(env_dir, lib)
         # Compose issues
         combined = LoadIssues()
         combined.errors.extend(lib_issues.errors)
-        combined.errors.extend(show_issues.errors)
+        combined.errors.extend(stage_issues.errors)
         combined.warnings.extend(lib_issues.warnings)
-        combined.warnings.extend(show_issues.warnings)
+        combined.warnings.extend(stage_issues.warnings)
 
-        if show is None:
-            log.warning("reload failed; keeping previous show. errors:")
+        if stage is None:
+            log.warning("reload failed; keeping previous stage. errors:")
             for e in combined.errors:
                 log.warning("  %s", e)
             if self._on_reload:
@@ -159,15 +159,16 @@ class HotReloader:
             return None, combined
 
         self._gen += 1
-        self._engine.replace_show(show)
-        log.info("reload OK (gen=%d): %d fixtures, %d scenes, %d chases, %d banks",
-                 self._gen, len(show.fixtures), len(show.scenes), len(show.chases), len(show.banks))
+        self._engine.replace_stage(stage)
+        log.info("reload OK (gen=%d): %d fixtures, %d scenes, %d chases, %d banks, %d shows",
+                 self._gen, len(stage.fixtures), len(stage.scenes), len(stage.chases),
+                 len(stage.banks), len(stage.shows))
 
         if self._auto_resume:
             for chase_name in active_names:
-                if chase_name in show.chases:
+                if chase_name in stage.chases:
                     self._engine.submit("start_chase", chase=chase_name)
 
         if self._on_reload:
-            self._on_reload(show, combined)
-        return show, combined
+            self._on_reload(stage, combined)
+        return stage, combined

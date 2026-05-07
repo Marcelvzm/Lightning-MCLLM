@@ -17,11 +17,11 @@ from lightning_mcllm.engine.clock import BpmClock
 from lightning_mcllm.engine.runtime import Engine
 
 
-def test_engine_drives_simulator(show, simulator):
+def test_engine_drives_simulator(stage, simulator):
     iface = EnttecProInterface(simulator.slave_path)
     iface.open()
     clock = BpmClock(bpm=120.0)
-    eng = Engine(show=show, dmx=iface, clock=clock, refresh_hz=30)
+    eng = Engine(stage=stage, dmx=iface, clock=clock, refresh_hz=30)
     eng.start()
     try:
         eng.submit("snap_scene", scene="warm_idle")
@@ -41,7 +41,7 @@ def test_engine_drives_simulator(show, simulator):
         iface.close()
 
 
-def test_engine_continues_when_simulator_dies_mid_stream(show):
+def test_engine_continues_when_simulator_dies_mid_stream(stage):
     """Engine + driver must not crash when the underlying serial endpoint goes away."""
     sim = EuroliteSimulator()
     sim.start()
@@ -49,7 +49,7 @@ def test_engine_continues_when_simulator_dies_mid_stream(show):
         iface = EnttecProInterface(sim.slave_path, reconnect_delay=0.05)
         iface.open()
         clock = BpmClock(bpm=120.0)
-        eng = Engine(show=show, dmx=iface, clock=clock, refresh_hz=30)
+        eng = Engine(stage=stage, dmx=iface, clock=clock, refresh_hz=30)
         eng.start()
         try:
             eng.submit("snap_scene", scene="warm_idle")

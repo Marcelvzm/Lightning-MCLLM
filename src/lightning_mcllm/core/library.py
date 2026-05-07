@@ -1,12 +1,17 @@
-"""Loaders + the runtime `Show` aggregate.
+"""Loaders + the runtime `Stage` aggregate.
 
-`FixtureLibrary` indexes the global fixture profiles. `Show` joins one
-environment's manifest with its scenes/chases/banks, validates cross-references,
-and exposes lookups the engine needs (resolve scene, fixture by name, etc.).
+`FixtureLibrary` indexes the global fixture profiles. `Stage` joins one
+environment's manifest with its scenes/chases/banks/shows, validates
+cross-references, and exposes lookups the engine needs (resolve scene,
+fixture by name, etc.).
 
 Validation strategy: collect *all* errors during load instead of failing on the
-first. The engine should never silently accept a broken show, but the user/LLM
+first. The engine should never silently accept a broken stage, but the user/LLM
 needs the full list to fix the YAML quickly.
+
+Naming: `Stage` is what's loaded into the engine at runtime — the union of
+environment manifest + scenes + chases + banks + shows. `Show` (separate
+module `core.shows`) is one *scripted choreography* that runs ON the stage.
 """
 
 from __future__ import annotations
@@ -22,7 +27,6 @@ from lightning_mcllm.core.banks import Bank
 from lightning_mcllm.core.chases import Chase, ReleaseAction, SnapAction, TransitionAction
 from lightning_mcllm.core.environments import EnvironmentManifest
 from lightning_mcllm.core.fixtures import FixtureInstance, FixtureProfile
-from lightning_mcllm.core.genres import GenreList, GenrePreset
 from lightning_mcllm.core.scenes import RenderedScene, Scene
 from lightning_mcllm.core.selectors import Selector, resolve as selector_resolve
 from lightning_mcllm.yaml_io import load_data
@@ -112,13 +116,19 @@ def load_fixture_library(directory: Path) -> tuple[FixtureLibrary, LoadIssues]:
 
 
 # ---------------------------------------------------------------------------
-# Show — environment + scenes + chases + banks, joined with library
+# Stage — environment + scenes + chases + banks + shows, joined with library
 # ---------------------------------------------------------------------------
 
 
 @dataclass
-class Show:
-    """Everything the engine needs to run one environment."""
+class Stage:
+    """Everything the engine needs to run one environment.
+
+    "Stage" is the loaded runtime composite. It bundles fixture instances,
+    scenes, chases, banks and shows into one object the engine ticks against.
+    A `Show` (see core.shows) is one *scripted choreography* that runs on a
+    stage — it lives in `Stage.shows`.
+    """
 
     library: FixtureLibrary
     manifest: EnvironmentManifest
@@ -127,7 +137,7 @@ class Show:
     chases: dict[str, Chase]
     banks: dict[str, Bank]
     env_dir: Path
-    genres: dict[str, GenrePreset] = field(default_factory=dict)
+    shows: dict[str, "Show"] = field(default_factory=dict)
 
     @property
     def name(self) -> str:
@@ -143,7 +153,7 @@ class Show:
         return selector_resolve(selector, self.fixtures)
 
     def render_scene(self, scene: Scene) -> RenderedScene:
-        """Resolve a scene against this show's fixtures into (universe, addr) -> value."""
+        """Resolve a scene against this stage's fixtures into (universe, addr) -> value."""
         out: dict[tuple[int, int], int] = {}
         for target in scene.targets:
             matches = selector_resolve(target.select, self.fixtures)
@@ -165,7 +175,6 @@ class Show:
                         offset = profile.role_to_offset(role)
                         if offset is None:
                             continue
-                        # Find the channel and look up its presets
                         ch = next((c for c in profile.channels if c.role == role), None)
                         if ch is None or not ch.presets or preset_name not in ch.presets:
                             log.warning("scene %r: preset %r not found for role %r on profile %r",
@@ -203,19 +212,25 @@ class Show:
 
 
 # ---------------------------------------------------------------------------
-# Environment loader
+# Stage loader
 # ---------------------------------------------------------------------------
 
 
-def load_show(env_dir: Path, library: FixtureLibrary) -> tuple[Show | None, LoadIssues]:
-    """Load an environment directory into a runtime Show.
+def load_stage(env_dir: Path, library: FixtureLibrary) -> tuple[Stage | None, LoadIssues]:
+    """Load an environment directory into a runtime Stage.
 
     Layout:
         env_dir/environment.yaml
         env_dir/scenes/*.yaml
         env_dir/chases/*.yaml
         env_dir/banks/*.yaml
+        env_dir/shows/*.yaml         (optional)
     """
+    # Late import to avoid circular dependency (core.shows imports nothing
+    # from this module, but we don't want core.library importing shows at
+    # module load time when bootstrapping fresh code).
+    from lightning_mcllm.core.shows import Show, validate_show_against_stage
+
     issues = LoadIssues()
 
     manifest_path = env_dir / "environment.yaml"
@@ -296,7 +311,6 @@ def load_show(env_dir: Path, library: FixtureLibrary) -> tuple[Show | None, Load
         if chase.name in chases:
             issues.errors.append(f"{path}: chase {chase.name!r} already defined")
             continue
-        # Validate scene references
         for i, step in enumerate(chase.steps):
             for j, action in enumerate(step.actions):
                 if isinstance(action, (TransitionAction, SnapAction)):
@@ -305,7 +319,7 @@ def load_show(env_dir: Path, library: FixtureLibrary) -> tuple[Show | None, Load
                             f"{path}: step {i} action {j} references unknown scene {action.scene!r}"
                         )
                 if isinstance(action, ReleaseAction):
-                    pass  # nothing to validate
+                    pass
         chases[chase.name] = chase
 
     # Load banks
@@ -325,7 +339,6 @@ def load_show(env_dir: Path, library: FixtureLibrary) -> tuple[Show | None, Load
         if bank.name in banks:
             issues.errors.append(f"{path}: bank {bank.name!r} already defined")
             continue
-        # Validate slot references
         from lightning_mcllm.core.banks import ChaseSlot, SceneSlot
         for slot in bank.slots:
             if isinstance(slot, SceneSlot) and slot.name not in scenes:
@@ -343,40 +356,33 @@ def load_show(env_dir: Path, library: FixtureLibrary) -> tuple[Show | None, Load
             f"environment {manifest.name!r}: default_bank {manifest.default_bank!r} not found"
         )
 
-    # Genres (optional)
-    genres: dict[str, GenrePreset] = {}
-    genres_path = env_dir / "genres.yaml"
-    if genres_path.exists():
+    # Load shows (scripted choreographies)
+    shows: dict[str, Show] = {}
+    shows_dir = env_dir / "shows"
+    for path in _iter_yaml_files(shows_dir):
         try:
-            data = load_data(genres_path) or {}
-            gl = GenreList.model_validate(data)
-            for g in gl.genres:
-                if g.name in genres:
-                    issues.errors.append(f"{genres_path}: duplicate genre {g.name!r}")
-                    continue
-                # Validate references
-                if g.lead_chase is not None and g.lead_chase not in chases:
-                    issues.warnings.append(
-                        f"{genres_path}: genre {g.name!r} lead_chase {g.lead_chase!r} not found"
-                    )
-                for ch in g.recommended_chases:
-                    if ch not in chases:
-                        issues.warnings.append(
-                            f"{genres_path}: genre {g.name!r} recommends unknown chase {ch!r}"
-                        )
-                for sc in g.recommended_scenes:
-                    if sc not in scenes:
-                        issues.warnings.append(
-                            f"{genres_path}: genre {g.name!r} recommends unknown scene {sc!r}"
-                        )
-                genres[g.name] = g
+            data = load_data(path)
+            if data is None:
+                continue
+            show = Show.model_validate(data)
+        except ValidationError as e:
+            issues.errors.append(_format_validation_error(path, e))
+            continue
         except Exception as e:  # noqa: BLE001
-            issues.errors.append(f"{genres_path}: {e}")
+            issues.errors.append(f"{path}: {e}")
+            continue
+        if show.name in shows:
+            issues.errors.append(f"{path}: show {show.name!r} already defined")
+            continue
+        # Cross-reference validate against the stage we've built so far
+        for warn in validate_show_against_stage(show, scenes, chases, banks):
+            issues.warnings.append(f"{path}: {warn}")
+        shows[show.name] = show
 
     if issues.errors:
         return None, issues
 
-    show = Show(
+    stage = Stage(
         library=library,
         manifest=manifest,
         fixtures=valid_fixtures,
@@ -384,9 +390,13 @@ def load_show(env_dir: Path, library: FixtureLibrary) -> tuple[Show | None, Load
         chases=chases,
         banks=banks,
         env_dir=env_dir,
-        genres=genres,
+        shows=shows,
     )
-    return show, issues
+    return stage, issues
+
+
+# Backward-compat alias for any caller still using the old name.
+load_show = load_stage
 
 
 def list_environments(envs_dir: Path) -> list[str]:

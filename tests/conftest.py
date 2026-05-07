@@ -10,7 +10,7 @@ from typing import Iterator
 import pytest
 
 from lightning_mcllm.config import Paths, Settings
-from lightning_mcllm.core.library import load_fixture_library, load_show
+from lightning_mcllm.core.library import load_fixture_library, load_stage
 from lightning_mcllm.dmx.null import NullInterface
 from lightning_mcllm.dmx.simulator import EuroliteSimulator
 from lightning_mcllm.engine.clock import BpmClock
@@ -33,10 +33,10 @@ def settings(tmp_data_dir: Path, tmp_path: Path) -> Settings:
 
 
 @pytest.fixture()
-def show(settings: Settings):
+def stage(settings: Settings):
     lib, _ = load_fixture_library(settings.paths.fixture_library)
-    s, issues = load_show(settings.paths.environments / "default", lib)
-    assert s is not None, f"failed to load default show: {issues.errors}"
+    s, issues = load_stage(settings.paths.environments / "default", lib)
+    assert s is not None, f"failed to load default stage: {issues.errors}"
     return s
 
 
@@ -49,9 +49,9 @@ def null_dmx() -> Iterator[NullInterface]:
 
 
 @pytest.fixture()
-def engine(show, null_dmx) -> Iterator[Engine]:
+def engine(stage, null_dmx) -> Iterator[Engine]:
     clock = BpmClock(bpm=120.0)
-    eng = Engine(show=show, dmx=null_dmx, clock=clock, refresh_hz=60)
+    eng = Engine(stage=stage, dmx=null_dmx, clock=clock, refresh_hz=60)
     eng.start()
     # Let the loop warm up
     time.sleep(0.05)

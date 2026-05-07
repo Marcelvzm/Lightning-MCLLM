@@ -30,12 +30,12 @@ def _engine_status_to_dict(engine: Engine) -> dict[str, Any]:
 
 
 def _show_summary(engine: Engine) -> dict[str, Any]:
-    show = engine.show()
-    if show is None:
+    stage = engine.stage()
+    if stage is None:
         return {"loaded": False}
     return {
         "loaded": True,
-        "name": show.name,
+        "name": stage.name,
         "fixtures": [
             {
                 "name": f.name,
@@ -43,11 +43,11 @@ def _show_summary(engine: Engine) -> dict[str, Any]:
                 "address": f.address,
                 "universe": f.universe,
                 "tags": list(f.tags),
-                "footprint": (show.library.get(f.profile).footprint if show.library.get(f.profile) else 0),
+                "footprint": (stage.library.get(f.profile).footprint if stage.library.get(f.profile) else 0),
             }
-            for f in show.fixtures
+            for f in stage.fixtures
         ],
-        "scenes": sorted(show.scenes.keys()),
+        "scenes": sorted(stage.scenes.keys()),
         "chases": [
             {
                 "name": c.name,
@@ -56,7 +56,7 @@ def _show_summary(engine: Engine) -> dict[str, Any]:
                 "length_seconds": c.length_seconds,
                 "step_count": len(c.steps),
             }
-            for c in show.chases.values()
+            for c in stage.chases.values()
         ],
         "banks": [
             {
@@ -66,7 +66,7 @@ def _show_summary(engine: Engine) -> dict[str, Any]:
                     for s in b.slots
                 ],
             }
-            for b in show.banks.values()
+            for b in stage.banks.values()
         ],
     }
 
