@@ -333,7 +333,17 @@ class Engine:
             if self._show_runner is not None:
                 self._show_runner.reset()
         elif name == "stop_show":
+            # Drop the runner AND everything it spawned. Just nulling the
+            # runner left chase voices ticking forever — confusing UX (user
+            # presses Stop, nothing visible changes). Stop chases + release
+            # blackout latch + drop the runner. Scene voices are left
+            # alone so the last snapped state stays visible until the user
+            # explicitly blackouts.
             self._show_runner = None
+            self._chase_runners.clear()
+            self._voices = [v for v in self._voices if not v.key.startswith("chase:")]
+            self._blackout = False
+            self._blackout_fade_seconds = 0.0
         elif name == "log":
             self._record_error(str(a.get("message", "")))
         else:
