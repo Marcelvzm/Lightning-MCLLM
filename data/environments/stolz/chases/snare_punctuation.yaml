@@ -1,0 +1,16 @@
+# Flash auf Beat 2 und 4 — Snare-Position. Gibt der Show das
+# Drum'n'Bass-typische "Snare-Akzent"-Gefühl ohne 4OTF-Pulse.
+# Bar bleibt unangetastet.
+name: snare_punctuation
+description: White flash auf Snare-Position (Beat 2 + 4).
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 1.0
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_white_full }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0, dimmer: 0 }, fade_seconds: 0.2 }
+  - at_beat: 3.0
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_white_full }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0, dimmer: 0 }, fade_seconds: 0.2 }

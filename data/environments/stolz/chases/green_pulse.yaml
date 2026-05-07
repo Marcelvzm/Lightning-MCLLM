@@ -1,0 +1,21 @@
+name: green_pulse
+description: 4OTF grün pulse auf Pars.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_green_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 0, color/green: 50, color/blue: 0, dimmer: 30 }, fade_seconds: 0.4 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_green_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 0, color/green: 50, color/blue: 0, dimmer: 30 }, fade_seconds: 0.4 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_green_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 0, color/green: 50, color/blue: 0, dimmer: 30 }, fade_seconds: 0.4 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_green_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 0, color/green: 50, color/blue: 0, dimmer: 30 }, fade_seconds: 0.4 }

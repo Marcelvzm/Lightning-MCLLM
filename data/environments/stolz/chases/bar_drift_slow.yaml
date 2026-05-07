@@ -1,0 +1,22 @@
+# Bar driftet langsam durch alle 5 Waypoints. 40-Beat-Loop.
+# Color/Dim wird NICHT gesetzt — die Heads behalten was sie aktuell haben.
+name: bar_drift_slow
+description: Bar driftet langsam durch 5 Movement-Waypoints (40 Beats).
+loop: true
+length_beats: 40
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_a, fade_seconds: 6.0, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_b, fade_seconds: 6.0, easing: ease_in_out }
+  - at_beat: 16
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_c, fade_seconds: 6.0, easing: ease_in_out }
+  - at_beat: 24
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_d, fade_seconds: 6.0, easing: ease_in_out }
+  - at_beat: 32
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_e, fade_seconds: 6.0, easing: ease_in_out }

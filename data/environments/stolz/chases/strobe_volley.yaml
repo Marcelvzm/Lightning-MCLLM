@@ -1,0 +1,17 @@
+# 4-Bar Strobe-Volley — kurzer aggressiver Burst. loop=false damit nach
+# Stop-Trigger das Strobe wegfällt.
+name: strobe_volley
+description: 4-Bar full-strobe burst (16 Beats). loop=false.
+loop: false
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - kind: snap
+        group: { tag: par }
+        values: { color/white: 255, dimmer: 255, strobe: 220 }
+  - at_beat: 15
+    actions:
+      - kind: snap
+        group: { tag: par }
+        values: { color/white: 0, strobe: 0, dimmer: 0 }

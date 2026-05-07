@@ -1,0 +1,40 @@
+# Wie mh_drift_blinks aber dauerhaft blau (statt parametrisiert).
+# Für Slot-Aufrufe ohne Args.
+name: mh_random_blinks_blue
+description: Bar Drift + asymmetrische white-blinks, baseline blau.
+loop: true
+length_beats: 24
+steps:
+  - at_beat: 0
+    actions:
+      - kind: snap
+        group: { tag: bar }
+        values: { color/wheel: 34, dimmer: 100, gobo/wheel: 0, strobe: 0 }
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_a, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_b, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 16
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_c, fade_seconds: 3.5, easing: ease_in_out }
+  # Per-head blinks
+  - at_beat: 1.3
+    actions:
+      - { kind: snap,       group: { name: head-1 }, values: { color/wheel: 0, dimmer: 255 } }
+      - { kind: transition, group: { name: head-1 }, values: { color/wheel: 34, dimmer: 100 }, fade_seconds: 0.15 }
+  - at_beat: 5.7
+    actions:
+      - { kind: snap,       group: { name: head-2 }, values: { color/wheel: 0, dimmer: 255 } }
+      - { kind: transition, group: { name: head-2 }, values: { color/wheel: 34, dimmer: 100 }, fade_seconds: 0.18 }
+  - at_beat: 11.9
+    actions:
+      - { kind: snap,       group: { name: head-3 }, values: { color/wheel: 0, dimmer: 255 } }
+      - { kind: transition, group: { name: head-3 }, values: { color/wheel: 34, dimmer: 100 }, fade_seconds: 0.20 }
+  - at_beat: 17.3
+    actions:
+      - { kind: snap,       group: { name: head-4 }, values: { color/wheel: 0, dimmer: 255 } }
+      - { kind: transition, group: { name: head-4 }, values: { color/wheel: 34, dimmer: 100 }, fade_seconds: 0.16 }
+  - at_beat: 21.8
+    actions:
+      - { kind: snap,       group: { name: head-1 }, values: { color/wheel: 0, dimmer: 255 } }
+      - { kind: transition, group: { name: head-1 }, values: { color/wheel: 34, dimmer: 100 }, fade_seconds: 0.15 }

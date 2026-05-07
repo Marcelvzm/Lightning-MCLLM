@@ -1,0 +1,17 @@
+name: bar_color_walk
+description: Bar-Heads walken über 16 Beats durch 4 Color-Wheel-Positionen.
+loop: true
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_red, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_blue, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_green, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 12
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_white, fade_seconds: 3.5, easing: ease_in_out }

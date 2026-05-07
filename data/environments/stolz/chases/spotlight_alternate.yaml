@@ -1,0 +1,15 @@
+# Wechselnder Spot zwischen den beiden äußeren Heads — left ↔ right.
+# Jeder Wechsel auf 2 Beats für Drama.
+name: spotlight_alternate
+description: Spotlight wechselt zwischen head-1 (links) und head-4 (rechts).
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: bar },     values: { dimmer: 0 } }
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 255 } }
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 255 } }

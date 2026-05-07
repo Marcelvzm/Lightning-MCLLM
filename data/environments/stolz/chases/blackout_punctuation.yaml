@@ -1,0 +1,72 @@
+# Pars und Bar pulsen normal, aber alle 16 Beats (= jede 4 Bars) kommt
+# ein 1-Beat-Blackout als Punctuation. Das "Hardtekk-Cut".
+name: blackout_punctuation
+description: Pars+Bar pulse + Blackout-Cut alle 16 Beats.
+loop: true
+length_beats: 16
+steps:
+  # Pars 4OTF rot
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 4
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 5
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 6
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 7
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 8
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 9
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 10
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 11
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 12
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 13
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 14
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  # 1-Beat-Cut auf Beat 15 — alle Pars dunkel als Vorbereitung des Loops
+  - at_beat: 15
+    actions:
+      - { kind: snap, group: { tag: par }, values: { dimmer: 0 } }

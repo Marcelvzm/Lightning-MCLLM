@@ -1,0 +1,24 @@
+# Quarter-Beat Strobe — alle 1/4 Beat snap-then-fade. Wirkt wie ein
+# kontrollierter Hardware-Strobe ohne den ch5-Strobe-Channel zu nutzen
+# (volle Kontrolle über Color + Timing).
+name: quarter_strobe_loop
+description: Quarter-Beat Manual-Strobe via snap+fade.
+loop: true
+length_beats: 1
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_white_full }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0, dimmer: 0 }, fade_seconds: 0.05 }
+  - at_beat: 0.25
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_white_full }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0, dimmer: 0 }, fade_seconds: 0.05 }
+  - at_beat: 0.5
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_white_full }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0, dimmer: 0 }, fade_seconds: 0.05 }
+  - at_beat: 0.75
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_white_full }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0, dimmer: 0 }, fade_seconds: 0.05 }

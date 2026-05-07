@@ -1,0 +1,19 @@
+# RX350 (effect-bar) wechselt durch LED-Gruppen-Farben (2CH-Mode).
+# Schneller Color-Switch — wirkt aufgeregt.
+name: effect_color_chase
+description: RX350 wechselt LED-Farben (2CH macro values).
+loop: true
+length_beats: 8
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 11, strobe: 0 } }   # rot
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 34, strobe: 0 } }   # gruen
+  - at_beat: 4
+    actions:
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 57, strobe: 0 } }   # blau
+  - at_beat: 6
+    actions:
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 80, strobe: 0 } }   # gelb

@@ -1,0 +1,18 @@
+# Schnellere Variante — alle 4 Beats neuer Waypoint, kürzere Fades.
+name: bar_drift_fast
+description: Bar driftet schnell durch Waypoints (16 Beats Loop).
+loop: true
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_a, fade_seconds: 1.5, easing: ease_in_out }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_c, fade_seconds: 1.5, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_e, fade_seconds: 1.5, easing: ease_in_out }
+  - at_beat: 12
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_d, fade_seconds: 1.5, easing: ease_in_out }

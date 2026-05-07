@@ -1,0 +1,24 @@
+# Erst Inner-Heads pulsen, dann Outer. Räumlich wachsendes Bild.
+name: inner_outer_pulse
+description: Inner-Heads pulsen, dann Outer — wachsende räumliche Präsenz.
+loop: true
+length_beats: 8
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: bar },   values: { dimmer: 0 } }
+      - { kind: snap,       group: { tag: inner }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: inner }, values: { dimmer: 60 }, fade_seconds: 0.6 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: inner }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: inner }, values: { dimmer: 60 }, fade_seconds: 0.6 }
+  - at_beat: 4
+    actions:
+      - { kind: snap,       group: { tag: inner }, values: { dimmer: 0 } }
+      - { kind: snap,       group: { tag: outer }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: outer }, values: { dimmer: 60 }, fade_seconds: 0.6 }
+  - at_beat: 6
+    actions:
+      - { kind: snap,       group: { tag: outer }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: outer }, values: { dimmer: 60 }, fade_seconds: 0.6 }

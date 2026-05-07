@@ -1,0 +1,38 @@
+# Double-time pulse — alle 0.5 Beats. Hardstyle / Hardcore feel.
+name: double_time_pulse
+description: Pars pulsen alle halbe Beats — double-time feel.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }
+  - at_beat: 0.5
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }
+  - at_beat: 1.5
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }
+  - at_beat: 2.5
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }
+  - at_beat: 3.5
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.2 }

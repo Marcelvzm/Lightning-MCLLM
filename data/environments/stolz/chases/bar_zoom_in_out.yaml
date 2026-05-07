@@ -1,0 +1,13 @@
+# Bar konvergiert und divergiert rhythmisch — "atmender Raum".
+# Ist ein 8-Beat-Loop: 4 Beat zoom in (zu mh_walk_d), 4 Beat zoom out (mh_walk_e).
+name: bar_zoom_in_out
+description: Bar konvergiert (mh_walk_d) und divergiert (mh_walk_e) rhythmisch.
+loop: true
+length_beats: 8
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_d, fade_seconds: 1.5, easing: ease_in_out }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_e, fade_seconds: 1.5, easing: ease_in_out }

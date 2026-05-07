@@ -1,0 +1,19 @@
+# Slow time-anchored fade-in — Pars von dunkel zu warm über 30 Sek.
+# Klassisches "show begins"-Opener. loop=false.
+name: intro_fade_in
+description: 30-Sekunden Fade-In to warm atmo. loop=false.
+loop: false
+length_seconds: 30
+steps:
+  - at_seconds: 0
+    actions:
+      - kind: snap
+        group: { tag: par }
+        values: { color/red: 0, color/green: 0, color/blue: 0, dimmer: 0 }
+  - at_seconds: 1
+    actions:
+      - kind: transition
+        group: { tag: par }
+        values: { color/red: 200, color/green: 80, color/blue: 20, color/white: 60, dimmer: 80 }
+        fade_seconds: 28.0
+        easing: ease_in_out

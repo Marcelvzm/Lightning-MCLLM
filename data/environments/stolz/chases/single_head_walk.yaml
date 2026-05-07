@@ -1,0 +1,25 @@
+# Eine Lampe nach der anderen — head-1 → head-2 → head-3 → head-4 →
+# wiederholt. Klassischer "lighthouse"-Effekt.
+name: single_head_walk
+description: Single head walk — eine Lampe nach der anderen, je 1 Beat.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 0 } }
+  - at_beat: 1
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 255 } }
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 255 } }
+  - at_beat: 3
+    actions:
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 255 } }

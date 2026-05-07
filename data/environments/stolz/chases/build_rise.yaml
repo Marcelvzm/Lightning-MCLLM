@@ -1,0 +1,27 @@
+# 16-Beat Build — Pars-Dimmer rampt von 0 bis 255 über 4 Bars,
+# gleichzeitig wird Color saturierter. Endet auf voll Bright.
+name: build_rise
+description: 4-Bar build — Pars dimmen von 0 hoch + Color sättigt.
+loop: false
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - kind: transition
+        group: { tag: par }
+        values: { color/red: 80, color/green: 0, color/blue: 0, dimmer: 0 }
+        fade_seconds: 0.1
+  - at_beat: 8
+    actions:
+      - kind: transition
+        group: { tag: par }
+        values: { color/red: 200, color/green: 0, color/blue: 0, dimmer: 150 }
+        fade_seconds: 4.0
+        easing: ease_in
+  - at_beat: 15
+    actions:
+      - kind: transition
+        group: { tag: par }
+        values: { color/red: 255, color/green: 0, color/blue: 0, dimmer: 255 }
+        fade_seconds: 3.5
+        easing: ease_in

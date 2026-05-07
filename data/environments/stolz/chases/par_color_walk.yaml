@@ -1,0 +1,19 @@
+# Pars laufen über 16 Bars durch 4 Farben — gibt der Show eine Farbreise
+# ohne aktiv etwas zu triggern. Klassisch in Liquid-DnB / Ambient.
+name: par_color_walk
+description: Pars walken über 16 Beats durch rot → blau → grün → warm.
+loop: true
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_red_full, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_blue_full, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_green_full, fade_seconds: 3.5, easing: ease_in_out }
+  - at_beat: 12
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_amber_full, fade_seconds: 3.5, easing: ease_in_out }

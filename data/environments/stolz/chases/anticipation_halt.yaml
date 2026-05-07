@@ -1,0 +1,16 @@
+# Z1-Pattern als loop=false-Chase. 2 Bars (8 Beats) Bar-Heads in
+# einer Farbe einfrieren, dann am Ende wieder freigeben für den nächsten
+# Chase.
+name: anticipation_halt
+description: 2-Bar anticipation halt — Bar in einer Farbe gefroren. loop=false.
+loop: false
+length_beats: 8
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: bar }, scene: bar_anticipation_red }
+      - { kind: snap, group: { tag: par }, scene: pars_red_full }
+  - at_beat: 7.5
+    actions:
+      # Kurz vor Ende fällt der "Halt" — Bar dunkel als Vorbereitung für Drop
+      - { kind: snap, group: { tag: bar }, scene: bar_park_center }

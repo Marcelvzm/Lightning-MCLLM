@@ -1,0 +1,29 @@
+# Rap-Style: Background bleibt rot wash, gelegentliche white-flashes
+# als Punctuation für Punchlines. Lange Loop-Zyklen (8 bars) mit
+# unregelmäßigen flashes — wirkt wie pre-cued Punchline-Anziechen.
+name: rap_punctuation
+description: Rap-Style — red wash + sparse white punchline flashes.
+loop: true
+length_beats: 32
+steps:
+  # Background: rot wash, langsamer Atmer-Cycle
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: par }, values: { color/red: 220, color/green: 30, color/blue: 0, dimmer: 80 } }
+  # White punctuation flashes auf "Punchline-typischen" Positionen
+  - at_beat: 6
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/red: 220, color/green: 30, color/blue: 0, color/white: 0, dimmer: 80 }, fade_seconds: 0.3 }
+  - at_beat: 14
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/red: 220, color/green: 30, color/blue: 0, color/white: 0, dimmer: 80 }, fade_seconds: 0.3 }
+  - at_beat: 22
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/red: 220, color/green: 30, color/blue: 0, color/white: 0, dimmer: 80 }, fade_seconds: 0.3 }
+  - at_beat: 30
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/red: 220, color/green: 30, color/blue: 0, color/white: 0, dimmer: 80 }, fade_seconds: 0.3 }

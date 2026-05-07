@@ -1,0 +1,17 @@
+# Schach-Pattern auf den Cameos: cameo-1 + cameo-3 alternieren mit
+# cameo-2 (= mittleres). Quirky punctuation effect.
+name: checker_pulse
+description: Schach-Pattern auf den 3 Cameos.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { color/red: 255, color/green: 0, color/blue: 0, effect/macro: 10, dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { color/red: 255, color/green: 0, color/blue: 0, effect/macro: 10, dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 0 } }
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 0 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { color/red: 255, color/green: 0, color/blue: 0, effect/macro: 10, dimmer: 255 } }

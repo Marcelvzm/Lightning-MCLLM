@@ -1,0 +1,19 @@
+# Time-anchored — unabhängig von BPM. Eine Farbreise über 60 Sekunden.
+# Klassisch in Ambient/Downtempo wo es keinen Beat gibt.
+name: ambient_color_drift
+description: Time-anchored color drift über 60s.
+loop: true
+length_seconds: 60
+steps:
+  - at_seconds: 0
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_amber_full, fade_seconds: 15.0, easing: ease_in_out }
+  - at_seconds: 15
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_red_full,   fade_seconds: 15.0, easing: ease_in_out }
+  - at_seconds: 30
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_blue_full,  fade_seconds: 15.0, easing: ease_in_out }
+  - at_seconds: 45
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_green_full, fade_seconds: 15.0, easing: ease_in_out }

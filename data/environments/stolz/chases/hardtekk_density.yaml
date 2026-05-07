@@ -1,0 +1,46 @@
+# Hardtekk: weisser Kick-Stamp + occasional white hits + Bar-Sweeps.
+# Auf jedem Beat ein white pulse, plus auf Beat 4.5 (lift) ein full-rig
+# white snap.
+name: hardtekk_density
+description: Hardtekk pulse + white-hit lift + bar sweeps.
+loop: true
+length_beats: 8
+steps:
+  # Per-Beat white kick stamp (8x über den Loop)
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  - at_beat: 4
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  - at_beat: 5
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  - at_beat: 6
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  - at_beat: 7
+    actions:
+      - { kind: snap,       group: { tag: par }, values: { color/white: 255, dimmer: 255 } }
+      - { kind: transition, group: { tag: par }, values: { color/white: 0,   dimmer: 50 },  fade_seconds: 0.2 }
+  # Lift-Akzent auf 7.5 — extra weiß-Hit auf der gesamten Bühne
+  - at_beat: 7.5
+    actions:
+      - { kind: snap,       group: { tag: bar }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 100 }, fade_seconds: 0.4 }

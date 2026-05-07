@@ -1,0 +1,23 @@
+# Bar-Heads pulsen auf jedem Kick (= jedem Beat). Pars unberührt — die
+# können separat eine andere Voice fahren.
+name: kick_pulse_bar
+description: Bar pulse auf jedem Beat (Kick). 4OTF auf der Bar.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: bar }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 80 }, fade_seconds: 0.4 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: bar }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 80 }, fade_seconds: 0.4 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: bar }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 80 }, fade_seconds: 0.4 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: bar }, values: { dimmer: 255 } }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 80 }, fade_seconds: 0.4 }

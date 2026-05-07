@@ -1,0 +1,15 @@
+# Post-Drop Calm — pars + bar fade slowly to a warm low atmo over 4 bars.
+# Reset-Phase nach einem Peak. loop=false.
+name: post_drop_calm
+description: 4-Bar fade to warm idle atmo. loop=false.
+loop: false
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_amber_full, fade_seconds: 5.0, easing: ease_in_out }
+      - { kind: transition, group: { tag: bar }, values: { color/wheel: 144, dimmer: 80, gobo/wheel: 0, strobe: 0 }, fade_seconds: 5.0, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: par }, values: { color/red: 80, color/green: 30, color/blue: 0, dimmer: 30 }, fade_seconds: 4.0, easing: ease_in_out }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 30 }, fade_seconds: 4.0, easing: ease_in_out }

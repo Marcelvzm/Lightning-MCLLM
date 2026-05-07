@@ -1,0 +1,19 @@
+# Schnelle Color-Sprünge auf den Pars — jeder Beat eine andere Farbe.
+# Hardstyle-/Hardcore-Drop-Variant.
+name: fast_color_jump
+description: Color jump auf jeder Beat — aggressiver Mode-Wechsel.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_red_full }
+  - at_beat: 1
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_blue_full }
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_white_full }
+  - at_beat: 3
+    actions:
+      - { kind: snap, group: { tag: par }, scene: pars_green_full }

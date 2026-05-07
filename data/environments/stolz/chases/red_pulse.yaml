@@ -1,0 +1,25 @@
+# Klassischer 4-on-the-floor red pulse auf den Pars.
+# Snap auf full red bei jedem Beat, fade zu dim red über 0.4s.
+# Voice-Mechanik: snap+transition im selben Step → der Engine erfasst den
+# Post-Snap-Wert als Source der Transition (siehe program.md §13).
+name: red_pulse
+description: 4OTF rot pulse auf Pars.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.4 }

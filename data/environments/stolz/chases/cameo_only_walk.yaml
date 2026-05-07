@@ -1,0 +1,34 @@
+# Nur die 3 Cameos walken durch Farben — Bar und Showtecs unberührt.
+name: cameo_only_walk
+description: Nur Cameos durch Farben walken (16 Beats).
+loop: true
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - kind: transition
+        group: { tag: cameo }
+        values: { color/red: 255, color/green: 0, color/blue: 0, dimmer: 220, effect/macro: 10 }
+        fade_seconds: 3.5
+        easing: ease_in_out
+  - at_beat: 4
+    actions:
+      - kind: transition
+        group: { tag: cameo }
+        values: { color/red: 0, color/green: 255, color/blue: 0, dimmer: 220, effect/macro: 21 }
+        fade_seconds: 3.5
+        easing: ease_in_out
+  - at_beat: 8
+    actions:
+      - kind: transition
+        group: { tag: cameo }
+        values: { color/red: 0, color/green: 0, color/blue: 255, dimmer: 220, effect/macro: 32 }
+        fade_seconds: 3.5
+        easing: ease_in_out
+  - at_beat: 12
+    actions:
+      - kind: transition
+        group: { tag: cameo }
+        values: { color/red: 200, color/green: 100, color/blue: 0, dimmer: 220, effect/macro: 43 }
+        fade_seconds: 3.5
+        easing: ease_in_out

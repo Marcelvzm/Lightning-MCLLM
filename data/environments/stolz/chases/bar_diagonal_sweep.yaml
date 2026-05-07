@@ -1,0 +1,13 @@
+# Heads flowen über mh_diagonal_lr und zurück. Wave-Effekt von links
+# nach rechts.
+name: bar_diagonal_sweep
+description: Bar schlägt diagonal aus + zurück.
+loop: true
+length_beats: 8
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_diagonal_lr, fade_seconds: 2.0, easing: ease_in_out }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: mh_walk_a, fade_seconds: 2.0, easing: ease_in_out }

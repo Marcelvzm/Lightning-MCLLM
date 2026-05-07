@@ -1,0 +1,19 @@
+# Phase-shifted bar movement — outer Heads driften, inner Heads driften
+# 0.5 Beats später. Klassisches "Wave"-Pattern (siehe llm_instruct.md §4.2).
+name: mh_alternating_sweep
+description: Phase-shifted Bar Sweep — outer/inner Heads versetzt.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: outer }, scene: mh_walk_a, fade_seconds: 0.8, easing: ease_in_out }
+  - at_beat: 0.5
+    actions:
+      - { kind: transition, group: { tag: inner }, scene: mh_walk_a, fade_seconds: 0.8, easing: ease_in_out }
+  - at_beat: 2
+    actions:
+      - { kind: transition, group: { tag: outer }, scene: mh_walk_b, fade_seconds: 0.8, easing: ease_in_out }
+  - at_beat: 2.5
+    actions:
+      - { kind: transition, group: { tag: inner }, scene: mh_walk_b, fade_seconds: 0.8, easing: ease_in_out }

@@ -1,0 +1,19 @@
+# Rolling color wave — Pars wechseln Farben in Wellen, gestaffelt
+# über 8 Beats. Phase-shift-Effekt.
+name: rolling_color_wave
+description: Rolling color wave über 8 Beats.
+loop: true
+length_beats: 8
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_red_full, fade_seconds: 1.0, easing: ease_in_out }
+  - at_beat: 2
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_blue_full, fade_seconds: 1.0, easing: ease_in_out }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_white_full, fade_seconds: 1.0, easing: ease_in_out }
+  - at_beat: 6
+    actions:
+      - { kind: transition, group: { tag: par }, scene: pars_blue_full, fade_seconds: 1.0, easing: ease_in_out }

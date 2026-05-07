@@ -1,0 +1,10 @@
+# Slow fade out für Show-Ends. Über 20 Sekunden auf 0.
+name: outro_fade_out
+description: 20-Sekunden Fade-Out — Show ende. loop=false.
+loop: false
+length_seconds: 20
+steps:
+  - at_seconds: 0
+    actions:
+      - { kind: transition, group: { tag: par }, values: { dimmer: 0, color/red: 0, color/green: 0, color/blue: 0, color/white: 0 }, fade_seconds: 18.0, easing: ease_in_out }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 0 }, fade_seconds: 18.0, easing: ease_in_out }

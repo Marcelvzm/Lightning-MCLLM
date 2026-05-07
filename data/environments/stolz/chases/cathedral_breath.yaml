@@ -1,0 +1,16 @@
+# Bar-Heads in der Decke (cathedral pose), langsame Color-Drift +
+# Atem-Pulse. Statisches Bild aber lebendig.
+name: cathedral_breath
+description: Bar in cathedral pose, slow color + dim drift.
+loop: true
+length_seconds: 30
+steps:
+  - at_seconds: 0
+    actions:
+      - { kind: snap, group: { tag: bar }, scene: cathedral_blue }
+  - at_seconds: 10
+    actions:
+      - { kind: transition, group: { tag: bar }, values: { color/wheel: 144, dimmer: 200 }, fade_seconds: 5.0, easing: ease_in_out }
+  - at_seconds: 20
+    actions:
+      - { kind: transition, group: { tag: bar }, values: { color/wheel: 34, dimmer: 255 }, fade_seconds: 5.0, easing: ease_in_out }

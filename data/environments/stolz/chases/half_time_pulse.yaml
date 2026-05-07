@@ -1,0 +1,15 @@
+# Half-time pulse — alle 2 Beats statt jedem Beat. DnB- / Trap-Style
+# (passt zur Half-Time-Wahrnehmung).
+name: half_time_pulse
+description: Pars pulsen alle 2 Beats — half-time feel.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.8 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_red_full }
+      - { kind: transition, group: { tag: par }, scene: pars_red_dim, fade_seconds: 0.8 }

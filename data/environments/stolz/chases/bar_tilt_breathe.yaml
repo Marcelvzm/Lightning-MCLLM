@@ -1,0 +1,19 @@
+# Bar tilt cycle — heads bewegen langsam von oben (cathedral) durch
+# Publikum-Tilt nach unten und zurück. 32-Beat-Loop.
+name: bar_tilt_breathe
+description: Bar tilt cycle — ceiling → audience → floor → audience → ceiling.
+loop: true
+length_beats: 32
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_to_ceiling,  fade_seconds: 7.0, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_to_audience, fade_seconds: 7.0, easing: ease_in_out }
+  - at_beat: 16
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_to_floor,    fade_seconds: 7.0, easing: ease_in_out }
+  - at_beat: 24
+    actions:
+      - { kind: transition, group: { tag: bar }, scene: bar_to_audience, fade_seconds: 7.0, easing: ease_in_out }

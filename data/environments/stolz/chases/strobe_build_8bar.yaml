@@ -1,0 +1,32 @@
+# 8-Bar-Build — Strobe-Rate verdoppelt sich alle 4 Beats. Klassisches
+# Hardstyle-Build vor dem Drop. Endet auf 32-Beat-Loop wenn man's laufen
+# lässt; gedacht als loop=false fürs Anfeuern und dann manuelles Stop.
+name: strobe_build_8bar
+description: Strobe-Build über 32 Beats (8 Bars) — Rate verdoppelt sich.
+loop: false
+length_beats: 32
+steps:
+  # Bar 1-2: sehr langsamer Strobe (rate 30)
+  - at_beat: 0
+    actions:
+      - kind: snap
+        group: { tag: par }
+        values: { color/red: 0, color/green: 0, color/blue: 0, color/white: 255, dimmer: 200, strobe: 30 }
+  # Bar 3-4: rate 60
+  - at_beat: 8
+    actions:
+      - kind: snap
+        group: { tag: par }
+        values: { color/white: 255, dimmer: 220, strobe: 60 }
+  # Bar 5-6: rate 120
+  - at_beat: 16
+    actions:
+      - kind: snap
+        group: { tag: par }
+        values: { color/white: 255, dimmer: 240, strobe: 120 }
+  # Bar 7-8: rate 220 — Maximum vor dem Drop
+  - at_beat: 24
+    actions:
+      - kind: snap
+        group: { tag: par }
+        values: { color/white: 255, dimmer: 255, strobe: 220 }

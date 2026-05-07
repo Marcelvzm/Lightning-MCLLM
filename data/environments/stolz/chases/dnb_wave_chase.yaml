@@ -1,0 +1,37 @@
+# DnB-style continuous wave — Pars liquid-fading durch Cyan/Blue/Magenta
+# über 16 Beats. Plus Snare-Punctuation auf Beat 2 + 4 (kurze flashes).
+name: dnb_wave_chase
+description: DnB Wave — liquid color-fade + snare punctuation.
+loop: true
+length_beats: 16
+steps:
+  # Liquid color phases
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: par }, values: { color/red: 0, color/green: 100, color/blue: 220, dimmer: 200 }, fade_seconds: 4.0, easing: ease_in_out }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: par }, values: { color/red: 200, color/green: 0, color/blue: 220, dimmer: 200 }, fade_seconds: 4.0, easing: ease_in_out }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: par }, values: { color/red: 0, color/green: 80, color/blue: 200, dimmer: 200 }, fade_seconds: 4.0, easing: ease_in_out }
+  - at_beat: 12
+    actions:
+      - { kind: transition, group: { tag: par }, values: { color/red: 100, color/green: 0, color/blue: 200, dimmer: 200 }, fade_seconds: 4.0, easing: ease_in_out }
+  # Snare-flashes auf Beat 1, 3, 5, 7, 9, 11, 13, 15 (alle "und-of-1" und "und-of-3")
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { name: head-2 }, values: { dimmer: 255 } }
+      - { kind: transition, group: { name: head-2 }, values: { dimmer: 80 }, fade_seconds: 0.2 }
+  - at_beat: 5
+    actions:
+      - { kind: snap,       group: { name: head-3 }, values: { dimmer: 255 } }
+      - { kind: transition, group: { name: head-3 }, values: { dimmer: 80 }, fade_seconds: 0.2 }
+  - at_beat: 9
+    actions:
+      - { kind: snap,       group: { name: head-1 }, values: { dimmer: 255 } }
+      - { kind: transition, group: { name: head-1 }, values: { dimmer: 80 }, fade_seconds: 0.2 }
+  - at_beat: 13
+    actions:
+      - { kind: snap,       group: { name: head-4 }, values: { dimmer: 255 } }
+      - { kind: transition, group: { name: head-4 }, values: { dimmer: 80 }, fade_seconds: 0.2 }

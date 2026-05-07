@@ -1,0 +1,19 @@
+# Peak-Volley — Bar full white + Pars strobing für 4 Bars.
+# Klassischer Peak-Hit-Folge nach einem Drop.
+name: peak_strobe_volley
+description: Peak — Bar full white, Pars strobing für 16 Beats.
+loop: false
+length_beats: 16
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: bar }, scene: bar_white }
+      - kind: snap
+        group: { tag: par }
+        values: { color/white: 255, dimmer: 255, strobe: 200 }
+  - at_beat: 15.5
+    actions:
+      # Pars stoppen den Strobe als Outro
+      - kind: snap
+        group: { tag: par }
+        values: { strobe: 0 }

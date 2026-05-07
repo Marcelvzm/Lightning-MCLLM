@@ -1,0 +1,21 @@
+name: amber_pulse
+description: 4OTF amber pulse — warmer 4OTF (low-key Tanzfläche).
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_amber_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 50, color/green: 20, color/blue: 5, dimmer: 30 }, fade_seconds: 0.5 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_amber_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 50, color/green: 20, color/blue: 5, dimmer: 30 }, fade_seconds: 0.5 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_amber_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 50, color/green: 20, color/blue: 5, dimmer: 30 }, fade_seconds: 0.5 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: par }, scene: pars_amber_full }
+      - { kind: transition, group: { tag: par }, values: { color/red: 50, color/green: 20, color/blue: 5, dimmer: 30 }, fade_seconds: 0.5 }

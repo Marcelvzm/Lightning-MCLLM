@@ -1,0 +1,22 @@
+# Bar-Heads pulsen rot — kombinierbar mit Pars die was anderes machen.
+name: bar_red_pulse
+description: Bar pulse rot 4OTF.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap,       group: { tag: bar }, scene: bar_red }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 40 }, fade_seconds: 0.4 }
+  - at_beat: 1
+    actions:
+      - { kind: snap,       group: { tag: bar }, scene: bar_red }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 40 }, fade_seconds: 0.4 }
+  - at_beat: 2
+    actions:
+      - { kind: snap,       group: { tag: bar }, scene: bar_red }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 40 }, fade_seconds: 0.4 }
+  - at_beat: 3
+    actions:
+      - { kind: snap,       group: { tag: bar }, scene: bar_red }
+      - { kind: transition, group: { tag: bar }, values: { dimmer: 40 }, fade_seconds: 0.4 }

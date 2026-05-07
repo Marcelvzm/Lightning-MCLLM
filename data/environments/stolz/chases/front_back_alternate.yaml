@@ -1,0 +1,15 @@
+# Front und Back blinken alternierend — wenn Front an, Back aus, etc.
+# Erzeugt räumliches Wandern.
+name: front_back_alternate
+description: Front und Back wechseln Aktivität, je 2 Beats.
+loop: true
+length_beats: 4
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: front }, values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: back },  values: { dimmer: 0 } }
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { tag: front }, values: { dimmer: 0 } }
+      - { kind: snap, group: { tag: back },  values: { dimmer: 255 } }

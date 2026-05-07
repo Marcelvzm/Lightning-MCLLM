@@ -1,0 +1,13 @@
+# Slow breath — pars dimmen langsam hoch und runter. Zeitbasiert
+# (12s Atemzyklus, fühlt sich biologisch an). Color bleibt unverändert.
+name: breath_pulse
+description: Sehr langsamer Dim-Pulse — wirkt wie Atem (12s Zyklus).
+loop: true
+length_seconds: 12
+steps:
+  - at_seconds: 0
+    actions:
+      - { kind: transition, group: { tag: par }, values: { dimmer: 90 }, fade_seconds: 6.0, easing: ease_in_out }
+  - at_seconds: 6
+    actions:
+      - { kind: transition, group: { tag: par }, values: { dimmer: 25 }, fade_seconds: 6.0, easing: ease_in_out }
