@@ -1,0 +1,123 @@
+# Asymmetrische white-flashes auf einzelne Cameos + Showtecs.
+# Funktioniert als OVERLAY auf einer existierenden Wash-Voice (z.B.
+# pars_red_full als Background-Snap): zwischen den Flashes drop ich
+# meine Voices via release-Action, damit der Background wieder durchpaintet.
+# Während eines Flash überschreibt mein snap kurz mit white.
+#
+# Pattern: jeder Flash = snap-action gefolgt 0.15 Beats später von einer
+# release-Action. Release droppt ALLE chase-voices dieser Instanz, sodass
+# die underlying scene-voice wieder sichtbar wird.
+#
+# 6 Fixtures (3 cameos + 3 showtecs) bekommen je ~3 flashes über 16 beats
+# = 18 flashes mit asymmetrischen Beat-Positionen für "random"-Effekt.
+
+name: pars_random_blinks
+description: Asymmetric white flashes on individual cameos+showtecs (overlay).
+loop: true
+length_beats: 16
+
+steps:
+  # cameo-1
+  - at_beat: 0.7
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 0.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # showtec-2
+  - at_beat: 1.6
+    actions:
+      - { kind: snap, group: { name: showtec-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 1.75
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # cameo-3
+  - at_beat: 2.4
+    actions:
+      - { kind: snap, group: { name: cameo-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 2.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # showtec-1
+  - at_beat: 3.3
+    actions:
+      - { kind: snap, group: { name: showtec-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 3.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # cameo-2
+  - at_beat: 4.2
+    actions:
+      - { kind: snap, group: { name: cameo-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 4.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # showtec-3
+  - at_beat: 5.1
+    actions:
+      - { kind: snap, group: { name: showtec-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 5.25
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # cameo-1 again
+  - at_beat: 6.4
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 6.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # showtec-2 again
+  - at_beat: 7.3
+    actions:
+      - { kind: snap, group: { name: showtec-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 7.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # cameo-2 again
+  - at_beat: 8.6
+    actions:
+      - { kind: snap, group: { name: cameo-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 8.75
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # showtec-3 again
+  - at_beat: 9.4
+    actions:
+      - { kind: snap, group: { name: showtec-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 9.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # cameo-3 again
+  - at_beat: 10.7
+    actions:
+      - { kind: snap, group: { name: cameo-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 10.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # showtec-1 again
+  - at_beat: 11.5
+    actions:
+      - { kind: snap, group: { name: showtec-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 11.65
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # cameo-1 final
+  - at_beat: 13.2
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 13.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # showtec-2 final
+  - at_beat: 14.1
+    actions:
+      - { kind: snap, group: { name: showtec-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 14.25
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # cameo-3 final
+  - at_beat: 15.4
+    actions:
+      - { kind: snap, group: { name: cameo-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 15.55
+    actions: [ { kind: release, group: { all: true } } ]

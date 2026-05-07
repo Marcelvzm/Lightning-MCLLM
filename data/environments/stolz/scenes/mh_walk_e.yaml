@@ -3,10 +3,10 @@ name: mh_walk_e
 description: MH waypoint E — divergent nach außen, ganz weit gespreizt.
 targets:
   - select: { name: head-1 }
-    values: { position/pan: 30,  position/tilt: 130, movement/speed: 80 }
+    values: { position/pan: 30,  position/tilt: 130, movement/speed: 0 }
   - select: { name: head-2 }
-    values: { position/pan: 100, position/tilt: 110, movement/speed: 80 }
+    values: { position/pan: 100, position/tilt: 110, movement/speed: 0 }
   - select: { name: head-3 }
-    values: { position/pan: 156, position/tilt: 110, movement/speed: 80 }
+    values: { position/pan: 156, position/tilt: 110, movement/speed: 0 }
   - select: { name: head-4 }
-    values: { position/pan: 226, position/tilt: 130, movement/speed: 80 }
+    values: { position/pan: 226, position/tilt: 130, movement/speed: 0 }
