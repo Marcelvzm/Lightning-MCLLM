@@ -1,0 +1,40 @@
+# Walkt die RX350 durch alle 12 LED-Modi, pro Beat ein Mode-Wechsel.
+# Bei BPM 120 = 0.5s pro Mode, kompletter Durchlauf 6s.
+# Bei BPM 165 = ~0.36s pro Mode (~4.4s Loop).
+#
+# Macro-Werte aus dem Profil (involight_led_rx350.yaml):
+#   1 = red (11)         5 = white (103)        9 = green+blue (195)
+#   2 = green (34)       6 = yellow+white (126) 10 = rgb (218)
+#   3 = blue (57)        7 = red+green (149)    11 = all colors (241)
+#   4 = yellow (80)      8 = red+blue (172)     12 = music (254)
+
+name: rx350_mode_walk
+description: RX350 walkt 12 LED-Modi durch (1 Beat pro Mode).
+loop: true
+length_beats: 12
+
+steps:
+  - at_beat: 0
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 11,  strobe: 0 } } ]
+  - at_beat: 1
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 34,  strobe: 0 } } ]
+  - at_beat: 2
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 57,  strobe: 0 } } ]
+  - at_beat: 3
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 80,  strobe: 0 } } ]
+  - at_beat: 4
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 103, strobe: 0 } } ]
+  - at_beat: 5
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 126, strobe: 0 } } ]
+  - at_beat: 6
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 149, strobe: 0 } } ]
+  - at_beat: 7
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 172, strobe: 0 } } ]
+  - at_beat: 8
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 195, strobe: 0 } } ]
+  - at_beat: 9
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 218, strobe: 0 } } ]
+  - at_beat: 10
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 241, strobe: 0 } } ]
+  - at_beat: 11
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 254, strobe: 0 } } ]

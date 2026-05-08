@@ -1,0 +1,32 @@
+# Heads an die Decke gerichtet, mit Gobos — outer und inner zeigen
+# unterschiedliche Muster (symmetrisch links/rechts, asymmetrisch innen/außen).
+# In Nebel/Smoke wirken die Beams als sichtbare Säulen mit Pattern,
+# auf der Decke als Lichtprojektion. Farbe parametrisiert.
+name: bar_gobo_cathedral
+description: Bar-Heads tilt up, Gobo-Muster — outer Gobo 1, inner Gobo 4.
+
+parameters:
+  col:  { type: str, default: weiss, options: [weiss, rot, blau, gruen, warm] }
+  dim:  { type: int, default: 255,   min: 0, max: 255 }
+  tilt: { type: int, default: 50,    min: 0, max: 255, description: "50 ≈ Decke, 128 = Mitte" }
+
+targets:
+  - select: { tags: [bar, outer] }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: "${tilt}"
+      movement/speed: 100
+      gobo/wheel: 14        # Gobo 1
+      strobe: 0
+      dimmer: "${dim}"
+
+  - select: { tags: [bar, inner] }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      position/pan: 128
+      position/tilt: "${tilt}"
+      movement/speed: 100
+      gobo/wheel: 44        # Gobo 4
+      strobe: 0
+      dimmer: "${dim}"

@@ -155,30 +155,24 @@ def run(
     reloader = HotReloader(engine, settings, env_name)
     reloader.start()
 
-    audio_detector = None
     if audio_bpm:
-        from lightning_mcllm.audio.beat import AudioBpmDetector
-        audio_detector = AudioBpmDetector(clock)
-        audio_detector.start()
-        if audio_detector.error:
-            log.warning("audio BPM disabled: %s", audio_detector.error)
+        # Live-toggleable: lives on the engine. Startup-flag = same as
+        # POST /api/cmd/start_audio after the fact.
+        err = engine.start_audio()
+        if err:
+            log.warning("audio BPM disabled: %s", err)
 
     # Web app
     app = create_app(engine, reloader, settings)
 
     def _shutdown(*_args) -> None:  # type: ignore[no-untyped-def]
         log.info("shutting down")
-        if audio_detector is not None:
-            try:
-                audio_detector.stop()
-            except Exception:  # noqa: BLE001
-                pass
         try:
             reloader.stop()
         except Exception:  # noqa: BLE001
             pass
         try:
-            engine.stop()
+            engine.stop()  # also stops audio detector
         except Exception:  # noqa: BLE001
             pass
         try:

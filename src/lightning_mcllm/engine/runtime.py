@@ -124,6 +124,8 @@ class Engine:
         self._stage_lock = threading.Lock()
         # ShowRunner — at most one show at a time; None means no script active
         self._show_runner = None  # type: ignore[var-annotated]
+        # Optional audio-BPM detector (live-toggleable). None = no audio mode.
+        self._audio_detector = None  # type: ignore[var-annotated]
 
     # ----------------------------------------------------------------- lifecycle
 
@@ -140,7 +142,52 @@ class Engine:
         if self._thread is not None:
             self._thread.join(timeout=2.0)
         self._thread = None
+        # Tear down audio detector if running — otherwise its background
+        # thread keeps holding the audio device handle.
+        self.stop_audio()
         log.info("engine stopped")
+
+    # ----------------------------------------------------------- audio mode
+
+    def start_audio(self) -> str | None:
+        """Start audio-BPM detection. Returns None on success, error string on
+        failure (missing optional deps, no audio device, permission denied …).
+        Idempotent — calling on a running detector is a no-op.
+        """
+        if self._audio_detector is not None:
+            return None
+        try:
+            from lightning_mcllm.audio.beat import AudioBpmDetector
+        except ImportError as e:
+            return f"audio extras not installed ({e}); install with `pip install '.[audio]'`"
+        det = AudioBpmDetector(self._clock)
+        det.start()
+        if det.error:
+            return det.error
+        self._audio_detector = det
+        log.info("audio BPM detector started (live)")
+        return None
+
+    def stop_audio(self) -> None:
+        """Stop audio-BPM detection. Idempotent. Resets clock source label
+        from `audio` / `audio (silent)` back to `manual`."""
+        if self._audio_detector is None:
+            return
+        try:
+            self._audio_detector.stop()
+        except Exception:  # noqa: BLE001
+            pass
+        self._audio_detector = None
+        # Clock source label may have been left as "audio (silent)" or "audio".
+        # Don't change BPM, just relabel the source so the GUI stops showing
+        # the audio status.
+        if self._clock.source.startswith("audio"):
+            self._clock.set_source("manual")
+        log.info("audio BPM detector stopped")
+
+    @property
+    def audio_running(self) -> bool:
+        return self._audio_detector is not None
 
     # ------------------------------------------------------------------- stage
 
@@ -344,6 +391,12 @@ class Engine:
             self._voices = [v for v in self._voices if not v.key.startswith("chase:")]
             self._blackout = False
             self._blackout_fade_seconds = 0.0
+        elif name == "start_audio":
+            err = self.start_audio()
+            if err:
+                self._record_error(f"start_audio: {err}")
+        elif name == "stop_audio":
+            self.stop_audio()
         elif name == "log":
             self._record_error(str(a.get("message", "")))
         else:
