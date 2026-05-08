@@ -414,6 +414,65 @@ def run_stdio(api_url: str) -> None:
                     "required": ["address", "value"],
                 },
             ),
+            Tool(
+                name="tap",
+                description="Register a beat tap. After 3+ taps locks BPM to the inter-tap average. Also resumes the clock if it was paused.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="set_master",
+                description="Set master dimmer (0..1).",
+                inputSchema={
+                    "type": "object",
+                    "properties": {"value": {"type": "number"}},
+                    "required": ["value"],
+                },
+            ),
+            Tool(
+                name="set_clock_running",
+                description="Pause or resume the BPM clock explicitly. set_bpm/tap/stop_audio also resume it implicitly.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {"running": {"type": "boolean", "default": True}},
+                },
+            ),
+            Tool(
+                name="start_audio",
+                description="Start audio-BPM detection from the default microphone.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="stop_audio",
+                description="Stop audio-BPM detection. Always resumes the clock on the way out.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="all_off",
+                description="Panic stop. Drops all voices, chase runners and the blackout latch; resets master to 1.0.",
+                inputSchema={"type": "object", "properties": {}},
+            ),
+            Tool(
+                name="set_values_group",
+                description="Atomic multi-channel override. Each entry is {address, value, universe?}.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "values": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "address": {"type": "integer"},
+                                    "value": {"type": "integer"},
+                                    "universe": {"type": "integer", "default": 0},
+                                },
+                                "required": ["address", "value"],
+                            },
+                        }
+                    },
+                    "required": ["values"],
+                },
+            ),
         ]
 
     # ---------------------------------------------------------- tool dispatch
@@ -455,7 +514,8 @@ def run_stdio(api_url: str) -> None:
             elif name in {
                 "snap_scene", "start_chase", "stop_chase", "stop_all_chases",
                 "blackout", "release_blackout", "set_bpm", "fire_slot",
-                "set_value", "tap", "set_master",
+                "set_value", "set_values_group", "tap", "set_master",
+                "set_clock_running", "start_audio", "stop_audio", "all_off",
             }:
                 out = client.cmd(name, **arguments)
             else:

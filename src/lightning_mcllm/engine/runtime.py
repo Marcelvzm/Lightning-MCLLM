@@ -366,6 +366,8 @@ class Engine:
             self._master = max(0.0, min(1.0, float(a.get("value", 1.0))))
         elif name == "set_bpm":
             self._clock.set_bpm(a["bpm"], source=a.get("source", "manual"))
+        elif name == "set_clock_running":
+            self._clock.set_running(bool(a.get("running", True)))
         elif name == "tap":
             self._clock.tap()
         elif name == "fire_slot":

@@ -44,6 +44,7 @@ ENGINE_OPS: tuple[str, ...] = (
     "stop_all_chases",
     "set_master",
     "set_bpm",
+    "set_clock_running",
     "tap",
     "fire_slot",
     "set_value",
