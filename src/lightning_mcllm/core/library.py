@@ -36,6 +36,34 @@ from lightning_mcllm.yaml_io import load_data
 log = logging.getLogger(__name__)
 
 
+def _apply_synthetic_dimmer(
+    profile: FixtureProfile,
+    role: str,
+    raw_value: object,
+    args: dict[str, object],
+    fixture: FixtureInstance,
+    out: dict[tuple[int, int], int],
+    context: str,
+) -> None:
+    """For profiles with no real `dimmer` channel: translate dimmer writes
+    via the profile's `synthetic_dimmer` declaration. Below threshold the
+    declared `off_writes` (role -> value) are written; at/above threshold
+    nothing happens (existing channel state survives — the underlying voice
+    keeps painting whatever color/macro was last set)."""
+    if role != "dimmer" or profile.synthetic_dimmer is None:
+        return
+    value = resolve_placeholder(raw_value, args)
+    iv = _coerce_channel_value(value, context, role)
+    sd = profile.synthetic_dimmer
+    if iv >= sd.threshold:
+        return
+    for off_role, off_value in sd.off_writes.items():
+        off_offset = profile.role_to_offset(off_role)
+        if off_offset is None:
+            continue
+        out[(fixture.universe, fixture.address - 1 + off_offset)] = int(off_value)
+
+
 def _coerce_channel_value(value: object, context: str, role: str) -> int:
     """Validate that a resolved scene/chase value is an int in 0..255.
 
@@ -216,6 +244,7 @@ class Stage:
                 for role, raw_value in target_values.items():
                     offset = profile.role_to_offset(role)
                     if offset is None:
+                        _apply_synthetic_dimmer(profile, role, raw_value, resolved_args, fixture, out, scene.name)
                         continue
                     value = resolve_placeholder(raw_value, resolved_args)
                     iv = _coerce_channel_value(value, scene.name, role)
@@ -259,6 +288,7 @@ class Stage:
             for role, raw_value in role_values.items():
                 offset = profile.role_to_offset(role)
                 if offset is None:
+                    _apply_synthetic_dimmer(profile, role, raw_value, args, fixture, out, "<inline>")
                     continue
                 value = resolve_placeholder(raw_value, args)
                 iv = _coerce_channel_value(value, "<inline>", role)

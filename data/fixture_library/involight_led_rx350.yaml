@@ -60,6 +60,17 @@ description: Involight LED RX350 — 4-flower LED beam effect (2-channel mode = 
 manufacturer: involight
 model: led_rx350
 
+# Synthetic dimmer — Gerät hat keinen echten Dimmer-Channel. Engine
+# übersetzt eingehende `dimmer`-Writes:
+#   dimmer < 1   → effect/macro: 0  (= aus, alle LEDs dunkel)
+#   dimmer >= 1  → no-op (lässt aktuelle macro-Voice durch → Farbe bleibt)
+# Damit reagiert die RX350 auf generische dim-Chases (beat_blackout, etc.)
+# wenigstens als On/Off — besser als komplett zu ignorieren.
+synthetic_dimmer:
+  threshold: 1
+  off_writes:
+    effect/macro: 0
+
 channels:
   - offset: 0
     role: effect/macro

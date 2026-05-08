@@ -153,6 +153,43 @@ Beispiel: Cameo Flat 1 TRI 3W IR hat 6CH-Mode → ein Profil
 umstellt, wird ein neues Profil `cameo_flat_par_tri_3w_ir_3ch.yaml`
 geschrieben und die Environment-Patch-Zeile referenziert das neue.
 
+### Synthetic dimmer (Geräte ohne echten Dimmer-Channel)
+
+Manche Geräte haben **keinen** physischen `dimmer`-Channel — z.B. der
+Involight RX350 in 2CH-Mode (nur effect/macro + strobe). Schreibt eine
+Voice `dimmer: N` auf so ein Gerät, droppt die Engine den Write per Default
+silently → das Gerät reagiert nicht auf generische dim-Chases.
+
+Mit `synthetic_dimmer:` kann das Profil deklarieren, **wie** dimmer-Writes
+auf andere Channels übersetzt werden:
+
+```yaml
+name: involight_led_rx350
+# ...
+synthetic_dimmer:
+  threshold: 1                    # Werte < threshold sind "off"
+  off_writes:
+    effect/macro: 0               # was bei "off" auf andere Rollen geschrieben wird
+channels:
+  - { offset: 0, role: effect/macro, ... }
+  - { offset: 1, role: strobe, ... }
+```
+
+Verhalten beim Render:
+
+- **dimmer < threshold**: Engine wendet `off_writes` an → für jede Rolle
+  in der Map wird der angegebene Wert auf den entsprechenden Channel
+  geschrieben (per `role_to_offset` aufgelöst). Im RX350-Beispiel: dim=0
+  schreibt `effect/macro: 0` → LEDs aus.
+- **dimmer ≥ threshold**: **No-op**. Die Engine schreibt nichts. Die
+  zuletzt gemalte Macro-Voice bleibt aktiv → Farbe bleibt erhalten.
+
+Damit reagiert das Gerät auf generische "alle aus"-Chases (z.B.
+`beat_blackout` mit `dimmer: 0` auf alles), ohne dass jeder Chase die
+device-spezifische Off-Logik kennen muss. Die Halb-Lösung "nur on/off,
+keine echte Helligkeitsregelung" ist die ehrlichste — auf Hardware-Ebene
+ist halt mehr nicht drin.
+
 ---
 
 ## 4. Environment + Fixture-Instanzen
@@ -277,6 +314,12 @@ Wenn ein Scene-Target eine Rolle schreibt, die das Fixture-Profil nicht hat
 anderen passiert einfach nichts.**
 
 Das macht Scenes radikal komponierbar.
+
+**Sonderfall `dimmer`**: Profile ohne echten Dimmer-Channel können via
+`synthetic_dimmer:` (siehe §3) deklarieren wie sie auf dim-Writes
+reagieren — typischerweise dim<threshold = "off" via macro=0, dim≥threshold
+= no-op. Damit reagiert das Gerät auf generische dim-Chases trotzdem als
+on/off. Wird auf andere Rollen kein synthetic-Mapping angewendet.
 
 ### Wert-Range
 

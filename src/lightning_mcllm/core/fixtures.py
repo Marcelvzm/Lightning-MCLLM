@@ -75,6 +75,22 @@ class FixtureChannel(BaseModel):
         return v.strip().lower()
 
 
+class SyntheticDimmer(BaseModel):
+    """Optional declaration on a profile that lacks a real `dimmer` channel.
+
+    Lets the engine respond to `dimmer` writes by translating them to writes
+    on other channels. Pattern: dimmer below `threshold` is treated as "off"
+    and applies `off_writes` to the listed roles. Dimmer at or above
+    threshold is a no-op (the existing channel state is left alone, so a
+    previously-painted color survives).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    threshold: int = Field(default=1, ge=0, le=255)
+    off_writes: dict[str, int] = Field(default_factory=dict)
+
+
 class FixtureProfile(BaseModel):
     """Profile = "what kind of device". Kept in fixture_library/.
 
@@ -88,6 +104,7 @@ class FixtureProfile(BaseModel):
     manufacturer: str | None = None
     model: str | None = None
     channels: list[FixtureChannel] = Field(min_length=1)
+    synthetic_dimmer: SyntheticDimmer | None = None
 
     @property
     def footprint(self) -> int:

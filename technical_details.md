@@ -286,6 +286,20 @@ channels:
 `offset` is 0-indexed within the fixture (channel 1 at `offset: 0`).
 `footprint` (auto-computed) = `max(offset) + 1`.
 
+**Optional `synthetic_dimmer`** for fixtures without a real dimmer channel
+(e.g. RX350 in 2CH-Mode). Lets the engine translate `dimmer` writes into
+writes on other channels — enables generic dim-chases (`beat_blackout`,
+kick blinks, etc.) to affect the fixture as on/off:
+
+```yaml
+synthetic_dimmer:
+  threshold: 1                    # values < threshold treated as "off"
+  off_writes:
+    effect/macro: 0               # what to write when dimmer < threshold
+                                  # (dimmer >= threshold is a no-op — last
+                                  #  painted color voice survives)
+```
+
 ### 5.2 Environment manifest (`data/environments/<env>/environment.yaml`)
 
 ```yaml
