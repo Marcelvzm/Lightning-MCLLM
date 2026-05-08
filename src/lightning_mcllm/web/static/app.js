@@ -67,6 +67,15 @@ function onStatus(s) {
     audioBtn.classList.toggle("active", audioOn);
     audioBtn.textContent = audioOn ? "🎵 Audio (ON)" : "🎵 Audio";
   }
+  // Sync the pause-on-silence checkbox with engine state. When the
+  // detector is running we know the truth; otherwise leave the box
+  // alone so the user's preselection is preserved.
+  const pauseChk = $("pause-on-silence");
+  if (pauseChk && s.audio && typeof s.audio.pause_on_silence === "boolean") {
+    if (pauseChk.checked !== s.audio.pause_on_silence) {
+      pauseChk.checked = s.audio.pause_on_silence;
+    }
+  }
   // Audio diagnostics: only show when detector is running.
   // Helps debug "audio (silent)" by showing actual RMS / confidence vs thresholds.
   const audioDiag = $("audio-diag");
@@ -462,6 +471,9 @@ function bind() {
     const lo = opt?.dataset.min, hi = opt?.dataset.max;
     if (lo && hi) cmd("set_bpm_range", { min: parseFloat(lo), max: parseFloat(hi) });
     else cmd("set_bpm_range", {});  // empty = clear
+  };
+  $("pause-on-silence").onchange = (e) => {
+    cmd("set_pause_on_silence", { enabled: e.target.checked });
   };
   $("all-off-btn").onclick = () => cmd("all_off");
   $("master-slider").oninput = (e) => cmd("set_master", { value: parseFloat(e.target.value) });

@@ -46,6 +46,7 @@ class AudioBpmDetector:
         silence_rms_threshold: float = 0.002,
         silence_pause_after_seconds: float = 2.0,
         range_provider=None,
+        pause_on_silence_provider=None,
     ):
         self._clock = clock
         self._samplerate = samplerate
@@ -58,6 +59,10 @@ class AudioBpmDetector:
         # Callable returning (lo, hi) plausibility BPM range, or None.
         # Read every frame, so the user can switch genres on the fly.
         self._range_provider = range_provider or (lambda: None)
+        # Callable returning True if silence should pause the BPM clock.
+        # Default True = original behaviour (chases freeze when music
+        # stops). False = clock keeps running on last known BPM.
+        self._pause_on_silence_provider = pause_on_silence_provider or (lambda: True)
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._recent: deque[float] = deque(maxlen=8)
@@ -162,7 +167,11 @@ class AudioBpmDetector:
                     elif (
                         not was_paused_by_silence
                         and (now - silent_since) > self._silence_timeout
+                        and self._pause_on_silence_provider()
                     ):
+                        # Only pause the clock if the user actually wants
+                        # silence to freeze chases. When the toggle is off,
+                        # the clock just rolls on with the last known BPM.
                         log.info(
                             "audio silent for %.1fs — pausing beat clock",
                             now - silent_since,

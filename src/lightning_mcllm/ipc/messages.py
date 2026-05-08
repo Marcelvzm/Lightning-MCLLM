@@ -57,6 +57,7 @@ ENGINE_OPS: tuple[str, ...] = (
     "start_audio",
     "stop_audio",
     "set_bpm_range",
+    "set_pause_on_silence",
     "all_off",
     "log",
     # special — handled in IPC server / web router, not via Engine.submit

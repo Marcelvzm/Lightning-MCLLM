@@ -1,8 +1,10 @@
 # Colors-Bank — alle Farb-Trigger zentralisiert (Color-Snaps, Color-Walks, Palettes).
-# Slots werden gemeinsam nach und nach befüllt.
 name: colors
 description: Bank für alle Farb-bezogenen Scenes & Chases.
 
 slots:
   - { id: 1, kind: chase, name: rx350_mode_walk, label: "RX Walk" }
+  - { id: 2, kind: scene, name: bar_col_dim,     label: "Bar Col" }
+  - { id: 3, kind: scene, name: par_col_dim,     label: "Par Col" }
+  - { id: 4, kind: scene, name: rx350_col,       label: "RX Col" }
   - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }

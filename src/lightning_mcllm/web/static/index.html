@@ -39,6 +39,10 @@
       <select id="bpm-genre" title="Plausibility BPM range — fixes aubio half-time/double-time errors">
         <option value="">— no genre —</option>
       </select>
+      <label class="toggle-label" title="When OFF, the BPM clock keeps running on the last known BPM even if the room goes quiet — chases never freeze.">
+        <input type="checkbox" id="pause-on-silence" checked>
+        pause on silence
+      </label>
     </div>
     <div class="control-row">
       <label>Master</label>

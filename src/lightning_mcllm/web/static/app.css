@@ -92,6 +92,12 @@ button.active:hover { background: #ffc358; }
   display: flex; flex-wrap: wrap; gap: 12px;
 }
 .audio-diag b { font-weight: 600; }
+.toggle-label {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--muted); cursor: pointer;
+  white-space: nowrap;
+}
+.toggle-label input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
 button.toggle.on { background: var(--accent); color: black; border-color: var(--accent); font-weight: 600; }
 select {
   background: #14161c; color: var(--text); border: 1px solid var(--border);

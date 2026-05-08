@@ -131,6 +131,10 @@ class Engine:
         # to disambiguate half-time / double-time locks (aubio is prone
         # to these on dense beats). None = no constraint.
         self._bpm_range: tuple[float, float] | None = None
+        # Should the BPM clock pause during audio silence? Default True
+        # = "if the room goes quiet, freeze beat-locked chases". False
+        # = lights keep moving on the last known BPM even without music.
+        self._pause_on_silence: bool = True
 
     # ----------------------------------------------------------------- lifecycle
 
@@ -169,7 +173,11 @@ class Engine:
             from lightning_mcllm.audio.beat import AudioBpmDetector
         except ImportError as e:
             return f"audio extras not installed ({e}); install with `pip install '.[audio]'`"
-        det = AudioBpmDetector(self._clock, range_provider=lambda: self._bpm_range)
+        det = AudioBpmDetector(
+            self._clock,
+            range_provider=lambda: self._bpm_range,
+            pause_on_silence_provider=lambda: self._pause_on_silence,
+        )
         det.start()
         if det.error:
             return det.error
@@ -270,6 +278,7 @@ class Engine:
                 "rms_threshold": d._silence_rms,
                 "confidence_threshold": d._conf_thresh,
                 "range": list(self._bpm_range) if self._bpm_range else None,
+                "pause_on_silence": self._pause_on_silence,
             }
         return EngineStatus(
             running=self._thread is not None and self._thread.is_alive(),
@@ -442,6 +451,16 @@ class Engine:
                 self._record_error(f"start_audio: {err}")
         elif name == "stop_audio":
             self.stop_audio()
+        elif name == "set_pause_on_silence":
+            self._pause_on_silence = bool(a.get("enabled", True))
+            log.info("pause-on-silence: %s", "ON" if self._pause_on_silence else "OFF")
+            # If we're switching it OFF and the clock was paused by the
+            # detector, resume it now — the user just told us to stop
+            # caring about silence.
+            if not self._pause_on_silence and not self._clock.running:
+                self._clock.set_running(True)
+                if self._clock.source == "audio (silent)":
+                    self._clock.set_source("audio")
         elif name == "set_bpm_range":
             lo = a.get("min")
             hi = a.get("max")

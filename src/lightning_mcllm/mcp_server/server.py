@@ -452,6 +452,15 @@ def run_stdio(api_url: str) -> None:
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
+                name="set_pause_on_silence",
+                description="Whether the BPM clock should pause when the audio detector hears no music for 2s. Default true. False = lights keep moving on last known BPM.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {"enabled": {"type": "boolean"}},
+                    "required": ["enabled"],
+                },
+            ),
+            Tool(
                 name="set_bpm_range",
                 description="Set plausibility BPM range used by the audio detector to disambiguate half-time / double-time locks. Pass {min, max} to constrain, or no args to clear.",
                 inputSchema={
@@ -527,7 +536,7 @@ def run_stdio(api_url: str) -> None:
                 "blackout", "release_blackout", "set_bpm", "fire_slot",
                 "set_value", "set_values_group", "tap", "set_master",
                 "set_clock_running", "start_audio", "stop_audio", "all_off",
-                "set_bpm_range",
+                "set_bpm_range", "set_pause_on_silence",
             }:
                 out = client.cmd(name, **arguments)
             else:
