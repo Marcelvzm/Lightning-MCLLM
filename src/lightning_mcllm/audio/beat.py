@@ -172,6 +172,12 @@ class AudioBpmDetector:
                         log.info("audio returned — resuming clock")
                         self._clock.set_running(True)
                         was_paused_by_silence = False
+                # Keep the source label honest even before BPM agreement
+                # locks. Without this, the label is stuck at "audio (silent)"
+                # for many frames after silence ends — until set_bpm finally
+                # fires when agreement_frames stabilise.
+                if self._clock.source != "audio":
+                    self._clock.set_source("audio")
 
                 bpm = float(tempo.get_bpm())
                 # Acceptance window. aubio sometimes locks half-time on
