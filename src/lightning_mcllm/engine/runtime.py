@@ -127,6 +127,10 @@ class Engine:
         self._show_runner = None  # type: ignore[var-annotated]
         # Optional audio-BPM detector (live-toggleable). None = no audio mode.
         self._audio_detector = None  # type: ignore[var-annotated]
+        # Plausibility BPM range — when set, the audio detector uses it
+        # to disambiguate half-time / double-time locks (aubio is prone
+        # to these on dense beats). None = no constraint.
+        self._bpm_range: tuple[float, float] | None = None
 
     # ----------------------------------------------------------------- lifecycle
 
@@ -150,6 +154,10 @@ class Engine:
 
     # ----------------------------------------------------------- audio mode
 
+    @property
+    def bpm_range(self) -> tuple[float, float] | None:
+        return self._bpm_range
+
     def start_audio(self) -> str | None:
         """Start audio-BPM detection. Returns None on success, error string on
         failure (missing optional deps, no audio device, permission denied …).
@@ -161,7 +169,7 @@ class Engine:
             from lightning_mcllm.audio.beat import AudioBpmDetector
         except ImportError as e:
             return f"audio extras not installed ({e}); install with `pip install '.[audio]'`"
-        det = AudioBpmDetector(self._clock)
+        det = AudioBpmDetector(self._clock, range_provider=lambda: self._bpm_range)
         det.start()
         if det.error:
             return det.error
@@ -256,9 +264,12 @@ class Engine:
                 "rms": round(d.last_rms, 4),
                 "confidence": round(d.last_confidence, 3),
                 "bpm_raw": round(d.last_bpm_raw, 1),
+                "bpm_corrected": round(d.last_bpm_corrected, 1),
+                "bpm_multiplier": d.last_bpm_multiplier,
                 "silent": d.last_silent,
                 "rms_threshold": d._silence_rms,
                 "confidence_threshold": d._conf_thresh,
+                "range": list(self._bpm_range) if self._bpm_range else None,
             }
         return EngineStatus(
             running=self._thread is not None and self._thread.is_alive(),
@@ -431,6 +442,19 @@ class Engine:
                 self._record_error(f"start_audio: {err}")
         elif name == "stop_audio":
             self.stop_audio()
+        elif name == "set_bpm_range":
+            lo = a.get("min")
+            hi = a.get("max")
+            if lo is None or hi is None:
+                self._bpm_range = None
+                log.info("BPM plausibility range cleared")
+            else:
+                lo_f, hi_f = float(lo), float(hi)
+                if lo_f <= 0 or hi_f <= lo_f:
+                    self._record_error(f"set_bpm_range: invalid range {lo_f}-{hi_f}")
+                else:
+                    self._bpm_range = (lo_f, hi_f)
+                    log.info("BPM plausibility range set: %.0f-%.0f", lo_f, hi_f)
         elif name == "all_off":
             # Hard-reset to clean state: drop ALL voices (chase + scene +
             # override), drop chase runners, release blackout latch, reset

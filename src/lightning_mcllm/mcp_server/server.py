@@ -452,6 +452,17 @@ def run_stdio(api_url: str) -> None:
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
+                name="set_bpm_range",
+                description="Set plausibility BPM range used by the audio detector to disambiguate half-time / double-time locks. Pass {min, max} to constrain, or no args to clear.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "min": {"type": "number"},
+                        "max": {"type": "number"},
+                    },
+                },
+            ),
+            Tool(
                 name="set_values_group",
                 description="Atomic multi-channel override. Each entry is {address, value, universe?}.",
                 inputSchema={
@@ -516,6 +527,7 @@ def run_stdio(api_url: str) -> None:
                 "blackout", "release_blackout", "set_bpm", "fire_slot",
                 "set_value", "set_values_group", "tap", "set_master",
                 "set_clock_running", "start_audio", "stop_audio", "all_off",
+                "set_bpm_range",
             }:
                 out = client.cmd(name, **arguments)
             else:

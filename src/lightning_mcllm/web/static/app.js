@@ -76,12 +76,17 @@ function onStatus(s) {
       const rmsBad = a.rms < a.rms_threshold;
       const confBad = a.confidence < a.confidence_threshold;
       audioDiag.style.display = "";
+      const rangeStr = a.range ? `[${a.range[0]}-${a.range[1]}]` : "—";
+      const multStr = (a.bpm_multiplier && a.bpm_multiplier !== 1)
+        ? ` <b style="color:var(--accent)">→ ${a.bpm_corrected.toFixed(1)} (×${a.bpm_multiplier})</b>`
+        : "";
       audioDiag.innerHTML =
         `<span title="audio level (root-mean-square)">RMS: <b style="color:${rmsBad ? 'var(--red)' : 'var(--green)'}">${a.rms.toFixed(4)}</b> ` +
         `<span class="muted-hint">/ thr ${a.rms_threshold}</span></span>` +
         `<span title="aubio beat-tracking confidence (0..1)">  Conf: <b style="color:${confBad ? 'var(--red)' : 'var(--green)'}">${a.confidence.toFixed(2)}</b> ` +
         `<span class="muted-hint">/ thr ${a.confidence_threshold}</span></span>` +
-        `<span class="muted-hint">  raw BPM: ${a.bpm_raw.toFixed(1)}</span>` +
+        `<span class="muted-hint">  raw BPM: ${a.bpm_raw.toFixed(1)}</span>${multStr}` +
+        `<span class="muted-hint">  range ${rangeStr}</span>` +
         `<span class="muted-hint">  ${a.silent ? '⏸ silent' : '▶ tracking'}</span>`;
     } else {
       audioDiag.style.display = "none";
@@ -449,6 +454,12 @@ function bind() {
     const src = state.status?.bpm_source || "";
     cmd(src.startsWith("audio") ? "stop_audio" : "start_audio");
   };
+  $("bpm-genre").onchange = (e) => {
+    const opt = e.target.selectedOptions[0];
+    const lo = opt?.dataset.min, hi = opt?.dataset.max;
+    if (lo && hi) cmd("set_bpm_range", { min: parseFloat(lo), max: parseFloat(hi) });
+    else cmd("set_bpm_range", {});  // empty = clear
+  };
   $("all-off-btn").onclick = () => cmd("all_off");
   $("master-slider").oninput = (e) => cmd("set_master", { value: parseFloat(e.target.value) });
   $("blackout-btn").onclick = () => cmd("blackout");
@@ -501,9 +512,30 @@ function escapeHtml(s) {
 
 // ----------------------------------------------------------------- boot
 
+async function refreshBpmGenres() {
+  try {
+    const data = await get("/api/bpm_genres");
+    const sel = $("bpm-genre");
+    if (!sel) return;
+    // Keep the current selection across refreshes if still present.
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— no genre —</option>';
+    for (const g of (data.genres || [])) {
+      const o = document.createElement("option");
+      o.value = g.name;
+      o.textContent = `${g.name} (${g.min}-${g.max})`;
+      o.dataset.min = g.min;
+      o.dataset.max = g.max;
+      sel.appendChild(o);
+    }
+    if (prev) sel.value = prev;
+  } catch (e) { /* genre file dir missing — leave dropdown with just "no genre" */ }
+}
+
 (async () => {
   bind();
   await refreshEnvs();
   await refreshStage();
+  await refreshBpmGenres();
   connectWs();
 })();

@@ -45,6 +45,7 @@ class AudioBpmDetector:
         smoothing: float = 0.4,
         silence_rms_threshold: float = 0.002,
         silence_pause_after_seconds: float = 2.0,
+        range_provider=None,
     ):
         self._clock = clock
         self._samplerate = samplerate
@@ -54,6 +55,9 @@ class AudioBpmDetector:
         self._smooth = smoothing
         self._silence_rms = silence_rms_threshold
         self._silence_timeout = silence_pause_after_seconds
+        # Callable returning (lo, hi) plausibility BPM range, or None.
+        # Read every frame, so the user can switch genres on the fly.
+        self._range_provider = range_provider or (lambda: None)
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._recent: deque[float] = deque(maxlen=8)
@@ -63,6 +67,8 @@ class AudioBpmDetector:
         self.last_rms: float = 0.0
         self.last_confidence: float = 0.0
         self.last_bpm_raw: float = 0.0
+        self.last_bpm_corrected: float = 0.0
+        self.last_bpm_multiplier: float = 1.0
         self.last_silent: bool = False
 
     @property
@@ -187,7 +193,27 @@ class AudioBpmDetector:
                 # speedcore/frenchcore.
                 if not (40.0 <= bpm <= 300.0):
                     continue
-                self._recent.append(bpm)
+                # Plausibility-range correction: if the user has selected a
+                # genre with a known BPM range, try octave multipliers
+                # {1, 2, 0.5, 4, 0.25} and pick whichever lands inside the
+                # range (closest to the centre wins). Fixes aubio's
+                # well-known half-time / double-time lock.
+                rng = self._range_provider()
+                mult = 1.0
+                if rng is not None:
+                    lo, hi = rng
+                    centre = (lo + hi) / 2.0
+                    candidates = []
+                    for m in (1.0, 2.0, 0.5, 4.0, 0.25):
+                        v = bpm * m
+                        if lo <= v <= hi:
+                            candidates.append((m, v))
+                    if candidates:
+                        mult, _ = min(candidates, key=lambda mv: abs(mv[1] - centre))
+                bpm_corr = bpm * mult
+                self.last_bpm_corrected = bpm_corr
+                self.last_bpm_multiplier = mult
+                self._recent.append(bpm_corr)
                 if len(self._recent) >= self._agree_n:
                     recent = list(self._recent)[-self._agree_n :]
                     spread = max(recent) - min(recent)

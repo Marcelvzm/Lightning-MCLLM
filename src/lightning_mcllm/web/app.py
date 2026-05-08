@@ -390,6 +390,30 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
             raise HTTPException(404, f"genre concept {name!r} not found")
         return PlainTextResponse(candidate.read_text(encoding="utf-8"), media_type="text/markdown")
 
+    @app.get("/api/bpm_genres")
+    async def list_bpm_genres() -> Any:
+        """Genres with parsed plausibility BPM ranges (header pattern
+        'BPM X-Y' / 'BPM X–Y' from genre_concepts/*.md). Used by the
+        audio detector to disambiguate aubio half-time / double-time
+        locks."""
+        import re
+        d = _genre_concepts_dir()
+        if not d.is_dir():
+            return {"genres": []}
+        pattern = re.compile(r"BPM\s+(\d+)\s*[-–]\s*(\d+)")
+        out = []
+        for p in sorted(d.glob("*.md")):
+            if p.stem.lower() == "readme":
+                continue
+            try:
+                head = p.read_text(encoding="utf-8")[:600]
+            except OSError:
+                continue
+            m = pattern.search(head)
+            if m:
+                out.append({"name": p.stem, "min": int(m.group(1)), "max": int(m.group(2))})
+        return {"genres": out}
+
     # ------------------------------------------------------------------- ws
 
     @app.websocket("/api/ws")
