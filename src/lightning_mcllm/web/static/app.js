@@ -319,7 +319,10 @@ function renderBankSlots() {
     el.className = "slot";
     el.classList.toggle("blackout", slot.kind === "blackout");
     if (slot.kind === "chase") el.dataset.chase = slot.name;
-    el.innerHTML = `<span class="id">${slot.id}</span> ${escapeHtml(slot.label || slot.name || slot.kind)}`;
+    // Find the keyboard letter (if any) that maps to this slot id.
+    const kbd = Object.entries(SLOT_KEYMAP).find(([_, id]) => id === slot.id)?.[0];
+    const kbdSpan = kbd ? ` <span class="slot-kbd">${kbd.toUpperCase()}</span>` : "";
+    el.innerHTML = `<span class="id">${slot.id}</span>${kbdSpan} ${escapeHtml(slot.label || slot.name || slot.kind)}`;
     el.onclick = () => cmd("fire_slot", { bank: state.selectedBank, slot_id: slot.id });
     row.appendChild(el);
   }
@@ -663,6 +666,21 @@ function _drawFixture(ctx, f, x, y, r) {
   ctx.fillStyle = lit;
   ctx.fill();
 
+  // Moving-head: gobo value badge in the top-right corner of the lens.
+  // Marcel asked for "at least the number" — a tiny chip suffices.
+  if (f.kind === "moving_head" && f.gobo != null) {
+    const bx = x + r * 0.45, by = y - r * 0.55;
+    ctx.fillStyle = "rgba(0,0,0,0.65)";
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(bx - 12, by - 8, 26, 14, 3) : ctx.rect(bx - 12, by - 8, 26, 14);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 10px ui-monospace, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(`g${f.gobo}`, bx + 1, by + 3);
+    ctx.textAlign = "start";
+  }
+
   // Moving-head pan/tilt indicator
   if (f.kind === "moving_head" && f.pan != null && f.tilt != null) {
     // Map pan 0..255 → -1..+1, tilt 0..255 → -1..+1
@@ -849,13 +867,29 @@ function handleKey(e) {
     return;
   }
 
-  // Default keyboard mode
-  if (e.key >= "1" && e.key <= "9") {
-    const id = parseInt(e.key);
-    cmd("fire_slot", { bank: state.selectedBank, slot_id: id });
+  // Default keyboard mode — extended slot map. Numeric row is the
+  // canonical 1-9, then 0 = 10, then QWERTY rows fan out for 11-36
+  // so a single bank can address ~36 slots from the keyboard. Slots
+  // beyond that are still clickable in the GUI.
+  const slotKey = SLOT_KEYMAP[e.key.toLowerCase()];
+  if (slotKey != null) {
+    cmd("fire_slot", { bank: state.selectedBank, slot_id: slotKey });
+    return;
   }
   if (e.key === "t" || e.key === "T") cmd("tap");
 }
+
+const SLOT_KEYMAP = (() => {
+  // 1..9 → 1..9, 0 → 10
+  const m = { "1":1, "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "0":10 };
+  // QWERTY top row → 11..20
+  "qwertzuiop".split("").forEach((c, i) => { m[c] = 11 + i; });
+  // ASDF row → 21..29 (tabs/return on most layouts → 9 keys before "ä")
+  "asdfghjkl".split("").forEach((c, i) => { m[c] = 21 + i; });
+  // ZXCV row → 30..36
+  "yxcvbnm".split("").forEach((c, i) => { m[c] = 30 + i; });
+  return m;
+})();
 
 function firePlayBinding(b) {
   if (b.kind === "scene") cmd("snap_scene", { scene: b.name });

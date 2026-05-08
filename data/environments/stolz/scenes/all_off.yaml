@@ -1,0 +1,20 @@
+# Gesamtes Rig off — schaltet alle Geräte sauber aus.
+# Kombiniert bar_off + par_off + rx350_off in einem Snap.
+name: all_off
+description: Gesamtes Rig off (Bar + Pars + RX350).
+
+targets:
+  - select: { tag: bar }
+    values: { dimmer: 0, strobe: 0 }
+
+  - select: { tag: par }
+    values: { dimmer: 0, strobe: 0 }
+
+  - select: { tag: showtec }
+    values: { color/red: 0, color/green: 0, color/blue: 0, effect/macro: 0 }
+
+  - select: { tag: cameo }
+    values: { effect/macro: 0 }
+
+  - select: { tag: beam_bar }
+    values: { effect/macro: 0, strobe: 0 }

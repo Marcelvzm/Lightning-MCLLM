@@ -1,21 +1,31 @@
-# Colors-Bank — pro Gerät: Color-Setter / Random / Off (3 Slots je
-# Bar+Par, 2 Slots für RX).
-# Folgende Chases existieren weiter, sind aber nicht im Pad:
-#   rx350_mode_walk, rx350_random_color, all_random_color.
-# Über die Chase-Liste in der GUI startbar.
+# Colors-Bank — Setter / Random / Off pro Gerät + All-Varianten.
+# Layout: 4-spaltig × 3 Reihen (Setter/Random/Off), Slot 9 = Blackout-Latch
+# (muscle memory), RX Walk hinten dran. Bank-Slot-Limit ist nicht mehr 1-9
+# (User hat aufgehoben).
 name: colors
 description: Bank für alle Farb-bezogenen Scenes & Chases.
 
 slots:
+  # ── Setter (statische Color+Dim auf Gerät) ──────────────────────────────
   - { id: 1, kind: scene, name: bar_col_dim,        label: "Bar Col" }
-  - { id: 2, kind: chase, name: bar_random_color,   label: "Bar Rnd" }
-  - { id: 3, kind: scene, name: bar_off,            label: "Bar Off" }
+  - { id: 2, kind: scene, name: par_col_dim,        label: "Par Col" }
+  - { id: 3, kind: scene, name: rx350_col,          label: "RX Col" }
+  - { id: 4, kind: scene, name: all_color,          label: "All Col" }
 
-  - { id: 4, kind: scene, name: par_col_dim,        label: "Par Col" }
-  - { id: 5, kind: chase, name: par_random_color,   label: "Par Rnd" }
-  - { id: 6, kind: scene, name: par_off,            label: "Par Off" }
+  # ── Random Color (Off-Grid Wechsel) ─────────────────────────────────────
+  - { id: 5, kind: chase, name: bar_random_color,   label: "Bar Rnd" }
+  - { id: 6, kind: chase, name: par_random_color,   label: "Par Rnd" }
+  - { id: 7, kind: chase, name: rx350_random_color, label: "RX Rnd" }
+  - { id: 8, kind: chase, name: all_random_color,   label: "All Rnd" }
 
-  - { id: 7, kind: scene, name: rx350_col,          label: "RX Col" }
-  - { id: 8, kind: scene, name: rx350_off,          label: "RX Off" }
-
+  # ── Blackout-Latch (universell, Slot 9 für muscle memory) ──────────────
   - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }
+
+  # ── Off-Scenes (per Gerät + All) ────────────────────────────────────────
+  - { id: 10, kind: scene, name: bar_off,           label: "Bar Off" }
+  - { id: 11, kind: scene, name: par_off,           label: "Par Off" }
+  - { id: 12, kind: scene, name: rx350_off,         label: "RX Off" }
+  - { id: 13, kind: scene, name: all_off,           label: "All Off" }
+
+  # ── Extras ──────────────────────────────────────────────────────────────
+  - { id: 14, kind: chase, name: rx350_mode_walk,   label: "RX Walk" }

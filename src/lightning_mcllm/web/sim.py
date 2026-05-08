@@ -151,6 +151,7 @@ def compute_sim_state(stage: Stage, shadow: bytes) -> dict[str, Any]:
         # Pan/tilt — coarse 8-bit only (16-bit fine ignored for the sim)
         pan = vals.get("position/pan")
         tilt = vals.get("position/tilt")
+        gobo = vals.get("gobo/wheel")
 
         out.append({
             "name": fx.name,
@@ -163,6 +164,7 @@ def compute_sim_state(stage: Stage, shadow: bytes) -> dict[str, Any]:
             "strobe": round(strobe, 3),
             "pan": pan,
             "tilt": tilt,
+            "gobo": gobo,
             "raw_macro": macro,
         })
 

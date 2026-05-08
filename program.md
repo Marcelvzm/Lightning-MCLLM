@@ -1471,6 +1471,101 @@ curl -X POST http://127.0.0.1:7777/api/cmd/<op> \
      -d '{"scene": "...", "args": {...}}'
 ```
 
+### Notes-File (operator-editierbar)
+
+Per Environment liegt eine `notes.yaml` neben `environment.yaml`, in
+der die Operator-Kommentare aus der GUI persisted werden:
+
+```yaml
+# data/environments/stolz/notes.yaml
+scenes:
+  all_color: "farb-snap nach palette"
+  hardstyle_drop: "härtester punkt — nicht früher feuern"
+chases:
+  chaos_strobe: "drop. palette per arg setzen"
+```
+
+Diese Datei ist **separat** von der `description:` in den Scene/Chase-
+YAMLs. Wenn die GUI eine Note für einen Eintrag hat, wird sie als
+Kommentar angezeigt; sonst zeigt sie die `description:` aus der YAML
+als Fallback. Du kannst die Datei direkt editieren oder per
+GUI-Inline-Edit. Endpoints: `GET /api/notes`, `PUT /api/notes` mit
+`{kind: "scene"|"chase", name, comment}`.
+
+### Live-Operations-Ops (jenseits von Authoring)
+
+Diese sind nicht beim Schreiben von YAMLs relevant, aber via API/MCP
+verfügbar:
+
+```python
+# BPM-Range / Genre-Plausibilität (audio mode disambiguation)
+set_bpm_range({"min": 150, "max": 180})
+
+# Pause-Verhalten bei Mic-Stille
+set_pause_on_silence({"enabled": False})
+
+# Show-Scrubbing
+seek_show({"target_seconds": 120, "reference_bpm": 165})
+set_show_reference_bpm({"bpm": 165})
+
+# Clock-Pause/Resume explizit
+set_clock_running({"running": True})
+
+# Audio-Toggle
+start_audio()
+stop_audio()
+
+# Panic stop — nicht nur Lichter aus, sondern Full Reset
+all_off()
+```
+
+Im Status-Block:
+
+```jsonc
+{
+  "audio": {
+    "running": true,
+    "rms": 0.0073, "confidence": 5.9, "bpm_raw": 73.6,
+    "bpm_corrected": 147.2, "bpm_multiplier": 2.0,
+    "range": [150, 180], "silent": false,
+    "pause_on_silence": true,
+    "rms_threshold": 0.002, "confidence_threshold": 0.15
+  },
+  "show": {
+    "name": "stolz_hardtekk",
+    "state": "running",
+    "elapsed_seconds": 83.4,
+    "length_seconds": 297.5,
+    "length_is_estimate": false,
+    "reference_bpm": 165
+  }
+}
+```
+
+### `list_stage`-Output: Scenes/Chases haben jetzt Parameter-Schema
+
+Beim Abfragen von `list_stage` (oder `/api/stage`) bekommst du pro
+Scene/Chase:
+
+```json
+{
+  "name": "all_color",
+  "description": "Gesamtes Rig in einer Palette",
+  "parameters": {
+    "col": {
+      "type": "str",
+      "default": "rot",
+      "options": ["rot", "blau", "gruen", "weiss", "warm"],
+      "description": "Palette-Name aus palettes.yaml.",
+      "min": null, "max": null
+    }
+  }
+}
+```
+
+So kann ein LLM (oder die GUI) für jede Scene/Chase einen passenden
+Eingabe-Dialog rendern, ohne die YAML selbst lesen zu müssen.
+
 ---
 
 ## Anhang A: Validierungs-Errors verstehen

@@ -211,6 +211,13 @@ select {
 .bank-slot-row .slot.blackout { background: #2a0a0e; border-color: var(--red); color: var(--red); }
 .bank-slot-row .slot .id { font-size: 10px; color: var(--muted); margin-right: 4px; }
 .bank-slot-row .slot.active .id { color: rgba(0,0,0,0.6); }
+.bank-slot-row .slot .slot-kbd {
+  display: inline-block; min-width: 14px; padding: 1px 4px;
+  background: #353945; color: var(--text); border-radius: 3px;
+  font-family: ui-monospace, Menlo, monospace; font-size: 10px;
+  border: 1px solid #444;
+}
+.bank-slot-row .slot.active .slot-kbd { background: rgba(0,0,0,0.2); border-color: rgba(0,0,0,0.3); color: black; }
 
 #universe-panel { grid-column: 1 / -1; }
 #triggers-panel { grid-column: 1 / -1; }

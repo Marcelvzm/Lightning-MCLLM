@@ -109,7 +109,23 @@ data/
 | `snap_scene(name)`, `start_chase(name)`, `blackout`, `release_blackout` | **Live-test what you wrote.** This is your feedback loop. |
 | `fire_slot(bank, slot_id)` | Test a bank slot |
 | `set_bpm(bpm)`, `tap` | Set tempo |
+| `set_clock_running({running})`, `set_pause_on_silence({enabled})` | Pause/resume the BPM clock explicitly; control whether silence freezes chases |
+| `set_bpm_range({min, max})` | Plausibility BPM range for the audio detector — disambiguates aubio half/double-time locks. Pass empty to clear. |
+| `start_audio`, `stop_audio` | Toggle live audio-BPM detection |
+| `seek_show({target_seconds, reference_bpm?})`, `set_show_reference_bpm({bpm})` | Scrub the running show to time T; ref BPM is what beat-waits assume |
+| `all_off` | Panic stop — drops all voices, chases, blackout latch; resets master to 1.0 |
+| `set_value({address, value})`, `set_values_group({values})` | Direct DMX channel writes (debug) |
 | `status`, `list_environments`, `switch_environment(name)` | Orientation |
+
+`status` now also includes `audio.{rms, confidence, bpm_raw,
+bpm_corrected, bpm_multiplier, range, silent, pause_on_silence}` and
+`show.{length_seconds, length_is_estimate, reference_bpm}` when
+applicable.
+
+`list_stage` returns `scenes` and `chases` as objects with
+`description` and `parameters` (typed `int` / `float` / `str` / `bool`,
+with `default`, `min`, `max`, `options`). Use this to fire parametrised
+items from MCP — e.g. `start_chase("chaos_strobe", {col: "rot"})`.
 
 Your loop: **inspect → plan → author → reload → validate errors → live-test
 → iterate.** Skip any step at your peril.

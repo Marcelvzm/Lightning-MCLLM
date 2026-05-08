@@ -570,3 +570,137 @@ Mögliche Erweiterung: ein Tool `render_preview(chase, duration)` das
 einen Frame-für-Frame-Snapshot zurückgibt, den der LLM analysieren kann.
 Steht auf der Roadmap. Für jetzt ist der Loop "der LLM schreibt, du
 sagst ihm, ob's gut war" der pragmatische Weg.
+
+---
+
+## Erweiterungen (Live-Operations-Layer)
+
+Die ursprüngliche Architektur (Voices, Chases, Stage, Show) ist
+unverändert. Was später dazukam, sind ausschließlich **Operator-seitige
+Komfort-Features** — keine davon ändert das Engine-Modell.
+
+### Audio-BPM-Detection mit Genre-Range
+
+`audio/beat.py` liest das System-Mic mit `sounddevice` und detektiert
+BPM via `aubio`. Architektur:
+
+* Detector läuft im Hintergrund-Thread, schreibt BPM nur wenn
+  `agreement_frames=3` Werte innerhalb 4 BPM Spread liegen — Smoothing
+  0.4. Engine blockiert nie auf Audio.
+* **Range-Provider-Callback** (gesetzt aus `Engine._bpm_range`): User
+  wählt im GUI ein Genre-Preset, daraus eine Plausibilitäts-Range
+  (parsed aus `genre_concepts/*.md`-Headers `BPM X-Y`). Der Detector
+  multipliziert raw BPM mit `{1, 2, 0.5, 4, 0.25}` und nimmt den Wert,
+  der in der Range landet (zentralster gewinnt). Beseitigt aubio's
+  Half-Time/Double-Time-Locks.
+* **Padding ±6 BPM** an den Range-Grenzen, weil Genre-Header oft etwas
+  konservativ sind (Hardtekk-Range 150-180 nimmt 144 = 72×2 sinnvoll an).
+* **Drop-Implausible**: bei keinem Octave-Fit wird das Frame komplett
+  verworfen, **nicht** rohes BPM gepusht. Clock behält letzten guten
+  Wert.
+* **Pause-on-Silence-Provider-Callback** (`Engine._pause_on_silence`):
+  Default true → Clock pausiert nach 2s Mic-Stille. Off → Clock läuft
+  weiter mit letzter BPM.
+* **Source-Label-Symmetry**: Source-Wechsel `audio (silent) → audio`
+  jetzt auf jeder Non-Silent-Frame, nicht erst beim nächsten BPM-Push.
+
+Engine-Ops dazu: `start_audio`, `stop_audio`, `set_bpm_range`,
+`set_pause_on_silence`. Live-Diagnose (rms, confidence, raw vs
+corrected BPM, multiplier, range, silent-flag) im Status-Block.
+
+### Show-Timeline + Seek
+
+`show_runner.compute_show_length_seconds(show, ref_bpm)` walkt das
+Script und summiert Wait-Durations. Beat-Waits werden per Ref-BPM
+linearisiert. `wait_chase`/`wait_group` werden als 0 gezählt und
+markieren das Resultat als Schätzwert.
+
+`ShowRunner.seek(target, ref_bpm)`:
+
+1. Reset zu Anfang
+2. Walk forward ohne real time: Wait-Durations werden zu einem
+   `accumulated`-Counter addiert; alle anderen Actions (snap_scene,
+   start_chase, set_bpm) werden via `engine.submit` an den
+   Command-Queue übergeben — kumulativer State-Aufbau.
+3. Wenn ein Wait `accumulated` über `target` schiebt, wird der
+   **Remainder** als Live-Wait installiert. Der Tick-Loop nimmt von
+   dort die Show wieder auf.
+
+User gibt im GUI eine **Reference BPM** ein — unabhängig von der
+Live-Clock. Beat-Waits werden gegen die Ref konvertiert; der
+Live-Detect wird nicht beeinflusst.
+
+### Hot-Reload preserves running show
+
+`Engine.replace_stage` cleart den Show-Runner wie immer. **Aber**: der
+Show-Name wird vorher gemerkt; nach dem Stage-Swap submited der Engine
+ein `play_show` mit dem gleichen Namen falls die Show im neuen Stage
+existiert. Ergebnis: YAML speichern → Show läuft auto von Beat 0
+weiter. Kein erneutes Play-Drücken nötig.
+
+### Healing-Pfade an der BPM-Clock
+
+Vorher konnte die Clock im Zustand `running=False` hängen, wenn der
+Audio-Detector während Stille pausiert hatte und der User Audio
+ausschaltete bevor wieder Sound kam. Jetzt:
+
+* `stop_audio` ruft am Ende `set_running(True)`
+* `set_bpm` setzt `_running=True`
+* `tap` setzt `_running=True`
+* Neuer expliziter Op `set_clock_running({running: bool})` für
+  externe Steuerung
+
+### Stage Preview (visuelle Sim)
+
+`web/sim.py` ist eine pure Funktion über `(stage, shadow) → fixtures`.
+Pro Fixture wird:
+
+* `kind` aus den Channel-Roles inferred (moving_head wenn `position/pan`
+  + `position/tilt`; rgb_par wenn `color/r,g,b`; wheel_par wenn
+  `color/wheel`; effect_bar wenn nur `effect/macro`)
+* `color` resolved: RGB direkt; sonst Wheel-Lookup (Bar S120
+  Wheel-Tabelle hardcoded); sonst Macro-Lookup (RX350 12-mode-Tabelle
+  hardcoded); sonst neutral grey
+* `intensity` aus `dimmer`-Channel; oder 1.0 wenn Color > 0
+* Pan/Tilt/Gobo/raw_macro durchgereicht für UI-Render
+
+Endpoint `/api/sim_state`. Die GUI rendert ein Canvas-Layout: Heads
+oben, RX350 mitte (4-LED-Bar), Pars unten. Pan/Tilt als
+Pointer-Linie; Gobo als kleines Badge oben rechts; Strobe als
+Flash-Overlay.
+
+### Scene/Chase Notes
+
+Editierbare Kommentare per Trigger, persisted in
+`<env>/notes.yaml`. Separat von der `description:` aus der YAML — der
+Operator kann live annotieren ohne authored YAMLs zu touchen. GET/PUT
+unter `/api/notes`. GUI: Inline-Edit am rechten Listen-Item-Rand.
+
+### Parameter-Modal
+
+`/api/stage` liefert Scenes/Chases als Objects mit `parameters:`-Block
+(type/default/min/max/options/description). GUI rendert für jedes
+Parameter den passenden Input-Type. Argumente werden mit der `args`-
+Map durchgereicht — gleicher Pfad wie der LLM bei MCP-Calls.
+
+### Reference-BPM für Shows ist ein Engine-State
+
+`Engine._show_reference_bpm`. Wird **nicht** zwischen Engine-Restarts
+persistiert — beim Boot 120 BPM. Ändert sich pro
+`set_show_reference_bpm`-Call. Rein für Längen-/Seek-Berechnung; live
+BPM bleibt unberührt.
+
+### Banks sind nicht 9-Pads
+
+Slot-IDs haben kein Modell-Limit. Tastatur-Map deckt 1-36 ab (Zahlen
+1-9, dann 0=10, dann QWERTZ-, ASDF-, YXCV-Reihen). Slots > 36 sind im
+GUI klickbar, nur ohne Tastenkürzel.
+
+### SET ZERO als Panik-Op
+
+`all_off` ist die nukleare Variante: cleart alle Voices, alle
+Chase-Runner, hebt den Blackout-Latch, setzt Master auf 1.0 zurück.
+Wichtig: Dies ist kein "ich hab was vergessen-Recovery" — es ist
+"Bühne ist im falschen Zustand und ich brauche jetzt sofort
+sauberen Reset". `stop_show` macht jetzt das gleiche, weil der alte
+`stop_show` Chases nicht mit gestoppt hat.
