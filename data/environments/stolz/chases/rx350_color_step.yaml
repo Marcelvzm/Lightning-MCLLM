@@ -1,0 +1,18 @@
+# RX350 — Color (LED-Gruppe) wechselt diskret jeden Beat. 5 Beats Loop.
+name: rx350_color_step
+description: RX350 — pro Beat eine andere LED-Gruppe (rot/blau/gruen/weiss/warm).
+
+loop: true
+length_beats: 5
+
+steps:
+  - at_beat: 0
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: rot,    facet: rx350 } } ]
+  - at_beat: 1
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: blau,   facet: rx350 } } ]
+  - at_beat: 2
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: gruen,  facet: rx350 } } ]
+  - at_beat: 3
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: weiss,  facet: rx350 } } ]
+  - at_beat: 4
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: warm,   facet: rx350 } } ]

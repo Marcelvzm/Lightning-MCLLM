@@ -245,18 +245,20 @@ Wenn zwei Voices den selben Channel beschreiben, gewinnt die jüngere
 
 ### 5. Bank — "wie triggerst du's"
 
-Eine Bank ist ein 9er-Pad-Layout für die GUI:
+Eine Bank ist eine geordnete Liste von Triggern für die GUI — eine
+Sortierung, kein 9er-Pad. Slots sind unbegrenzt:
 
 ```yaml
 name: starter
 slots:
-  - { id: 1, kind: scene,    name: warm_idle, label: "Idle" }
-  - { id: 5, kind: chase,    name: red_pulse, label: "Red Pulse" }
-  - { id: 9, kind: blackout,                  label: "BLACKOUT" }
+  - { id: 1, kind: scene,    name: warm_idle,  label: "Idle",      key: i }
+  - { id: 5, kind: chase,    name: red_pulse,  label: "Red Pulse", key: r }
+  - { id: 9, kind: blackout,                   label: "BLACKOUT",  key: x }
 ```
 
-In der GUI sind die als Tasten 1–9 gemappt. Drückst du `5`, startet
-`red_pulse`. Drückst du `9`, blackout.
+`key:` ist optional pro Slot. Standardmäßig ist nichts auf Tasten
+gemappt; du musst explizit `key:` setzen wenn du eine Tastatur-Trigger
+willst. Slot-Klick funktioniert immer.
 
 ### 6. Show — choreographierte Komposition
 
@@ -690,11 +692,22 @@ persistiert — beim Boot 120 BPM. Ändert sich pro
 `set_show_reference_bpm`-Call. Rein für Längen-/Seek-Berechnung; live
 BPM bleibt unberührt.
 
-### Banks sind nicht 9-Pads
+### Banks haben keine fixe Größe und kein Auto-Keymap
 
-Slot-IDs haben kein Modell-Limit. Tastatur-Map deckt 1-36 ab (Zahlen
-1-9, dann 0=10, dann QWERTZ-, ASDF-, YXCV-Reihen). Slots > 36 sind im
-GUI klickbar, nur ohne Tastenkürzel.
+Slot-IDs haben kein Modell-Limit. **Standardmäßig ist gar nichts auf
+Tasten gemappt** — kein 1-9, keine QWERTZ-Reihen.
+
+Wer Tasten-Trigger will, deklariert `key:` explizit pro Slot in der
+Bank-YAML. Dasselbe geht auch direkt auf Scene- und Chase-YAMLs (auch
+optional `key:`-Feld). Konflikt-Auflösung im Default-Mode:
+
+1. Aktive Bank: Slot mit passendem `key:` gewinnt
+2. Sonst: Scene mit passendem `key:`
+3. Sonst: Chase mit passendem `key:`
+4. Sonst: nichts (außer `T` für Tap-Tempo, `Space`/`Esc` für Blackout-
+   Safety — built-in, nicht-überschreibbar)
+
+Im Show-Mode überlagern die `keybindings:` der Show alle Default-Keys.
 
 ### SET ZERO als Panik-Op
 

@@ -86,7 +86,7 @@ data/
     ├── chases/
     │   └── *.yaml                  zeitliche Aktions-Sequenzen
     ├── banks/
-    │   └── *.yaml                  Launchpad-Layout (9er-Grid)
+    │   └── *.yaml                  Slot-Listen (beliebig viele Slots, opt. key)
     └── shows/
         └── *.yaml                  (optional) skriptierte Choreografien
 ```
@@ -333,6 +333,7 @@ targets:
 | `description` | – | Freitext-Beschreibung |
 | `parameters` | – | Parameter-Deklarationen (§11) |
 | `targets` | – | Liste von Targets (siehe unten) |
+| `key` | – | Optionales Tasten-Kürzel (z.B. `key: r`). Im GUI-Default-Modus feuert die Taste `snap_scene` mit den Default-Args. Bank-Slot-Keys haben Vorrang. |
 
 ### Target-Felder
 
@@ -411,6 +412,7 @@ name: red_pulse
 description: 4-on-the-floor red pulse on the pars.
 loop: true                          # default true; false = einmal durchlaufen, dann stop
 length_beats: 4
+key: p                              # optional — Default-Mode-Tastenkürzel
 
 # (optional) Parameter (§11)
 parameters:
@@ -532,9 +534,11 @@ Wenn Position von z.B. 3.9 auf 0.1 wraps (loop length = 4): Steps die in
 
 ## 9. Banks
 
-Eine **Bank** ist ein 9-Slot-Launchpad-Layout für die GUI. Die Tasten 1-9
-mappen auf Slots. Mehrere Banks pro Environment möglich; eine ist
-"default" (siehe `environment.yaml: default_bank`).
+Eine **Bank** ist eine geordnete Liste von Triggern (Slots) für die GUI.
+Banks haben **kein Größen-Limit** und **kein automatisches Tasten-Layout** —
+sie sind eine Sortierung, kein Launchpad-Pad. Mehrere Banks pro
+Environment möglich; eine ist "default" (siehe
+`environment.yaml: default_bank`).
 
 ### Schema
 
@@ -549,35 +553,50 @@ slots:
     kind: chase
     name: mh_drift_blinks
     label: "MH Drift Rot"
+    key: r          # ← optionales Tasten-Kürzel (case-insensitive)
   # Mit args-Override (siehe §11) — derselbe Chase, andere Variante
   - id: 6
     kind: chase
     name: mh_drift_blinks
     label: "MH Drift Blau"
     args: { baseline_wheel: 34, baseline_dim: 80 }
+    key: b
   - { id: 8, kind: release, group: { tag: bar }, label: "Free MHs" }
-  - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }
+  - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0, key: x }
 ```
 
 ### Slot-Kinds
 
 | Kind | Felder | Verhalten |
 |---|---|---|
-| `scene` | `name`, `label?`, `fade_seconds?`, `args?` | Snap der Scene (mit optionalem Fade-In) |
-| `chase` | `name`, `label?`, `args?` | Start des Chase (oder Replace falls schon laufend) |
-| `blackout` | `label?`, `fade_seconds?` | Globaler Blackout-Latch (siehe §13) |
-| `release` | `group`, `label?` | Voices auf den Selektor-Channels droppen |
+| `scene` | `name`, `label?`, `fade_seconds?`, `args?`, `key?` | Snap der Scene (mit optionalem Fade-In) |
+| `chase` | `name`, `label?`, `args?`, `key?` | Start des Chase (oder Replace falls schon laufend) |
+| `blackout` | `label?`, `fade_seconds?`, `key?` | Globaler Blackout-Latch (siehe §13) |
+| `release` | `group`, `label?`, `key?` | Voices auf den Selektor-Channels droppen |
 
 ### Slot-IDs
 
-`id` ist 1-9 (Tastatur-Slot). Bank-Validation lehnt Duplikate ab. Lücken
-sind erlaubt — die GUI rendert die fehlenden Slots leer.
+`id` ist eine beliebige positive ganze Zahl. Bank-Validation lehnt
+Duplikate ab. Lücken sind erlaubt — sie werden in der GUI einfach in
+der Reihenfolge gerendert in der die `slots:`-Liste sie hat.
+
+### Tastenkürzel (`key:`)
+
+`key:` ist optional auf jedem Slot. Wenn gesetzt: Drücken dieser Taste
+in der GUI feuert den Slot (nur wenn die Bank gerade aktiv ist).
+**Standardmäßig ist nichts belegt** — keine automatische 1-9-Mapping
+mehr. Du musst pro Slot explizit ein `key:` deklarieren wenn du das
+willst.
+
+Konflikt-Auflösung: dieselbe Taste in Bank-Slot UND einer Scene/Chase
+(siehe §7/§8) → der Slot der aktiven Bank gewinnt. Show-Mode ignoriert
+Default-Keys vollständig (siehe `keybindings:` in §15).
 
 ### `args` pro Slot
 
-Slot-Args werden beim Fire an die Scene/Chase weitergegeben. Heißt: derselbe
-Scene-File kann mehrfach in der Bank auftauchen, mit verschiedenen
-Parameter-Werten. Siehe §11 für Details.
+Slot-Args werden beim Fire an die Scene/Chase weitergegeben. Heißt:
+derselbe Scene-File kann mehrfach in der Bank auftauchen, mit
+verschiedenen Parameter-Werten. Siehe §11 für Details.
 
 ---
 
@@ -1093,11 +1112,15 @@ set_value(address, value)   # Direkt-Channel-Override (Debug)
 
 ### GUI
 
-- 9er-Pad triggert Slots (Tasten 1-9 oder Klick)
-- Chases-Liste: Klick togglet start/stop
-- Scenes-Liste: Klick = snap
-- BPM-Slider, Master-Slider, Tap-Tempo-Button (T-Taste)
-- Blackout (Leertaste, latcht), Release (Esc)
+- Bank-Slots: Klick feuert. Optionaler `key:` auf dem Slot bindet eine Taste.
+- Chases-Liste: Klick togglet start/stop. Bei Parametern öffnet sich ein Eingabe-Dialog.
+- Scenes-Liste: Klick = snap. Bei Parametern öffnet sich ein Eingabe-Dialog.
+- Per-Item Notes (rechte Spalte) sind inline editierbar, persisted in `<env>/notes.yaml`.
+- BPM-Slider (40-300), Master-Slider, Tap-Tempo-Button (T-Taste)
+- Audio-Toggle, Genre-Dropdown (Plausibilitäts-Range), Pause-on-Silence-Switch
+- Blackout (Leertaste, latcht), Release (Esc), SET ZERO (Panik-Reset)
+- Show-Timeline-Scrubber + Reference-BPM-Input
+- Stage Preview: Live-Visualisierung des Rigs aus dem DMX-Shadow
 
 ---
 
@@ -1379,7 +1402,7 @@ Action oder muss eine spätere Voice mit höherem Dimmer drüber.
 | `data/environments/<env>/palettes.yaml` | (optional) Cross-Fixture-Farb-Definitionen |
 | `data/environments/<env>/scenes/<name>.yaml` | Eine Scene pro File |
 | `data/environments/<env>/chases/<name>.yaml` | Ein Chase pro File |
-| `data/environments/<env>/banks/<name>.yaml` | 9-Slot-Layouts |
+| `data/environments/<env>/banks/<name>.yaml` | Slot-Listen (beliebig groß; opt. `key:` pro Slot) |
 | `data/environments/<env>/shows/<name>.yaml` | Skriptierte Choreografien |
 
 ### Selektor-Formen

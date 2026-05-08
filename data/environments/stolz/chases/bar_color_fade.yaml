@@ -1,0 +1,20 @@
+# Bar-Heads — kontinuierliches Color-Fade durch alle 5 Paletten.
+# 5 Segmente × 4 Beats = 20 Beats Loop. fade_seconds=1.8 ≈ ein Segment
+# bei BPM ~130 (passt für die meisten Tempi 120-140).
+name: bar_color_fade
+description: Bar — fade durch rot → blau → gruen → weiss → warm → loop.
+
+loop: true
+length_beats: 20
+
+steps:
+  - at_beat: 0
+    actions: [ { kind: transition, group: { tag: bar }, palette: { name: rot,    facet: wheel }, fade_seconds: 1.8 } ]
+  - at_beat: 4
+    actions: [ { kind: transition, group: { tag: bar }, palette: { name: blau,   facet: wheel }, fade_seconds: 1.8 } ]
+  - at_beat: 8
+    actions: [ { kind: transition, group: { tag: bar }, palette: { name: gruen,  facet: wheel }, fade_seconds: 1.8 } ]
+  - at_beat: 12
+    actions: [ { kind: transition, group: { tag: bar }, palette: { name: weiss,  facet: wheel }, fade_seconds: 1.8 } ]
+  - at_beat: 16
+    actions: [ { kind: transition, group: { tag: bar }, palette: { name: warm,   facet: wheel }, fade_seconds: 1.8 } ]

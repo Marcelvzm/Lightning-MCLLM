@@ -1,0 +1,18 @@
+# Bar-Heads — Color wechselt diskret jeden Beat. 5 Beats Loop.
+name: bar_color_step
+description: Bar — pro Beat eine andere Farbe (rot/blau/gruen/weiss/warm).
+
+loop: true
+length_beats: 5
+
+steps:
+  - at_beat: 0
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: rot,    facet: wheel } } ]
+  - at_beat: 1
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: blau,   facet: wheel } } ]
+  - at_beat: 2
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: gruen,  facet: wheel } } ]
+  - at_beat: 3
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: weiss,  facet: wheel } } ]
+  - at_beat: 4
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: warm,   facet: wheel } } ]

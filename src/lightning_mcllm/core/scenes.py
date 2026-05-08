@@ -58,6 +58,11 @@ class Scene(BaseModel):
     description: str | None = None
     parameters: dict[str, ParameterSpec] = Field(default_factory=dict)
     targets: list[SceneTarget] = Field(default_factory=list)
+    # Optional keyboard shortcut. Single character (case-insensitive) or
+    # a named key like "Space"/"Escape". Not assigned by default — set
+    # explicitly in the YAML to bind. Bank-slot keys for the active
+    # bank take precedence when the same key is bound twice.
+    key: str | None = None
 
 
 class RenderedScene(BaseModel):

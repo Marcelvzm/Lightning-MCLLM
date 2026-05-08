@@ -1,0 +1,25 @@
+# Overlay — kehrt das Beat-Verhältnis um. Zwischen den Beats schreibt's
+# all_off (dimmer/RGB/macro auf 0) auf das gesamte Rig → Show ist dunkel.
+# Auf jedem Beat wird kurz released → die underlying Chase-Voice malt
+# durch und die Show wird ~0.15 Beats lang sichtbar.
+#
+# Mechanik (length_beats=1, loopt pro Beat):
+#   at_beat 0:    release → underlying Show paintet wieder (visible)
+#   at_beat 0.15: snap all_off → Show wieder dunkel bis zum nächsten Beat
+#
+# Schreibt nur Dimmer/RGB/Macro (was all_off setzt) — Color, Position,
+# Gobo bleiben unangetastet. Echtes Overlay: kann über jeden Show-Chase
+# gelegt werden, der wird nur "stroboskopisch" durch die Beats geblickt.
+name: beat_blackout
+description: |
+  Beat-getriggertes Show-Overlay — Show ist nur sichtbar während der
+  ersten 0.15 Beats jedes Beats. Sonst Blackout.
+
+loop: true
+length_beats: 1
+
+steps:
+  - at_beat: 0
+    actions: [ { kind: release, group: { all: true } } ]
+  - at_beat: 0.15
+    actions: [ { kind: snap, group: { all: true }, scene: all_off } ]

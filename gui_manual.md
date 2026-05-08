@@ -187,9 +187,9 @@ Bank: [main ▼]    [1 1 Rot] [2 2 Blau] [3 3 Grün] ... [9 9 Halt] [10 0 White 
   gemappt), und Label. Klick = feuern.
 * **Aktive Chase-Slots** sind orange hinterlegt; Blackout-Slots
   haben rote Border.
-* **Slot-Anzahl unbegrenzt** — Tastatur-Map (siehe unten) deckt 1-36
-  ab; alles darüber ist klickbar. Banks sind nicht 9-Slot-Pads, sie
-  sind nur eine Sortierung.
+* **Slot-Anzahl unbegrenzt**, Banks sind nur eine Sortierung. Wenn ein
+  Slot ein `key:`-Feld hat, wird's als Chip neben der Slot-ID
+  eingeblendet — sonst kein Tasten-Trigger.
 
 ---
 
@@ -235,22 +235,31 @@ Updated mit dem Status-Tick.
 
 ### Default-Modus (Play Mode AUS)
 
-Bank-Slots werden über drei Tastatur-Reihen gemappt — einmalig nach
-nicht-deutschem Layout (Y/Z swapped):
+**Standardmäßig ist keine Taste belegt.** Bank-Slots, Scenes und
+Chases bekommen ein optionales `key:`-Feld in ihrer YAML — *nur dann*
+ist die Taste aktiv:
 
-| Tasten | Slots |
-| --- | --- |
-| `1` `2` `3` `4` `5` `6` `7` `8` `9` | 1 - 9 |
-| `0` | 10 |
-| `Q W E R T Z U I O P` | 11 - 20 |
-| `A S D F G H J K L` | 21 - 29 |
-| `Y X C V B N M` | 30 - 36 |
+```yaml
+# in einem Bank-Slot:
+- { id: 5, kind: chase, name: red_pulse, key: r }
 
-| Andere Tasten | Aktion |
+# direkt auf einer Scene oder einem Chase:
+name: warm_idle
+key: i
+targets: [...]
+```
+
+Beim Tastendruck wird in dieser Reihenfolge gesucht: aktive Bank →
+Scenes → Chases. Erste Übereinstimmung gewinnt.
+
+| Built-in Tasten | Aktion |
 | --- | --- |
 | `Leertaste` | BLACKOUT (latcht) |
 | `Esc` | Blackout lösen |
-| `T` | Tap-Tempo |
+| `T` | Tap-Tempo (überschreibbar wenn `T` einer Scene/Slot zugewiesen ist) |
+
+Bank-Slots zeigen ihren `key:` als Chip in der GUI; Scenes/Chases
+zeigen ihn als Tastenbadge in der Liste.
 
 ### Play Mode AN
 

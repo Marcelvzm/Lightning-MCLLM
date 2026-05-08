@@ -28,6 +28,10 @@ class SceneSlot(BaseModel):
     # Optional argument overrides forwarded to the scene's parameters at
     # trigger time. Empty dict / omitted = use scene defaults.
     args: dict[str, Any] = Field(default_factory=dict)
+    # Optional keyboard shortcut. Single character (case-insensitive) or
+    # a named key like "Space" / "Escape". No automatic mapping — if you
+    # don't set this, the key is unbound.
+    key: str | None = None
 
 
 class ChaseSlot(BaseModel):
@@ -38,6 +42,7 @@ class ChaseSlot(BaseModel):
     name: str
     label: str | None = None
     args: dict[str, Any] = Field(default_factory=dict)
+    key: str | None = None
 
 
 class BlackoutSlot(BaseModel):
@@ -47,6 +52,7 @@ class BlackoutSlot(BaseModel):
     kind: Literal["blackout"]
     label: str | None = "Blackout"
     fade_seconds: float = Field(ge=0, default=0.0)
+    key: str | None = None
 
 
 class ReleaseSlot(BaseModel):
@@ -56,6 +62,7 @@ class ReleaseSlot(BaseModel):
     kind: Literal["release"]
     group: Selector
     label: str | None = None
+    key: str | None = None
 
 
 Slot = SceneSlot | ChaseSlot | BlackoutSlot | ReleaseSlot

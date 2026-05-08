@@ -1,0 +1,35 @@
+# Pars (alle: cameos + showtecs + varytec + par64) — kontinuierliches
+# Color-Fade durch alle 5 Paletten. RGB-Werte interpolieren echt smooth,
+# Cameo-Macro folgt diskret (springt zur passenden Palette-Stufe).
+name: par_color_fade
+description: Pars — fade durch rot → blau → gruen → weiss → warm → loop.
+
+loop: true
+length_beats: 20
+
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: par },     palette: { name: rot,    facet: rgb   }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: cameo },   palette: { name: rot,    facet: cameo }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: showtec }, values:  { effect/macro: 0 },             fade_seconds: 1.8 }
+  - at_beat: 4
+    actions:
+      - { kind: transition, group: { tag: par },     palette: { name: blau,   facet: rgb   }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: cameo },   palette: { name: blau,   facet: cameo }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: showtec }, values:  { effect/macro: 0 },             fade_seconds: 1.8 }
+  - at_beat: 8
+    actions:
+      - { kind: transition, group: { tag: par },     palette: { name: gruen,  facet: rgb   }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: cameo },   palette: { name: gruen,  facet: cameo }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: showtec }, values:  { effect/macro: 0 },             fade_seconds: 1.8 }
+  - at_beat: 12
+    actions:
+      - { kind: transition, group: { tag: par },     palette: { name: weiss,  facet: rgb   }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: cameo },   palette: { name: weiss,  facet: cameo }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: showtec }, values:  { effect/macro: 0 },             fade_seconds: 1.8 }
+  - at_beat: 16
+    actions:
+      - { kind: transition, group: { tag: par },     palette: { name: warm,   facet: rgb   }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: cameo },   palette: { name: warm,   facet: cameo }, fade_seconds: 1.8 }
+      - { kind: transition, group: { tag: showtec }, values:  { effect/macro: 0 },             fade_seconds: 1.8 }

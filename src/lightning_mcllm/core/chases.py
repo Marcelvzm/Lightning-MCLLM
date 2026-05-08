@@ -151,6 +151,10 @@ class Chase(BaseModel):
     length_beats: float | None = Field(default=None, gt=0)
     length_seconds: float | None = Field(default=None, gt=0)
     steps: list[Step] = Field(min_length=1)
+    # Optional keyboard shortcut — same semantics as on Scene: opt-in,
+    # no automatic mapping. Bank-slot keys for the active bank win when
+    # the same key is bound twice.
+    key: str | None = None
 
     @model_validator(mode="after")
     def _consistency(self) -> "Chase":

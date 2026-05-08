@@ -1,7 +1,11 @@
-# Colors-Bank — Setter / Random / Off pro Gerät + All-Varianten.
-# Layout: 4-spaltig × 3 Reihen (Setter/Random/Off), Slot 9 = Blackout-Latch
-# (muscle memory), RX Walk hinten dran. Bank-Slot-Limit ist nicht mehr 1-9
-# (User hat aufgehoben).
+# Colors-Bank — alle Farb-bezogenen Trigger.
+# Layout:
+#   1-4   Setter (statische Color+Dim auf Gerät)
+#   5-8   Random Color (Off-Grid Wechsel)
+#   9     Blackout-Latch (muscle memory)
+#   10-13 Off-Scenes (per Gerät + All)
+#   14    RX Walk (12-Mode-Cycle)
+#   15-19 Direkte Color-Snaps via all_color + palette-args (Rot/Blau/Grün/Weiß/Warm)
 name: colors
 description: Bank für alle Farb-bezogenen Scenes & Chases.
 
@@ -27,5 +31,12 @@ slots:
   - { id: 12, kind: scene, name: rx350_off,         label: "RX Off" }
   - { id: 13, kind: scene, name: all_off,           label: "All Off" }
 
-  # ── Extras ──────────────────────────────────────────────────────────────
+  # ── RX Walk ─────────────────────────────────────────────────────────────
   - { id: 14, kind: chase, name: rx350_mode_walk,   label: "RX Walk" }
+
+  # ── Direkte Color-Snaps fürs gesamte Rig (all_color + palette args) ─────
+  - { id: 15, kind: scene, name: all_color, label: "Rot",   args: { col: rot } }
+  - { id: 16, kind: scene, name: all_color, label: "Blau",  args: { col: blau } }
+  - { id: 17, kind: scene, name: all_color, label: "Grün",  args: { col: gruen } }
+  - { id: 18, kind: scene, name: all_color, label: "Weiß",  args: { col: weiss } }
+  - { id: 19, kind: scene, name: all_color, label: "Warm",  args: { col: warm } }

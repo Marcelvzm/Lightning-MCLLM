@@ -100,6 +100,7 @@ def _stage_summary(engine: Engine) -> dict[str, Any]:
                 "name": s.name,
                 "description": s.description,
                 "parameters": _params_to_dict(s.parameters),
+                "key": s.key,
             }
             for s in sorted(stage.scenes.values(), key=lambda x: x.name)
         ],
@@ -112,6 +113,7 @@ def _stage_summary(engine: Engine) -> dict[str, Any]:
                 "step_count": len(c.steps),
                 "description": c.description,
                 "parameters": _params_to_dict(c.parameters),
+                "key": c.key,
             }
             for c in stage.chases.values()
         ],
@@ -124,6 +126,7 @@ def _stage_summary(engine: Engine) -> dict[str, Any]:
                         "kind": s.kind,
                         "name": getattr(s, "name", None),
                         "label": s.label,
+                        "key": getattr(s, "key", None),
                     }
                     for s in b.slots
                 ],

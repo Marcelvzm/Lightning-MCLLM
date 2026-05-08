@@ -319,9 +319,11 @@ function renderBankSlots() {
     el.className = "slot";
     el.classList.toggle("blackout", slot.kind === "blackout");
     if (slot.kind === "chase") el.dataset.chase = slot.name;
-    // Find the keyboard letter (if any) that maps to this slot id.
-    const kbd = Object.entries(SLOT_KEYMAP).find(([_, id]) => id === slot.id)?.[0];
-    const kbdSpan = kbd ? ` <span class="slot-kbd">${kbd.toUpperCase()}</span>` : "";
+    // Show the slot's explicit key binding (if any). No automatic
+    // mapping by id position any more.
+    const kbdSpan = slot.key
+      ? ` <span class="slot-kbd">${escapeHtml(String(slot.key).toUpperCase())}</span>`
+      : "";
     el.innerHTML = `<span class="id">${slot.id}</span>${kbdSpan} ${escapeHtml(slot.label || slot.name || slot.kind)}`;
     el.onclick = () => cmd("fire_slot", { bank: state.selectedBank, slot_id: slot.id });
     row.appendChild(el);
@@ -338,7 +340,12 @@ function _buildTriggerLi(kind, item) {
   const hasParams = Object.keys(params).length > 0;
   if (hasParams) li.classList.add("has-params");
 
-  const kbdBadge = makeKbdBadgeForName(kind, item.name);
+  // In Play Mode the show's keybindings drive the badge; otherwise the
+  // item's own `key:` field (if any).
+  let kbdBadge = makeKbdBadgeForName(kind, item.name);
+  if (!kbdBadge && item.key) {
+    kbdBadge = `<span class="kbd-badge">${escapeHtml(String(item.key).toUpperCase())}</span>`;
+  }
   let meta = "";
   if (kind === "chase") {
     const len = item.length_beats != null ? `${item.length_beats}b` : `${item.length_seconds}s`;
@@ -867,29 +874,62 @@ function handleKey(e) {
     return;
   }
 
-  // Default keyboard mode — extended slot map. Numeric row is the
-  // canonical 1-9, then 0 = 10, then QWERTY rows fan out for 11-36
-  // so a single bank can address ~36 slots from the keyboard. Slots
-  // beyond that are still clickable in the GUI.
-  const slotKey = SLOT_KEYMAP[e.key.toLowerCase()];
-  if (slotKey != null) {
-    cmd("fire_slot", { bank: state.selectedBank, slot_id: slotKey });
+  // Default keyboard mode — no automatic key map. A key only fires
+  // something if it is explicitly bound in the YAML, either on a slot
+  // of the active bank, or on a scene/chase. Priority:
+  //   active bank slot > scene > chase
+  // (if multiple bindings declare the same key, the most "operator-
+  // selected" surface wins).
+  const action = _resolveDefaultKey(e.key);
+  if (action) {
+    e.preventDefault();
+    _fireKeyAction(action);
     return;
   }
+  // T = tap-tempo, only as a fallback when nothing has bound T.
   if (e.key === "t" || e.key === "T") cmd("tap");
 }
 
-const SLOT_KEYMAP = (() => {
-  // 1..9 → 1..9, 0 → 10
-  const m = { "1":1, "2":2, "3":3, "4":4, "5":5, "6":6, "7":7, "8":8, "9":9, "0":10 };
-  // QWERTY top row → 11..20
-  "qwertzuiop".split("").forEach((c, i) => { m[c] = 11 + i; });
-  // ASDF row → 21..29 (tabs/return on most layouts → 9 keys before "ä")
-  "asdfghjkl".split("").forEach((c, i) => { m[c] = 21 + i; });
-  // ZXCV row → 30..36
-  "yxcvbnm".split("").forEach((c, i) => { m[c] = 30 + i; });
-  return m;
-})();
+function _normaliseKey(s) {
+  if (s == null) return null;
+  return String(s).trim().toLowerCase();
+}
+
+function _resolveDefaultKey(rawKey) {
+  const k = _normaliseKey(rawKey);
+  if (!k) return null;
+  // 1. Active bank slot
+  const bank = (state.stage?.banks || []).find(b => b.name === state.selectedBank);
+  for (const slot of (bank?.slots || [])) {
+    if (_normaliseKey(slot.key) === k) {
+      return { kind: "slot", bank: state.selectedBank, slot_id: slot.id };
+    }
+  }
+  // 2. Scenes
+  for (const sc of (state.stage?.scenes || [])) {
+    if (_normaliseKey(sc.key) === k) {
+      return { kind: "scene", name: sc.name };
+    }
+  }
+  // 3. Chases
+  for (const ch of (state.stage?.chases || [])) {
+    if (_normaliseKey(ch.key) === k) {
+      return { kind: "chase", name: ch.name };
+    }
+  }
+  return null;
+}
+
+function _fireKeyAction(a) {
+  if (a.kind === "slot") {
+    cmd("fire_slot", { bank: a.bank, slot_id: a.slot_id });
+  } else if (a.kind === "scene") {
+    cmd("snap_scene", { scene: a.name });
+  } else if (a.kind === "chase") {
+    const isActive = state.status?.active_chases?.some(k => k.startsWith(`chase:${a.name}:`));
+    cmd(isActive ? "stop_chase" : "start_chase", { chase: a.name });
+  }
+}
 
 function firePlayBinding(b) {
   if (b.kind === "scene") cmd("snap_scene", { scene: b.name });

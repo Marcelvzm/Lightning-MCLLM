@@ -1,0 +1,22 @@
+# RX350 — kontinuierlicher Macro-Sweep durch alle Palette-LED-Gruppen.
+# Macros 11 (red) → 57 (blue) → 34 (green) → 103 (white) → 80 (yellow).
+# Achtung: Da macro ein Selektor-Channel ist, durchläuft der Fade
+# zwischenzeitig "ungewollte" Macro-Werte (z.B. Mischfarben). Sieht
+# trotzdem wie ein Color-Wash durch die LED-Gruppen aus.
+name: rx350_color_fade
+description: RX350 — fade durch rot → blau → gruen → weiss → warm → loop.
+
+loop: true
+length_beats: 20
+
+steps:
+  - at_beat: 0
+    actions: [ { kind: transition, group: { tag: beam_bar }, palette: { name: rot,    facet: rx350 }, fade_seconds: 1.8 } ]
+  - at_beat: 4
+    actions: [ { kind: transition, group: { tag: beam_bar }, palette: { name: blau,   facet: rx350 }, fade_seconds: 1.8 } ]
+  - at_beat: 8
+    actions: [ { kind: transition, group: { tag: beam_bar }, palette: { name: gruen,  facet: rx350 }, fade_seconds: 1.8 } ]
+  - at_beat: 12
+    actions: [ { kind: transition, group: { tag: beam_bar }, palette: { name: weiss,  facet: rx350 }, fade_seconds: 1.8 } ]
+  - at_beat: 16
+    actions: [ { kind: transition, group: { tag: beam_bar }, palette: { name: warm,   facet: rx350 }, fade_seconds: 1.8 } ]
