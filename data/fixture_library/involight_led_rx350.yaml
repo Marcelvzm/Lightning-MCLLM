@@ -67,6 +67,7 @@ channels:
     description: "LED-group selector — siehe Kommentar oben für die Werte-Tabelle."
     presets:
       off:           0       # keine Funktion (= dunkel falls nichts anderes drüber liegt).
+      # Named presets — die haben Vorrang in der Doku
       red:          11       # Mitte von 001-022.
       green:        34       # Mitte von 023-045.
       blue:         57       # Mitte von 046-068.
@@ -79,6 +80,19 @@ channels:
       rgb:         218       # Mitte von 207-229: rot + grün + blau.
       all:         241       # Mitte von 230-252: alle Farben gleichzeitig.
       music:       254       # 253-255: music-control mode.
+      # Numerische Aliase 1..12 (für die `rx350_mode`-Scene und ähnliche)
+      '1':          11       # = red
+      '2':          34       # = green
+      '3':          57       # = blue
+      '4':          80       # = yellow
+      '5':         103       # = white
+      '6':         126       # = yellow_white
+      '7':         149       # = red_green
+      '8':         172       # = red_blue
+      '9':         195       # = green_blue
+      '10':        218       # = rgb
+      '11':        241       # = all
+      '12':        254       # = music
   - offset: 1
     role: strobe
     default: 0

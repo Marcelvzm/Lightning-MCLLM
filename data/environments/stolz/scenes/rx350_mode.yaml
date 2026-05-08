@@ -1,0 +1,35 @@
+# Delta-Scene für die Involight RX350 (4-Flower-Bar im 2CH-Mode).
+# EIN Argument mode = '1'..'12' wählt einen der 12 LED-Modi:
+#
+#   "1"  → rote LEDs           "7"  → rot + grün
+#   "2"  → grüne LEDs          "8"  → rot + blau
+#   "3"  → blaue LEDs          "9"  → grün + blau
+#   "4"  → gelbe LEDs          "10" → rot + grün + blau
+#   "5"  → weiße LEDs          "11" → ALLE Farben
+#   "6"  → gelb + weiß         "12" → music-control mode
+#
+# Aufruf:
+#   snap_scene("rx350_mode", args={"mode": "3"})   → blaue LEDs
+#   snap_scene("rx350_mode", args={"mode": "11"})  → alle Farben
+#
+# Die Numerischen Aliase '1'..'12' kommen aus dem RX350-Profil
+# (involight_led_rx350.yaml). Bei jeder Änderung der Bedeutungen → dort
+# anpassen, nicht hier.
+#
+# Delta-Charakter: nur effect/macro wird geschrieben, strobe + andere
+# Voices laufen unangetastet weiter.
+
+name: rx350_mode
+description: RX350 LED-Mode-Switch — eine der 12 Modi via mode-Argument.
+
+parameters:
+  mode:
+    type: str
+    default: "1"
+    options: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+    description: "RX350 LED-Modus (1=rot, 2=grün, …, 11=alle, 12=music)."
+
+targets:
+  - select: { tag: beam_bar }
+    presets:
+      effect/macro: "${mode}"

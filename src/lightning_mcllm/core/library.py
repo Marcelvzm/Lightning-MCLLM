@@ -220,12 +220,16 @@ class Stage:
                     value = resolve_placeholder(raw_value, resolved_args)
                     iv = _coerce_channel_value(value, scene.name, role)
                     out[(fixture.universe, fixture.address - 1 + offset)] = iv
-                # Preset values (resolved via profile.presets)
+                # Preset values (resolved via profile.presets). Preset name
+                # may be a `${param}` placeholder — resolved against scene args.
                 if target.presets:
-                    for role, preset_name in target.presets.items():
+                    for role, raw_preset_name in target.presets.items():
                         offset = profile.role_to_offset(role)
                         if offset is None:
                             continue
+                        preset_name = resolve_placeholder(raw_preset_name, resolved_args)
+                        if not isinstance(preset_name, str):
+                            preset_name = str(preset_name)
                         ch = next((c for c in profile.channels if c.role == role), None)
                         if ch is None or not ch.presets or preset_name not in ch.presets:
                             log.warning("scene %r: preset %r not found for role %r on profile %r",
