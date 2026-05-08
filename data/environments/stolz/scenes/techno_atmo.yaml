@@ -2,6 +2,10 @@
 # Techno-Grundstimmung — siehe genre_concepts/techno.md (state A).
 name: techno_atmo
 description: Techno-Atmosphäre — tief blau, ruhig, hypnotisch.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: blau, facet: wheel }
@@ -9,7 +13,7 @@ targets:
       position/pan: 128
       position/tilt: 110
       movement/speed: 220
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 60
 

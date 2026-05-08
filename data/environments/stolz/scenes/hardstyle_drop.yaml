@@ -2,6 +2,10 @@
 # Siehe genre_concepts/hardstyle.md (state Z2).
 name: hardstyle_drop
 description: Hardstyle Drop — full red+white, peak intensity.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: rot, facet: wheel }
@@ -9,7 +13,7 @@ targets:
       position/pan: 128
       position/tilt: 165
       movement/speed: 0
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 255
 

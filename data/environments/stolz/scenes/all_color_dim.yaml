@@ -18,6 +18,7 @@ parameters:
     min: 0
     max: 255
     description: "Master-Dimmer für Pars (Bar nutzt eigenen Dimmer)."
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   - select: { tag: bar }
@@ -26,7 +27,7 @@ targets:
       position/pan: 128
       position/tilt: 128
       movement/speed: 0
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: "${dim}"
 

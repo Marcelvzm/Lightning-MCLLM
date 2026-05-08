@@ -3,12 +3,15 @@
 name: bar_park_center
 description: Bar-Heads zentriert, Dimmer 0.
 
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     values:
       position/pan: 128
       position/tilt: 128
       movement/speed: 80
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 0

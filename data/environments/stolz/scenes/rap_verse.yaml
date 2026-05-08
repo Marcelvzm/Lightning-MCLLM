@@ -4,10 +4,14 @@
 # am besten via head-2/head-3 in warm-white auf das Publikum gerichtet.)
 name: rap_verse
 description: Rap verse — minimaler Background, "spot"-Effekt durch innere MH-Heads.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     values:
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 0
 

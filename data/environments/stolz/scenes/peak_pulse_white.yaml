@@ -3,11 +3,15 @@
 # in einem Loop wiederholt zu werden (z.B. quarter-beat hits).
 name: peak_pulse_white
 description: Full white peak — repeatable variant von white_hit.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: weiss, facet: wheel }
     values:
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 255
 

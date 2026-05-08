@@ -2,10 +2,14 @@
 # Komplementärkontrast-Setup. Die Bar nutzt die front-Farbe.
 name: split_red_blue
 description: Front rot, Back blau — komplementärer Tiefen-Effekt.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: rot, facet: wheel }
-    values: { dimmer: 255, gobo/wheel: 0, strobe: 0 }
+    values: { dimmer: 255, gobo/wheel: "${gobo}", strobe: 0 }
 
   - select: { tags: [par, front] }
     palette: { name: rot, facet: rgb }

@@ -2,10 +2,14 @@
 # konvention "warm = forward, cold = back" für Tiefe.
 name: split_warm_cold
 description: Front warm (amber), Back kalt (blau) — Tiefen-Illusion.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: warm, facet: wheel }
-    values: { dimmer: 200, gobo/wheel: 0, strobe: 0 }
+    values: { dimmer: 200, gobo/wheel: "${gobo}", strobe: 0 }
 
   - select: { tags: [par, front] }
     palette: { name: warm, facet: rgb }

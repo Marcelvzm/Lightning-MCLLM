@@ -2,6 +2,10 @@
 # Klassisches "Wedding/Party-Reception"-Setup.
 name: dance_floor_warm
 description: Bar-Heads zum Floor, warm bright. Party-Look.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: warm, facet: wheel }
@@ -9,6 +13,6 @@ targets:
       position/pan: 128
       position/tilt: 220
       movement/speed: 80
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 220

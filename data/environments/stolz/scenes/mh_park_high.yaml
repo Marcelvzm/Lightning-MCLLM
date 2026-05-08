@@ -1,12 +1,16 @@
 # Heads nach oben geparkt, Dimmer 0. Neutrale Ruhestellung.
 name: mh_park_high
 description: Bar-Heads oben geparkt, Licht aus.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     values:
       position/pan: 128
       position/tilt: 50
       movement/speed: 80
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 0

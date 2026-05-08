@@ -3,6 +3,9 @@
 name: idle_warm
 description: Sehr dezente warme Grundstimmung.
 
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: warm, facet: wheel }
@@ -10,7 +13,7 @@ targets:
       position/pan: 128
       position/tilt: 110
       movement/speed: 200
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 35
 

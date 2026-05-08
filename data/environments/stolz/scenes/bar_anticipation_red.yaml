@@ -3,6 +3,10 @@
 # Siehe genre_concepts/hardstyle.md (state Z1).
 name: bar_anticipation_red
 description: Bar-Heads rot, frozen — Z1 anticipation halt.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: rot, facet: wheel }
@@ -10,6 +14,6 @@ targets:
       position/pan: 128
       position/tilt: 128
       movement/speed: 0
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 255

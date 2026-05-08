@@ -2,6 +2,10 @@
 # Für ambient peaks, breakdowns, theatralische Momente.
 name: cathedral_blue
 description: Bar-Heads in die Decke, blau — Cathedral-Look.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: blau, facet: wheel }
@@ -9,6 +13,6 @@ targets:
       position/pan: 128
       position/tilt: 50
       movement/speed: 80
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 255

@@ -3,6 +3,10 @@
 # "fühlt sich nach Stunden an, hat sich aber unmerklich gewandelt"-Gefühl.
 name: ambient_drift
 description: Ambient — warm, fast statisch, sehr ruhig.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: warm, facet: wheel }
@@ -10,7 +14,7 @@ targets:
       position/pan: 128
       position/tilt: 80
       movement/speed: 240
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 25
 

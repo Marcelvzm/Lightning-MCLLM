@@ -59,6 +59,13 @@ function onStatus(s) {
   $("bpm-source").textContent = s.bpm_source;
   $("beat-pos").textContent = s.beat_position.toFixed(2);
   $("beat-pos").style.color = s.bpm_source.includes("silent") || !s.running ? "var(--red)" : "";
+  // Audio button: highlight when audio detector is running (source starts with "audio")
+  const audioBtn = $("audio-btn");
+  if (audioBtn) {
+    const audioOn = s.bpm_source && s.bpm_source.startsWith("audio");
+    audioBtn.classList.toggle("active", audioOn);
+    audioBtn.textContent = audioOn ? "🎵 Audio (ON)" : "🎵 Audio";
+  }
   $("master-value").textContent = s.master.toFixed(2);
   $("dmx-status").textContent = (s.dmx_connected ? "✓ " : "✗ ") + s.dmx_description;
   $("dmx-status").style.color = s.dmx_connected ? "var(--green)" : "var(--red)";
@@ -360,6 +367,11 @@ function bind() {
     cmd("set_bpm", { bpm: v, source: "manual" });
   };
   $("tap-btn").onclick = () => cmd("tap");
+  $("audio-btn").onclick = () => {
+    // Toggle: if currently audio mode, turn off; otherwise turn on.
+    const src = state.status?.bpm_source || "";
+    cmd(src.startsWith("audio") ? "stop_audio" : "start_audio");
+  };
   $("master-slider").oninput = (e) => cmd("set_master", { value: parseFloat(e.target.value) });
   $("blackout-btn").onclick = () => cmd("blackout");
   $("release-blackout-btn").onclick = () => cmd("release_blackout");

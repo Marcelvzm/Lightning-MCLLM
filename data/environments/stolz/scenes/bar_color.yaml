@@ -7,11 +7,12 @@ description: Bar-Heads in Palette-Farbe ohne Positions-Override.
 parameters:
   col: { type: str, default: rot, options: [rot, blau, gruen, weiss, warm] }
   dim: { type: int, default: 255, min: 0, max: 255 }
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   - select: { tag: bar }
     palette: { name: "${col}", facet: wheel }
     values:
       dimmer: "${dim}"
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0

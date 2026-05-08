@@ -1,6 +1,10 @@
 name: bar_white
 description: Bar-Heads white, full bright.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: weiss, facet: wheel }
-    values: { dimmer: 255, gobo/wheel: 0, strobe: 0 }
+    values: { dimmer: 255, gobo/wheel: "${gobo}", strobe: 0 }

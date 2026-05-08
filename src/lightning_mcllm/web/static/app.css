@@ -81,6 +81,9 @@ button.danger:hover { background: #d83341; }
 button.danger-light { color: var(--red); border-color: #5a2a30; }
 button.danger-light:hover { background: #2a1115; }
 button.toggle { background: #2a2d36; }
+/* "active" toggle state — highlights when something is on (e.g. audio mode) */
+button.active { background: var(--accent); color: black; border-color: var(--accent); font-weight: 600; }
+button.active:hover { background: #ffc358; }
 button.toggle.on { background: var(--accent); color: black; border-color: var(--accent); font-weight: 600; }
 select {
   background: #14161c; color: var(--text); border: 1px solid var(--border);

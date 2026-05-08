@@ -4,12 +4,15 @@
 name: white_hit
 description: Full-rig white-hit für Drops / Peak-Momente.
 
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: weiss, facet: wheel }
     values:
       dimmer: 255
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
 
   - select: { tag: par }

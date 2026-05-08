@@ -1,6 +1,10 @@
 name: bar_green
 description: Bar-Heads green, full bright.
+
+parameters:
+  gobo: { type: int, default: 0, min: 0, max: 255 }
+
 targets:
   - select: { tag: bar }
     palette: { name: gruen, facet: wheel }
-    values: { dimmer: 255, gobo/wheel: 0, strobe: 0 }
+    values: { dimmer: 255, gobo/wheel: "${gobo}", strobe: 0 }

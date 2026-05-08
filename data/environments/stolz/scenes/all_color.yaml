@@ -14,6 +14,7 @@ parameters:
     default: rot
     options: [rot, blau, gruen, weiss, warm]
     description: "Palette-Name aus palettes.yaml."
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   # Bar-Heads — color-wheel + zentrale Position + voller Dimmer
@@ -25,7 +26,7 @@ targets:
       position/tilt: 128
       position/tilt_fine: 0
       movement/speed: 0
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 255
 

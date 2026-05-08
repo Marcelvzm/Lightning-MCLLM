@@ -7,6 +7,7 @@ description: Sehr leise Atmo-Schicht in Palette-Farbe.
 parameters:
   col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
   dim: { type: int, default: 25, min: 0, max: 255 }
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   - select: { tag: bar }
@@ -15,7 +16,7 @@ targets:
       position/pan: 128
       position/tilt: 110
       movement/speed: 200
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: "${dim}"
 
