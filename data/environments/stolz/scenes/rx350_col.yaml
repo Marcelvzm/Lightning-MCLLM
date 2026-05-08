@@ -1,0 +1,23 @@
+# Setter-Scene für RX350 — schreibt NUR den Color-Macro.
+#
+# Wichtig: Der Involight RX350 (2CH-Mode) hat KEINEN Dimmer-Channel —
+# nur effect/macro (LED-Gruppen-Selektor) und strobe. "Helligkeit" gibt's
+# also nicht regelbar; macro=0 ist effektiv aus, jeder Color-Macro-Wert
+# leuchtet bei voller LED-Helligkeit.
+#
+# Wenn du die RX350 wirklich aus haben willst → palette `weiss` mit
+# col-Override auf 0 geht nicht (palette schreibt einen Wert ≠ 0). Stattdessen
+# einfach eine `release`-Action oder dedizierte Off-Scene.
+name: rx350_col
+description: RX350 — nur Color-Macro setzen (Gerät hat keinen Dimmer-Channel).
+
+parameters:
+  col:
+    type: str
+    default: rot
+    options: [rot, blau, gruen, weiss, warm]
+    description: "Palette-Name aus palettes.yaml."
+
+targets:
+  - select: { tag: beam_bar }
+    palette: { name: "${col}", facet: rx350 }

@@ -1,0 +1,38 @@
+# Alle Bar-Heads kreisen synchron im Uhrzeigersinn (von oben gesehen).
+# 8 Keyframes über 16 Beats, pro Keyframe 2 Beats Übergangszeit.
+# movement/speed=80 lässt die Hardware-Motoren physisch interpolieren.
+#
+# Kreis-Parameter: center=(128,128), radius=70.
+# Sequenz Top → Top-Right → Right → Bottom-Right → Bottom → Bottom-Left
+#         → Left → Top-Left → (loop).
+name: bar_turn_rechts
+description: Bar — alle Heads im Kreis im Uhrzeigersinn.
+
+loop: true
+length_beats: 16
+
+steps:
+  - at_beat: 0      # 12 o'clock — top
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 128, position/tilt: 58,  movement/speed: 80 } }
+  - at_beat: 2      # 1:30 — top-right
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 178, position/tilt: 78,  movement/speed: 80 } }
+  - at_beat: 4      # 3 o'clock — right
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 198, position/tilt: 128, movement/speed: 80 } }
+  - at_beat: 6      # 4:30 — bottom-right
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 178, position/tilt: 178, movement/speed: 80 } }
+  - at_beat: 8      # 6 o'clock — bottom (Publikum)
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 128, position/tilt: 198, movement/speed: 80 } }
+  - at_beat: 10     # 7:30 — bottom-left
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 78,  position/tilt: 178, movement/speed: 80 } }
+  - at_beat: 12     # 9 o'clock — left
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 58,  position/tilt: 128, movement/speed: 80 } }
+  - at_beat: 14     # 10:30 — top-left
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 78,  position/tilt: 78,  movement/speed: 80 } }

@@ -1,0 +1,8 @@
+# Dimmer-Bank — alle Dimmer-/Helligkeits-Trigger zentralisiert.
+# Slots werden gemeinsam nach und nach befüllt.
+name: dimmer
+description: Bank für alle Dimmer-/Helligkeits-bezogenen Scenes & Chases.
+
+slots:
+  - { id: 1, kind: chase, name: rx350_kick_blink, label: "RX Kick" }
+  - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }

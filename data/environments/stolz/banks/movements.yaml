@@ -1,0 +1,7 @@
+# Movements-Bank — Pan/Tilt-Bewegungen, Sweeps, Drifts, Position-Snaps.
+# Slots werden gemeinsam nach und nach befüllt.
+name: movements
+description: Bank für alle Bewegungs-bezogenen Scenes & Chases (Pan/Tilt-Patterns).
+
+slots:
+  - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }

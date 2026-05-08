@@ -1,0 +1,69 @@
+# Reine Bewegung aus chaos_strobe extrahiert — Heads thrashen alle 0.5 Beats
+# zu pseudozufälligen Positionen. Schreibt NUR position/pan + position/tilt
+# + movement/speed. Color, Dimmer, Strobe, Gobo bleiben unangetastet.
+#
+# Movement/speed: 0 = instant motor (snappy thrashing). Wenn du smoother
+# willst, kombinier mit einer Scene die movement/speed hochsetzt — die
+# wird hier nur überschrieben sobald der nächste Snap kommt.
+name: bar_chaos_movement
+description: Chaos-Bewegungsanteil aus chaos_strobe — thrashing heads ohne Strobe/Color.
+
+loop: true
+length_beats: 4
+
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 50,  position/tilt: 80,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 200, position/tilt: 130, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 80,  position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 230, position/tilt: 60,  movement/speed: 0 } }
+
+  - at_beat: 0.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 180, position/tilt: 60,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 30,  position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 220, position/tilt: 100, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 100, position/tilt: 170, movement/speed: 0 } }
+
+  - at_beat: 1.0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 220, position/tilt: 170, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 100, position/tilt: 50,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 50,  position/tilt: 130, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 180, position/tilt: 220, movement/speed: 0 } }
+
+  - at_beat: 1.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 30,  position/tilt: 110, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 230, position/tilt: 80,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 130, position/tilt: 220, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 80,  position/tilt: 60,  movement/speed: 0 } }
+
+  - at_beat: 2.0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 200, position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 80,  position/tilt: 110, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 230, position/tilt: 50,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 30,  position/tilt: 170, movement/speed: 0 } }
+
+  - at_beat: 2.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 100, position/tilt: 230, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 180, position/tilt: 50,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 60,  position/tilt: 100, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 200, position/tilt: 130, movement/speed: 0 } }
+
+  - at_beat: 3.0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 230, position/tilt: 80,  movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 50,  position/tilt: 220, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 180, position/tilt: 130, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 130, position/tilt: 50,  movement/speed: 0 } }
+
+  - at_beat: 3.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: 130, position/tilt: 200, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: 220, position/tilt: 100, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: 30,  position/tilt: 180, movement/speed: 0 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: 100, position/tilt: 110, movement/speed: 0 } }

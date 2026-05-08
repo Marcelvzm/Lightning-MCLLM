@@ -1,0 +1,55 @@
+# Jeder Bar-Head hat eine eigene Sequenz von Position-Snaps zu off-grid
+# Beats — unterschiedliche Anzahl Beats zwischen Wechseln, unterschiedliche
+# implizite Drehrichtung (Reihenfolge der Positionen). Sieht zufällig aus,
+# ist aber deterministisch beat-locked.
+#
+# Loop = 24 Beats (krumme Länge — Loop-Boundary fällt nicht auf eine
+# Standardphrase). Pro Head 4-5 Keyframes verteilt.
+name: bar_turn_random
+description: |
+  Bar-Heads kreisen unabhängig — jeder Head eigene Sequenz, unterschiedliche
+  Beat-Längen, unterschiedliche Richtungen. Off-grid für "random"-Look.
+
+loop: true
+length_beats: 24
+
+steps:
+  # ── head-1 — startet oben, dreht CW dann CCW ─────────────────────────────
+  - at_beat: 0.5
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: 128, position/tilt: 58,  movement/speed: 80 } } ]
+  - at_beat: 5.3   # → CW: right
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: 198, position/tilt: 128, movement/speed: 80 } } ]
+  - at_beat: 11.7  # → CCW: top-left
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: 78,  position/tilt: 78,  movement/speed: 80 } } ]
+  - at_beat: 18.4  # → CW: bottom
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: 128, position/tilt: 198, movement/speed: 80 } } ]
+
+  # ── head-2 — startet rechts, dreht CW konstant aber mit Pausen ──────────
+  - at_beat: 1.2
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: 198, position/tilt: 128, movement/speed: 80 } } ]
+  - at_beat: 7.6   # → bottom-right
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: 178, position/tilt: 178, movement/speed: 80 } } ]
+  - at_beat: 14.9  # → left (springt → wirkt wie Richtungswechsel)
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: 58,  position/tilt: 128, movement/speed: 80 } } ]
+  - at_beat: 21.3  # → top
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: 128, position/tilt: 58,  movement/speed: 80 } } ]
+
+  # ── head-3 — startet unten, kurze Sequenzen ─────────────────────────────
+  - at_beat: 2.8
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: 128, position/tilt: 198, movement/speed: 80 } } ]
+  - at_beat: 9.1   # → top
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: 128, position/tilt: 58,  movement/speed: 80 } } ]
+  - at_beat: 15.4  # → right
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: 198, position/tilt: 128, movement/speed: 80 } } ]
+  - at_beat: 20.7  # → bottom-left
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: 78,  position/tilt: 178, movement/speed: 80 } } ]
+
+  # ── head-4 — startet links, lange Pausen ────────────────────────────────
+  - at_beat: 0.8
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: 58,  position/tilt: 128, movement/speed: 80 } } ]
+  - at_beat: 6.4   # → bottom
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: 128, position/tilt: 198, movement/speed: 80 } } ]
+  - at_beat: 13.2  # → top
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: 128, position/tilt: 58,  movement/speed: 80 } } ]
+  - at_beat: 22.5  # → right
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: 198, position/tilt: 128, movement/speed: 80 } } ]

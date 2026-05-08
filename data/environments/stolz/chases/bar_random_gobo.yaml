@@ -1,0 +1,30 @@
+# Bar-Heads wechseln Gobo zu off-grid Beat-Positionen. Alle Heads synchron
+# (gleiches Gobo) aber die Wechsel-Zeitpunkte sind unregelmäßig — wirkt
+# zufällig, bleibt aber tight im Takt.
+#
+# Schreibt NUR gobo/wheel. Andere Channels (Color, Tilt, Pan, Dimmer)
+# bleiben unangetastet → kann jederzeit über jeden anderen Bar-Chase
+# gelegt werden.
+name: bar_random_gobo
+description: |
+  Off-grid Gobo-Wechsel auf allen Bar-Heads synchron. Beat-locked aber
+  mit unregelmäßigen Abständen.
+
+loop: true
+length_beats: 16
+
+steps:
+  - at_beat: 0.7
+    actions: [ { kind: snap, group: { tag: bar }, values: { gobo/wheel: 14 } } ]   # gobo1
+  - at_beat: 2.4
+    actions: [ { kind: snap, group: { tag: bar }, values: { gobo/wheel: 34 } } ]   # gobo3
+  - at_beat: 5.1
+    actions: [ { kind: snap, group: { tag: bar }, values: { gobo/wheel: 54 } } ]   # gobo5
+  - at_beat: 7.8
+    actions: [ { kind: snap, group: { tag: bar }, values: { gobo/wheel: 74 } } ]   # gobo7
+  - at_beat: 9.3
+    actions: [ { kind: snap, group: { tag: bar }, values: { gobo/wheel: 24 } } ]   # gobo2
+  - at_beat: 11.6
+    actions: [ { kind: snap, group: { tag: bar }, values: { gobo/wheel: 64 } } ]   # gobo6
+  - at_beat: 13.9
+    actions: [ { kind: snap, group: { tag: bar }, values: { gobo/wheel: 44 } } ]   # gobo4

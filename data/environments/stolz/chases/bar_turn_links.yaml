@@ -1,0 +1,34 @@
+# Wie bar_turn_rechts, aber gegen den Uhrzeigersinn.
+# Sequenz Top → Top-Left → Left → Bottom-Left → Bottom → Bottom-Right
+#         → Right → Top-Right → (loop).
+name: bar_turn_links
+description: Bar — alle Heads im Kreis gegen den Uhrzeigersinn.
+
+loop: true
+length_beats: 16
+
+steps:
+  - at_beat: 0      # 12 o'clock — top
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 128, position/tilt: 58,  movement/speed: 80 } }
+  - at_beat: 2      # 10:30 — top-left
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 78,  position/tilt: 78,  movement/speed: 80 } }
+  - at_beat: 4      # 9 o'clock — left
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 58,  position/tilt: 128, movement/speed: 80 } }
+  - at_beat: 6      # 7:30 — bottom-left
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 78,  position/tilt: 178, movement/speed: 80 } }
+  - at_beat: 8      # 6 o'clock — bottom (Publikum)
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 128, position/tilt: 198, movement/speed: 80 } }
+  - at_beat: 10     # 4:30 — bottom-right
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 178, position/tilt: 178, movement/speed: 80 } }
+  - at_beat: 12     # 3 o'clock — right
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 198, position/tilt: 128, movement/speed: 80 } }
+  - at_beat: 14     # 1:30 — top-right
+    actions:
+      - { kind: snap, group: { tag: bar }, values: { position/pan: 178, position/tilt: 78,  movement/speed: 80 } }

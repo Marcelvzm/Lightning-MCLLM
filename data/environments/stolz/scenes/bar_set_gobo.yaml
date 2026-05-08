@@ -1,0 +1,28 @@
+# Setter-Scene für Gobo auf den Bar-Heads. Schreibt NUR den
+# gobo/wheel-Channel — Color, Position, Dimmer bleiben unangetastet.
+# Werte (TMH Bar S120):
+#   0    = open (kein Gobo)
+#   14   = gobo1
+#   24   = gobo2
+#   34   = gobo3
+#   44   = gobo4
+#   54   = gobo5
+#   64   = gobo6
+#   74   = gobo7
+#   80-149  = gobo shaking (in absteigenden Bereichen)
+#   150-255 = wheel rotation (langsam → schnell)
+name: bar_set_gobo
+description: Bar-Heads — Gobo setzen.
+
+parameters:
+  gobo:
+    type: int
+    default: 0
+    min: 0
+    max: 255
+    description: "Gobo-Wert. 0=open, 14=gobo1, 24=gobo2, …, 74=gobo7. 150-255=Wheel-Rotation."
+
+targets:
+  - select: { tag: bar }
+    values:
+      gobo/wheel: "${gobo}"

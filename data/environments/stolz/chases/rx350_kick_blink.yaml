@@ -1,0 +1,28 @@
+# Orthogonaler Blink-Overlay für die RX350. Lässt die LEDs nur kurz auf
+# jedem Beat aufleuchten — die FARBE wird NICHT geschrieben, sondern kommt
+# vom darunterliegenden Chase (z.B. `rx350_mode_walk`).
+#
+# Mechanik:
+#   - bei jedem Beat wird per `release` die eigene dark-voice gedroppt →
+#     die underlying Color-Walk-Voice paintet ihren aktuellen Mode (~ kurz
+#     hell)
+#   - 0.18 Beats später wird wieder macro=0 gesnapt (= dunkel laut Profil)
+#     → bleibt bis zum nächsten Beat dunkel
+#
+# Ergibt zusammen mit `rx350_mode_walk`: pro Beat ein kurzer Color-Burst,
+# Farbe wechselt jeden Beat (12-Mode-Walk vom mode_walk-Chase).
+# Allein ohne Color-Walk darunter: nichts sichtbar (die release droppt nur
+# eigene voices, und die snap-macro=0-voice macht Default = dunkel).
+
+name: rx350_kick_blink
+description: RX350-Blink-Overlay — pro Beat kurz aufleuchten, Farbe von darunterliegendem Chase.
+loop: true
+length_beats: 1
+
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: release, group: { tag: beam_bar } }
+  - at_beat: 0.18
+    actions:
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } }

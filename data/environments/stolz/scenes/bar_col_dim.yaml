@@ -1,0 +1,24 @@
+# Setter-Scene für die Bar-Heads — schreibt NUR Color-Wheel + Dimmer.
+# Keine Position, kein Gobo, kein Strobe — die gehören in andere Banks
+# (movements / effects). Cleaner Bank-by-Concern Refactor.
+name: bar_col_dim
+description: Bar-Heads — Color-Wheel + Dimmer setzen (sonst nichts).
+
+parameters:
+  col:
+    type: str
+    default: rot
+    options: [rot, blau, gruen, weiss, warm]
+    description: "Palette-Name aus palettes.yaml."
+  dim:
+    type: int
+    default: 255
+    min: 0
+    max: 255
+    description: "Master-Dimmer der Bar-Heads (0-255)."
+
+targets:
+  - select: { tag: bar }
+    palette: { name: "${col}", facet: wheel }
+    values:
+      dimmer: "${dim}"

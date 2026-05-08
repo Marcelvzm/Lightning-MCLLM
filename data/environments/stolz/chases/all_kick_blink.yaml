@@ -1,0 +1,288 @@
+# Synchroner Dimmer-Kick auf ALLEN Fixtures gleichzeitig — pars + bar
+# pulsen auf 255, RX350 auf rx350_color, dann release. Off-grid Beat-
+# Stellen wie bei den per-Group-kick-blinks, aber ALLES feuert auf
+# denselben Beats statt versetzt.
+#
+# Schreibt nur dimmer (pars/bar) bzw. macro (rx350) — Color/Position/Gobo
+# der underlying Voices bleiben unangetastet (echtes Overlay).
+#
+# WICHTIG — RX350: hat keinen Dimmer-Channel, wird per macro auf
+# rx350_color gesnappt während eines Blinks. Nach dem release fällt es auf
+# whatever der underlying Voice malt (z.B. rx350_mode_walk) bzw. macro=0
+# wenn nichts darunter läuft.
+#
+# Showtecs: rausgelassen — sie haben keinen Master-Dimmer (RGB regelt
+# Helligkeit direkt). Filter würde nichts tun.
+#
+# 16 Trigger-Punkte über 16 Beats:
+#   12× single  → alle Fixtures pulsen kurz
+#    3× double  → zweimal in dichter Folge (wie 8-tel)  (Beats 3, 12)
+#    1× triple  → dreimal in dichter Folge (Beat 8 — Peak)
+name: all_kick_blink
+description: |
+  Synchroner Off-Grid-Blink auf allen Fixtures (pars + bar + rx350)
+  gleichzeitig. Echtes Overlay — schreibt nur Dimmer/Macro.
+
+loop: true
+length_beats: 16
+
+parameters:
+  rx350_color:
+    type: int
+    default: 103     # white
+    min: 0
+    max: 255
+    description: "Macro-Wert für RX350 während der Blinks. 11=red, 34=green, 57=blue, 80=yellow, 103=white, 218=rgb, 241=all."
+
+steps:
+  # Beat 0 — single
+  - at_beat: 0.5
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 0.65
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 1
+  - at_beat: 1.2
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 1.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 2
+  - at_beat: 2.7
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 2.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 3 — DOUBLE (zwei Blinks in dichter Folge)
+  - at_beat: 3.3
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 3.45
+    actions: [ { kind: release, group: { all: true } } ]
+  - at_beat: 3.65
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 3.8
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 4
+  - at_beat: 4.6
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 4.75
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 5
+  - at_beat: 5.4
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 5.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 6
+  - at_beat: 6.8
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 6.95
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 7
+  - at_beat: 7.2
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 7.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 8 — TRIPLE peak
+  - at_beat: 8.3
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 8.45
+    actions: [ { kind: release, group: { all: true } } ]
+  - at_beat: 8.55
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 8.7
+    actions: [ { kind: release, group: { all: true } } ]
+  - at_beat: 8.8
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 8.95
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 9
+  - at_beat: 9.4
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 9.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 10
+  - at_beat: 10.7
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 10.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 11
+  - at_beat: 11.3
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 11.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 12 — DOUBLE
+  - at_beat: 12.6
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 12.75
+    actions: [ { kind: release, group: { all: true } } ]
+  - at_beat: 12.95
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 13.1
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 13
+  - at_beat: 13.5
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 13.65
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 14
+  - at_beat: 14.2
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 14.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 15
+  - at_beat: 15.7
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: cameo-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: pad-1 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { name: par64 },   values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: bar },      values: { dimmer: 255 } }
+      - { kind: snap, group: { tag: beam_bar }, values: { effect/macro: "${rx350_color}" } }
+  - at_beat: 15.85
+    actions: [ { kind: release, group: { all: true } } ]

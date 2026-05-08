@@ -1,0 +1,36 @@
+# Setter-Scene für alle Pars — schreibt nur Farbe (RGB + cameo-macro
+# Override) + Dimmer. Andere Channels (Strobe, Mode) bleiben unangetastet.
+#
+# Tag-Auflösung:
+#   - tag: par      matched alle Pars (cameos, showtecs, varytec, par64)
+#   - tag: cameo    matched zusätzlich nur die Cameos → bekommen extra
+#                   macro-Override (sonst macro=0=Blackout-Bug)
+#   - tag: showtec  matched nur Showtecs → effect/macro=0 für RGB-Direkt-Mode
+name: par_col_dim
+description: Alle Pars — Farbe (RGB + Cameo-Macro) + Dimmer setzen.
+
+parameters:
+  col:
+    type: str
+    default: rot
+    options: [rot, blau, gruen, weiss, warm]
+    description: "Palette-Name aus palettes.yaml."
+  dim:
+    type: int
+    default: 255
+    min: 0
+    max: 255
+    description: "Master-Dimmer aller Pars (0-255)."
+
+targets:
+  - select: { tag: par }
+    palette: { name: "${col}", facet: rgb }
+    values:
+      dimmer: "${dim}"
+
+  - select: { tag: cameo }
+    palette: { name: "${col}", facet: cameo }
+
+  - select: { tag: showtec }
+    values:
+      effect/macro: 0

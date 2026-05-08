@@ -231,6 +231,26 @@ function onStage(st) {
   }
 
   applyFilter();
+  // Re-apply active-chase highlight from the last known status — the
+  // list rebuild above wiped the .active class. Without this, on every
+  // hot-reload (i.e. every YAML save) the highlight blinks off until
+  // the next status frame arrives.
+  if (state.status?.active_chases) {
+    const active = state.status.active_chases;
+    document.querySelectorAll("#chases-list li").forEach(li => {
+      const name = li.dataset.name;
+      li.classList.toggle(
+        "active",
+        active.some(k => k === `chase:${name}` || k.startsWith(`chase:${name}:`)),
+      );
+    });
+    document.querySelectorAll(".bank-slot-row .slot[data-chase]").forEach(el => {
+      el.classList.toggle(
+        "active",
+        active.some(k => k.startsWith(`chase:${el.dataset.chase}:`)),
+      );
+    });
+  }
 }
 
 function makeKbdBadgeForName(kind, name) {
