@@ -66,6 +66,26 @@ function onStatus(s) {
     audioBtn.classList.toggle("active", audioOn);
     audioBtn.textContent = audioOn ? "🎵 Audio (ON)" : "🎵 Audio";
   }
+  // Audio diagnostics: only show when detector is running.
+  // Helps debug "audio (silent)" by showing actual RMS / confidence vs thresholds.
+  const audioDiag = $("audio-diag");
+  if (audioDiag) {
+    if (s.audio && s.audio.running) {
+      const a = s.audio;
+      const rmsBad = a.rms < a.rms_threshold;
+      const confBad = a.confidence < a.confidence_threshold;
+      audioDiag.style.display = "";
+      audioDiag.innerHTML =
+        `<span title="audio level (root-mean-square)">RMS: <b style="color:${rmsBad ? 'var(--red)' : 'var(--green)'}">${a.rms.toFixed(4)}</b> ` +
+        `<span class="muted-hint">/ thr ${a.rms_threshold}</span></span>` +
+        `<span title="aubio beat-tracking confidence (0..1)">  Conf: <b style="color:${confBad ? 'var(--red)' : 'var(--green)'}">${a.confidence.toFixed(2)}</b> ` +
+        `<span class="muted-hint">/ thr ${a.confidence_threshold}</span></span>` +
+        `<span class="muted-hint">  raw BPM: ${a.bpm_raw.toFixed(1)}</span>` +
+        `<span class="muted-hint">  ${a.silent ? '⏸ silent' : '▶ tracking'}</span>`;
+    } else {
+      audioDiag.style.display = "none";
+    }
+  }
   $("master-value").textContent = s.master.toFixed(2);
   $("dmx-status").textContent = (s.dmx_connected ? "✓ " : "✗ ") + s.dmx_description;
   $("dmx-status").style.color = s.dmx_connected ? "var(--green)" : "var(--red)";
@@ -368,10 +388,10 @@ function bind() {
   };
   $("tap-btn").onclick = () => cmd("tap");
   $("audio-btn").onclick = () => {
-    // Toggle: if currently audio mode, turn off; otherwise turn on.
     const src = state.status?.bpm_source || "";
     cmd(src.startsWith("audio") ? "stop_audio" : "start_audio");
   };
+  $("all-off-btn").onclick = () => cmd("all_off");
   $("master-slider").oninput = (e) => cmd("set_master", { value: parseFloat(e.target.value) });
   $("blackout-btn").onclick = () => cmd("blackout");
   $("release-blackout-btn").onclick = () => cmd("release_blackout");

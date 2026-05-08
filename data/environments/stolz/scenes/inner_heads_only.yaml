@@ -6,6 +6,7 @@ description: Nur die beiden inneren Bar-Heads leuchten.
 parameters:
   col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
   dim: { type: int, default: 200, min: 0, max: 255 }
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   - select: { tag: bar }
@@ -18,6 +19,6 @@ targets:
       position/pan: 128
       position/tilt: 140
       movement/speed: 100
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: "${dim}"

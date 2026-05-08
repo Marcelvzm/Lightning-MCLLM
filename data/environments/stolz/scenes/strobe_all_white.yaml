@@ -11,13 +11,14 @@ parameters:
     min: 11
     max: 255
     description: "Strobe-Rate auf Pars/Bar. Min 11 weil unter 11 = aus."
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   - select: { tag: bar }
     palette: { name: weiss, facet: wheel }
     values:
       dimmer: 255
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: "${rate}"
 
   - select: { tag: par }

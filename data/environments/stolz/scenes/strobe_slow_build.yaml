@@ -7,13 +7,14 @@ description: Slow strobe für Build-up-Phasen, Pars + Bar.
 parameters:
   rate: { type: int, default: 40, min: 11, max: 255 }
   col: { type: str, default: weiss, options: [rot, blau, gruen, weiss, warm] }
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   - select: { tag: bar }
     palette: { name: "${col}", facet: wheel }
     values:
       dimmer: 200
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: "${rate}"
 
   - select: { tag: par }

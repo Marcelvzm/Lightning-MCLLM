@@ -5,6 +5,7 @@ description: Sehr dezenter Glow (10 dim) — kaum mehr als Präsenz.
 
 parameters:
   col: { type: str, default: warm, options: [rot, blau, gruen, weiss, warm] }
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   - select: { tag: bar }
@@ -13,7 +14,7 @@ targets:
       position/pan: 128
       position/tilt: 110
       movement/speed: 240
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 10
 

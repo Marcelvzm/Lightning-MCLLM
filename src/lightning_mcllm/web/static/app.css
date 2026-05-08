@@ -84,6 +84,14 @@ button.toggle { background: #2a2d36; }
 /* "active" toggle state — highlights when something is on (e.g. audio mode) */
 button.active { background: var(--accent); color: black; border-color: var(--accent); font-weight: 600; }
 button.active:hover { background: #ffc358; }
+
+/* Live audio diagnostics — under the master row when audio mode is on */
+.audio-diag {
+  margin-top: 6px; padding: 6px 8px; border-radius: 4px;
+  background: #14161c; font-size: 11px; font-variant-numeric: tabular-nums;
+  display: flex; flex-wrap: wrap; gap: 12px;
+}
+.audio-diag b { font-weight: 600; }
 button.toggle.on { background: var(--accent); color: black; border-color: var(--accent); font-weight: 600; }
 select {
   background: #14161c; color: var(--text); border: 1px solid var(--border);

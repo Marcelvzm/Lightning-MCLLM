@@ -5,6 +5,7 @@ description: Nur head-1 leuchtet, alle anderen Bar-Heads aus.
 
 parameters:
   col: { type: str, default: weiss, options: [rot, blau, gruen, weiss, warm] }
+  gobo: { type: int, default: 0, min: 0, max: 255 }
 
 targets:
   # Erst alle Heads dunkel
@@ -19,6 +20,6 @@ targets:
       position/pan: 128
       position/tilt: 165
       movement/speed: 100
-      gobo/wheel: 0
+      gobo/wheel: "${gobo}"
       strobe: 0
       dimmer: 255

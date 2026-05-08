@@ -58,6 +58,12 @@ class AudioBpmDetector:
         self._thread: threading.Thread | None = None
         self._recent: deque[float] = deque(maxlen=8)
         self._error: str | None = None
+        # Live diagnostics (read by Engine.status() so the GUI can show them).
+        # Updated each audio frame ~43Hz at 44.1kHz / 1024-sample blocks.
+        self.last_rms: float = 0.0
+        self.last_confidence: float = 0.0
+        self.last_bpm_raw: float = 0.0
+        self.last_silent: bool = False
 
     @property
     def error(self) -> str | None:
@@ -132,9 +138,14 @@ class AudioBpmDetector:
                 _ = tempo(samples)
                 confidence = tempo.get_confidence()
                 rms = float(np.sqrt(np.mean(samples * samples))) if len(samples) > 0 else 0.0
+                # Live diagnostics for the GUI / status endpoint.
+                self.last_rms = rms
+                self.last_confidence = float(confidence)
+                self.last_bpm_raw = float(tempo.get_bpm())
                 # Silence = either room is genuinely quiet (low RMS) OR aubio
                 # reports no usable beat (low confidence).
                 is_silent = rms < self._silence_rms or confidence < self._conf_thresh
+                self.last_silent = is_silent
 
                 now = time.monotonic()
                 if is_silent:

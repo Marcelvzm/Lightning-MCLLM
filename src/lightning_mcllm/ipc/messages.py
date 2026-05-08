@@ -55,6 +55,7 @@ ENGINE_OPS: tuple[str, ...] = (
     "stop_show",
     "start_audio",
     "stop_audio",
+    "all_off",
     "log",
     # special — handled in IPC server / web router, not via Engine.submit
     "status",

@@ -84,6 +84,7 @@ class EngineStatus:
     tick_rate_hz: float
     actual_dt_ms: float
     show: dict[str, Any] | None = None
+    audio: dict[str, Any] | None = None  # live RMS/confidence diag when audio mode is on
 
 
 # ---------------------------------------------------------------------------
@@ -229,6 +230,19 @@ class Engine:
             }
         else:
             show_state = None
+        # Audio diagnostics (live RMS/confidence) when detector is running
+        audio_state = None
+        if self._audio_detector is not None:
+            d = self._audio_detector
+            audio_state = {
+                "running": True,
+                "rms": round(d.last_rms, 4),
+                "confidence": round(d.last_confidence, 3),
+                "bpm_raw": round(d.last_bpm_raw, 1),
+                "silent": d.last_silent,
+                "rms_threshold": d._silence_rms,
+                "confidence_threshold": d._conf_thresh,
+            }
         return EngineStatus(
             running=self._thread is not None and self._thread.is_alive(),
             stage_name=stage_name,
@@ -246,6 +260,7 @@ class Engine:
             tick_rate_hz=self._refresh_hz,
             actual_dt_ms=self._actual_dt_ms,
             show=show_state,
+            audio=audio_state,
         )
 
     def shadow_snapshot(self) -> bytes:
@@ -397,6 +412,16 @@ class Engine:
                 self._record_error(f"start_audio: {err}")
         elif name == "stop_audio":
             self.stop_audio()
+        elif name == "all_off":
+            # Hard-reset to clean state: drop ALL voices (chase + scene +
+            # override), drop chase runners, release blackout latch, reset
+            # master to 1.0. Result: shadow renders as all-zero next tick,
+            # every fixture goes dark immediately. Use as a panic button.
+            self._voices = []
+            self._chase_runners.clear()
+            self._blackout = False
+            self._blackout_fade_seconds = 0.0
+            self._master = 1.0
         elif name == "log":
             self._record_error(str(a.get("message", "")))
         else:

@@ -1,6 +1,0 @@
-name: back_blue
-description: Backlight blau full bright.
-targets:
-  - select: { tag: back }
-    palette: { name: blau, facet: rgb }
-    values: { dimmer: 255, strobe: 0 }

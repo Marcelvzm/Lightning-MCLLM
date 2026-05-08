@@ -1,0 +1,109 @@
+# Bar-Heads in zwei "Zickzack"-Paaren — head-1+head-3 (Paar A) vs.
+# head-2+head-4 (Paar B). Phase 1 (Beats 0-3): A schaut nach vorne ins
+# Publikum, B nach oben zur Decke. Phase 2 (Beats 4-7): umgekehrt.
+# Pro Paar eigenes Gobo + eigene Color via Parameter.
+#
+# Voice-Trick: Phase 1 (Step 0) schreibt ALLE Werte (pan/tilt/color/gobo/
+# dimmer/strobe) für jeden Head. Phase 2 (Step 1) schreibt NUR die
+# Tilt-Werte um. Color/Gobo/Dimmer bleiben über die persistierenden
+# Step-0-Voices erhalten — Newer-wins greift nur auf dem Tilt-Channel.
+name: bar_pair_alternate_tilt
+description: |
+  Zwei Head-Paare wechseln Tilt zwischen Publikum (165) und Decke (50).
+  Paar A = head-1 + head-3 (Zickzack ungerade), Paar B = head-2 + head-4
+  (Zickzack gerade). Wenn A vorne schaut, schaut B oben — und umgekehrt.
+  Pro Paar separates color/wheel + gobo/wheel über Parameter.
+
+loop: true
+length_beats: 8
+
+parameters:
+  gobo_a:
+    type: int
+    default: 0          # open beam (kein Gobo)
+    min: 0
+    max: 255
+    description: "Gobo-Wert für Paar A (head-1 + head-3). 0=open, 14=gobo1, 24=gobo2, 34=gobo3, ..."
+  gobo_b:
+    type: int
+    default: 24         # gobo2
+    min: 0
+    max: 255
+    description: "Gobo-Wert für Paar B (head-2 + head-4)."
+  color_a:
+    type: int
+    default: 14         # red
+    min: 0
+    max: 255
+    description: "Color-wheel Wert für Paar A. 0=white, 14=red, 24=green, 34=blue, 44=yellow, 64=orange, 74=purple."
+  color_b:
+    type: int
+    default: 34         # blue
+    min: 0
+    max: 255
+    description: "Color-wheel Wert für Paar B."
+  dimmer:
+    type: int
+    default: 220
+    min: 0
+    max: 255
+    description: "Master-Dimmer beider Paare."
+
+steps:
+  # ── Phase 1: A nach vorne (Publikum), B nach oben (Decke) ────────────────
+  - at_beat: 0
+    note: "A → Publikum (tilt 165), B → Decke (tilt 50)"
+    actions:
+      # Paar A — head-1
+      - kind: snap
+        group: { name: head-1 }
+        values:
+          position/pan: 128
+          position/tilt: 165
+          movement/speed: 80
+          color/wheel: "${color_a}"
+          gobo/wheel: "${gobo_a}"
+          dimmer: "${dimmer}"
+          strobe: 0
+      # Paar A — head-3
+      - kind: snap
+        group: { name: head-3 }
+        values:
+          position/pan: 128
+          position/tilt: 165
+          movement/speed: 80
+          color/wheel: "${color_a}"
+          gobo/wheel: "${gobo_a}"
+          dimmer: "${dimmer}"
+          strobe: 0
+      # Paar B — head-2
+      - kind: snap
+        group: { name: head-2 }
+        values:
+          position/pan: 128
+          position/tilt: 50
+          movement/speed: 80
+          color/wheel: "${color_b}"
+          gobo/wheel: "${gobo_b}"
+          dimmer: "${dimmer}"
+          strobe: 0
+      # Paar B — head-4
+      - kind: snap
+        group: { name: head-4 }
+        values:
+          position/pan: 128
+          position/tilt: 50
+          movement/speed: 80
+          color/wheel: "${color_b}"
+          gobo/wheel: "${gobo_b}"
+          dimmer: "${dimmer}"
+          strobe: 0
+
+  # ── Phase 2: A nach oben, B nach vorne — nur Tilt-Channel umschreiben ────
+  - at_beat: 4
+    note: "Wechsel — A → Decke, B → Publikum (Color/Gobo/Dimmer halten)"
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/tilt: 50 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/tilt: 50 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/tilt: 165 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/tilt: 165 } }
