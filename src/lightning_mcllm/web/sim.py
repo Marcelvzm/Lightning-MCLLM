@@ -41,6 +41,34 @@ def _wheel_to_rgb(value: int) -> tuple[int, int, int]:
     return (255, 255, 255)
 
 
+# Involight RX350 — 12 macro modes selectable via the single effect/macro
+# channel. Mode value ranges & meanings come straight from the profile
+# YAML. The colours below are illustrative, not photometrically exact;
+# the goal is "user can tell the 12 modes apart at a glance".
+_RX350_MACRO = [
+    (0,   (0, 0, 0)),          # off — black
+    (22,  (255, 0,   0)),      # 1: red
+    (45,  (0,   220, 0)),      # 2: green
+    (68,  (40,  60,  255)),    # 3: blue
+    (91,  (255, 230, 0)),      # 4: yellow
+    (114, (255, 255, 255)),    # 5: white
+    (137, (255, 245, 180)),    # 6: yellow + white
+    (160, (255, 160, 0)),      # 7: red + green (orange mix)
+    (183, (220, 0,   220)),    # 8: red + blue (magenta)
+    (206, (0,   220, 220)),    # 9: green + blue (cyan)
+    (229, (255, 120, 200)),    # 10: rgb together — pinkish shimmer
+    (252, (220, 220, 255)),    # 11: all on — neutral white-ish multi
+    (255, (255, 100, 255)),    # 12: music — strobing magenta hint
+]
+
+
+def _rx350_macro_to_rgb(value: int) -> tuple[int, int, int]:
+    for cap, rgb in _RX350_MACRO:
+        if value <= cap:
+            return rgb
+    return (200, 200, 220)
+
+
 def _classify(roles: set[str]) -> str:
     """Return a render-kind hint based on which channel roles exist."""
     has_pan = "position/pan" in roles
@@ -82,6 +110,7 @@ def compute_sim_state(stage: Stage, shadow: bytes) -> dict[str, Any]:
         kind = _classify(set(roles.keys()))
 
         # Color resolution
+        prof_lower = (profile.name or "").lower()
         if "color/red" in vals:
             r = vals.get("color/red", 0)
             g = vals.get("color/green", 0)
@@ -89,6 +118,9 @@ def compute_sim_state(stage: Stage, shadow: bytes) -> dict[str, Any]:
             color = (r, g, b)
         elif "color/wheel" in vals:
             color = _wheel_to_rgb(vals["color/wheel"])
+        elif "rx350" in prof_lower and "effect/macro" in vals:
+            # Macro-driven LED bar — 12 modes mapped to distinguishable hues.
+            color = _rx350_macro_to_rgb(vals["effect/macro"])
         else:
             # No explicit color channel — show a neutral fixed hue.
             color = (200, 200, 220)

@@ -481,6 +481,12 @@ function _drawFixture(ctx, f, x, y, r) {
   // Visible color = (color * intensity) on a neutral fixture body.
   const lit = `rgb(${Math.round(cr * intensity)}, ${Math.round(cg * intensity)}, ${Math.round(cb * intensity)})`;
 
+  // RX350 / effect-bar: 4-LED horizontal strip rendering.
+  if (f.kind === "effect_bar") {
+    _drawEffectBar(ctx, f, x, y, r, lit);
+    return;
+  }
+
   // Outer ring (chassis)
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -545,6 +551,91 @@ function _drawFixture(ctx, f, x, y, r) {
   ctx.textAlign = "center";
   ctx.fillText(f.name, x, y + r + 16);
   ctx.textAlign = "start";
+}
+
+// Draw the RX350 (and other effect-bars) as a horizontal 4-LED strip.
+// For combo modes (red+green, red+blue, …) we synthesise the per-LED
+// colours from the macro value so the user can tell them apart at a
+// glance. Not photometrically correct — just visually distinctive.
+function _drawEffectBar(ctx, f, x, y, r, lit) {
+  const w = r * 4.2, h = r * 0.95;
+  const left = x - w / 2, top = y - h / 2;
+  // Chassis
+  ctx.fillStyle = "#1a1c22";
+  ctx.fillRect(left, top, w, h);
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(left, top, w, h);
+
+  // Per-LED colour mix for combined modes — read the raw macro value
+  // and split into a 4-LED pattern.
+  const macro = f.raw_macro != null ? f.raw_macro : 0;
+  const ledColors = _rx350LedSplit(macro, f.color);
+  const intensity = Math.max(0, Math.min(1, f.intensity || 0));
+
+  // 4 LEDs, evenly spaced along the bar
+  const ledR = h * 0.32;
+  for (let i = 0; i < 4; i++) {
+    const cx = left + (w / 5) * (i + 1);
+    const cy = y;
+    const [cr, cg, cb] = ledColors[i];
+    const on = intensity > 0.01 && (cr + cg + cb) > 0;
+    const fill = on
+      ? `rgb(${Math.round(cr * intensity)}, ${Math.round(cg * intensity)}, ${Math.round(cb * intensity)})`
+      : "#080a0e";
+    if (on) {
+      const grad = ctx.createRadialGradient(cx, cy, 1, cx, cy, ledR * 2.4);
+      grad.addColorStop(0, fill);
+      grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
+      ctx.beginPath();
+      ctx.arc(cx, cy, ledR * 2.4, 0, Math.PI * 2);
+      ctx.fillStyle = grad; ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, ledR, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+
+  // Strobe overlay
+  if (f.strobe > 0.05) {
+    const flashOn = (Date.now() / (50 + (1 - f.strobe) * 200)) % 1 < 0.5;
+    if (flashOn) {
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.fillRect(left + 2, top + 2, w - 4, h - 4);
+    }
+  }
+
+  // Label below
+  ctx.fillStyle = "#aab";
+  ctx.font = "11px ui-monospace, monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(`${f.name} · m=${macro}`, x, top + h + 16);
+  ctx.textAlign = "start";
+}
+
+// Given the raw RX350 macro value and the resolved single-colour from
+// the backend, produce 4 per-LED colours. Combined modes (e.g. red+blue)
+// alternate between the two component colours; pure modes use the same
+// colour on every LED. "all" mode (mode 11) cycles through 4 distinct
+// colours so the user can see it differs from pure white.
+function _rx350LedSplit(macro, fallback) {
+  const RED = [255, 0, 0], GREEN = [0, 220, 0], BLUE = [40, 60, 255];
+  const YELLOW = [255, 230, 0], WHITE = [255, 255, 255];
+  if (macro <= 0) return [[0,0,0], [0,0,0], [0,0,0], [0,0,0]];
+  if (macro <= 22)  return [RED, RED, RED, RED];
+  if (macro <= 45)  return [GREEN, GREEN, GREEN, GREEN];
+  if (macro <= 68)  return [BLUE, BLUE, BLUE, BLUE];
+  if (macro <= 91)  return [YELLOW, YELLOW, YELLOW, YELLOW];
+  if (macro <= 114) return [WHITE, WHITE, WHITE, WHITE];
+  if (macro <= 137) return [YELLOW, WHITE, YELLOW, WHITE];          // yellow + white
+  if (macro <= 160) return [RED, GREEN, RED, GREEN];                 // red + green
+  if (macro <= 183) return [RED, BLUE, RED, BLUE];                   // red + blue
+  if (macro <= 206) return [GREEN, BLUE, GREEN, BLUE];               // green + blue
+  if (macro <= 229) return [RED, GREEN, BLUE, RED];                  // rgb together
+  if (macro <= 252) return [RED, GREEN, BLUE, YELLOW];               // all on
+  // music — pulse magenta-ish, fall back to single color from server
+  return [fallback, fallback, fallback, fallback];
 }
 
 // ----------------------------------------------------------------- env
