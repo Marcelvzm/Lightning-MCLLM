@@ -1,0 +1,23 @@
+# Sehr langsames Drift über 64 Beats (~28 s bei BPM 135). Nutzt
+# software-side transitions mit fade_seconds=16 — die Hardware-Motoren
+# zucken nicht, alles wird interpolierend über den DMX-Refresh upgesendet.
+# 4 Waypoints im Loop.
+name: bar_slow_walk
+description: Bar — sehr langsames Kriechen zwischen 4 Positionen (16-Beat-Fades).
+
+loop: true
+length_beats: 64
+
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: transition, group: { tag: bar }, values: { position/pan: 60,  position/tilt: 90,  movement/speed: 0 }, fade_seconds: 16, easing: ease_in_out }
+  - at_beat: 16
+    actions:
+      - { kind: transition, group: { tag: bar }, values: { position/pan: 200, position/tilt: 80,  movement/speed: 0 }, fade_seconds: 16, easing: ease_in_out }
+  - at_beat: 32
+    actions:
+      - { kind: transition, group: { tag: bar }, values: { position/pan: 180, position/tilt: 180, movement/speed: 0 }, fade_seconds: 16, easing: ease_in_out }
+  - at_beat: 48
+    actions:
+      - { kind: transition, group: { tag: bar }, values: { position/pan: 80,  position/tilt: 170, movement/speed: 0 }, fade_seconds: 16, easing: ease_in_out }

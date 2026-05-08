@@ -135,6 +135,7 @@ function onStatus(s) {
   }
 
   refreshShadow();
+  refreshSim();
 }
 
 function renderShowState(showState) {
@@ -365,6 +366,148 @@ function drawShadow(byteString) {
     ctx.fillStyle = `rgb(${v}, ${v}, ${v})`;
     ctx.fillRect(i * 2, 0, 2, h);
   }
+}
+
+// ----------------------------------------------------------------- sim view
+
+let simFetching = false;
+async function refreshSim() {
+  if (simFetching) return;
+  simFetching = true;
+  try {
+    const r = await fetch("/api/sim_state");
+    if (!r.ok) return;
+    drawSim(await r.json());
+  } finally {
+    simFetching = false;
+  }
+}
+
+// Group fixtures by render-kind into rows. Bar/moving heads on top,
+// effect bars in the middle, pars on the bottom. Within a group, sort
+// by tag so head-1..head-4 stay left-to-right and cameo-1..3 stay in
+// numeric order.
+function _layoutFixtures(fixtures) {
+  const tops = [], mids = [], bots = [];
+  for (const f of fixtures) {
+    if (f.kind === "moving_head") tops.push(f);
+    else if (f.kind === "effect_bar" || f.tags?.includes("beam_bar")) mids.push(f);
+    else bots.push(f);
+  }
+  const byName = (a, b) => a.name.localeCompare(b.name, "en", { numeric: true });
+  tops.sort(byName);
+  mids.sort(byName);
+  bots.sort(byName);
+  return [tops, mids, bots];
+}
+
+function drawSim(state) {
+  const canvas = $("sim-canvas");
+  if (!canvas) return;
+  // High-DPI awareness
+  const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
+  if (canvas.width !== cssW * dpr || canvas.height !== cssH * dpr) {
+    canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  const fixtures = state.fixtures || [];
+  if (fixtures.length === 0) {
+    ctx.fillStyle = "#666"; ctx.font = "14px sans-serif";
+    ctx.fillText("(no fixtures loaded)", 20, 30);
+    return;
+  }
+
+  const rows = _layoutFixtures(fixtures);
+  const rowYs = [cssH * 0.22, cssH * 0.55, cssH * 0.83];
+  const radius = 28;
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    if (row.length === 0) continue;
+    const y = rowYs[r];
+    const stepX = cssW / (row.length + 1);
+    for (let i = 0; i < row.length; i++) {
+      const f = row[i];
+      const x = stepX * (i + 1);
+      _drawFixture(ctx, f, x, y, radius);
+    }
+  }
+}
+
+function _drawFixture(ctx, f, x, y, r) {
+  const [cr, cg, cb] = f.color || [200, 200, 200];
+  const intensity = Math.max(0, Math.min(1, f.intensity || 0));
+  // Visible color = (color * intensity) on a neutral fixture body.
+  const lit = `rgb(${Math.round(cr * intensity)}, ${Math.round(cg * intensity)}, ${Math.round(cb * intensity)})`;
+
+  // Outer ring (chassis)
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = "#1a1c22";
+  ctx.fill();
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Inner glowing lens
+  if (intensity > 0.01) {
+    const grad = ctx.createRadialGradient(x, y, 1, x, y, r * 0.95);
+    grad.addColorStop(0, lit);
+    grad.addColorStop(0.55, lit);
+    grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.6 * intensity + r * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  // Inner solid disk for the actual lens
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.62, 0, Math.PI * 2);
+  ctx.fillStyle = lit;
+  ctx.fill();
+
+  // Moving-head pan/tilt indicator
+  if (f.kind === "moving_head" && f.pan != null && f.tilt != null) {
+    // Map pan 0..255 → -1..+1, tilt 0..255 → -1..+1
+    const px = (f.pan - 128) / 128;
+    const py = (f.tilt - 128) / 128;
+    // Pointer line from centre toward (px, py), max length r*0.55
+    const len = r * 0.55;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + px * len, y + py * len);
+    ctx.strokeStyle = intensity > 0.05 ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.25)";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.stroke();
+    // small dot at tip
+    ctx.beginPath();
+    ctx.arc(x + px * len, y + py * len, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "white"; ctx.fill();
+  }
+
+  // Strobe overlay flash
+  if (f.strobe > 0.05) {
+    const flashOn = (Date.now() / (50 + (1 - f.strobe) * 200)) % 1 < 0.5;
+    if (flashOn) {
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.62, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.fill();
+    }
+  }
+
+  // Label
+  ctx.fillStyle = "#aab";
+  ctx.font = "11px ui-monospace, monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(f.name, x, y + r + 16);
+  ctx.textAlign = "start";
 }
 
 // ----------------------------------------------------------------- env

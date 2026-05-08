@@ -168,6 +168,8 @@ select {
 #universe-panel { grid-column: 1 / -1; }
 #triggers-panel { grid-column: 1 / -1; }
 #banks-panel { grid-column: 1 / -1; }
+#sim-panel { grid-column: 1 / -1; }
+#sim-canvas { width: 100%; height: 280px; background: radial-gradient(ellipse at center, #14161c 0%, #07080a 100%); border-radius: 6px; }
 #universe-canvas { width: 100%; height: 64px; background: #000; border-radius: 6px; image-rendering: pixelated; }
 .universe-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
 

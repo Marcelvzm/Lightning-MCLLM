@@ -194,6 +194,13 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
         frame = engine.shadow_snapshot()
         return {"universe": 0, "frame_b64": base64.b64encode(frame).decode()}
 
+    @app.get("/api/sim_state")
+    async def get_sim_state() -> Any:
+        from lightning_mcllm.web.sim import compute_sim_state
+        stage = engine.stage()
+        shadow = engine.shadow_snapshot()
+        return compute_sim_state(stage, shadow)
+
     # ---------------------------------------------------------- environments
 
     @app.get("/api/environments")

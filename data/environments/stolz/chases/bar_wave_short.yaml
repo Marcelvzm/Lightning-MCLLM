@@ -1,0 +1,56 @@
+# Wie bar_wave_long aber mit minimalem Phasenversatz (0.25 Beats) und
+# kürzerer Periode (4 Beats statt 8). Heads oszillieren fast simultan,
+# subtiler "Trail"-Effekt — alle praktisch gleichzeitig in Bewegung mit
+# leichtem Nachlauf.
+name: bar_wave_short
+description: Wave-Oszillation aller Heads, 0.25-Beat Versatz pro Head.
+
+loop: true
+length_beats: 4
+
+parameters:
+  a_pan:
+    type: int
+    default: 50          # horizontal: links
+    min: 0
+    max: 255
+  a_tilt:
+    type: int
+    default: 128
+    min: 0
+    max: 255
+  b_pan:
+    type: int
+    default: 200         # horizontal: rechts
+    min: 0
+    max: 255
+  b_tilt:
+    type: int
+    default: 128
+    min: 0
+    max: 255
+
+steps:
+  # head-1 — Phase 0
+  - at_beat: 0
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 2
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
+
+  # head-2 — Phase 0.25
+  - at_beat: 0.25
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 2.25
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
+
+  # head-3 — Phase 0.5
+  - at_beat: 0.5
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 2.5
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
+
+  # head-4 — Phase 0.75
+  - at_beat: 0.75
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 2.75
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]

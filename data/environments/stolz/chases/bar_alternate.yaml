@@ -14,7 +14,7 @@ description: |
   args (a_pan: 50, a_tilt: 128, b_pan: 200, b_tilt: 128).
 
 loop: true
-length_beats: 8
+length_beats: 4
 
 parameters:
   a_pan:
@@ -52,7 +52,7 @@ steps:
       - { kind: snap, group: { name: head-4 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } }
 
   # ── Phase 2: getauscht ───────────────────────────────────────────────────
-  - at_beat: 4
+  - at_beat: 2
     actions:
       - { kind: snap, group: { name: head-1 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } }
       - { kind: snap, group: { name: head-3 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } }
