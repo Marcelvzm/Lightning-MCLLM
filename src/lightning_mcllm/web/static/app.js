@@ -77,9 +77,12 @@ function onStatus(s) {
       const confBad = a.confidence < a.confidence_threshold;
       audioDiag.style.display = "";
       const rangeStr = a.range ? `[${a.range[0]}-${a.range[1]}]` : "—";
-      const multStr = (a.bpm_multiplier && a.bpm_multiplier !== 1)
-        ? ` <b style="color:var(--accent)">→ ${a.bpm_corrected.toFixed(1)} (×${a.bpm_multiplier})</b>`
-        : "";
+      let multStr = "";
+      if (a.range && a.bpm_multiplier === 0) {
+        multStr = ` <b style="color:var(--red)">✗ outside range</b>`;
+      } else if (a.bpm_multiplier && a.bpm_multiplier !== 1) {
+        multStr = ` <b style="color:var(--accent)">→ ${a.bpm_corrected.toFixed(1)} (×${a.bpm_multiplier})</b>`;
+      }
       audioDiag.innerHTML =
         `<span title="audio level (root-mean-square)">RMS: <b style="color:${rmsBad ? 'var(--red)' : 'var(--green)'}">${a.rms.toFixed(4)}</b> ` +
         `<span class="muted-hint">/ thr ${a.rms_threshold}</span></span>` +

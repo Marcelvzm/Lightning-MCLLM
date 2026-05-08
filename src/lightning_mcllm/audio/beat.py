@@ -198,19 +198,35 @@ class AudioBpmDetector:
                 # {1, 2, 0.5, 4, 0.25} and pick whichever lands inside the
                 # range (closest to the centre wins). Fixes aubio's
                 # well-known half-time / double-time lock.
+                #
+                # Two important behaviours:
+                # 1. Pad the boundaries by ±6 BPM. Genre headers are often
+                #    a bit conservative — e.g. hardtekk at 144 BPM is real,
+                #    even though the header says 150-180.
+                # 2. If no octave fits even with the pad, the reading is
+                #    implausible. DROP it entirely instead of falling back
+                #    to raw — falling back makes the clock adopt a wrong
+                #    BPM whenever aubio momentarily wanders.
                 rng = self._range_provider()
                 mult = 1.0
+                bpm_corr = bpm
                 if rng is not None:
                     lo, hi = rng
+                    pad = 6.0
                     centre = (lo + hi) / 2.0
                     candidates = []
                     for m in (1.0, 2.0, 0.5, 4.0, 0.25):
                         v = bpm * m
-                        if lo <= v <= hi:
+                        if (lo - pad) <= v <= (hi + pad):
                             candidates.append((m, v))
-                    if candidates:
-                        mult, _ = min(candidates, key=lambda mv: abs(mv[1] - centre))
-                bpm_corr = bpm * mult
+                    if not candidates:
+                        # Implausible — let the clock keep its last good
+                        # value. Diag still reflects raw + zero-multiplier
+                        # so the GUI can show "rejected".
+                        self.last_bpm_corrected = bpm
+                        self.last_bpm_multiplier = 0.0
+                        continue
+                    mult, bpm_corr = min(candidates, key=lambda mv: abs(mv[1] - centre))
                 self.last_bpm_corrected = bpm_corr
                 self.last_bpm_multiplier = mult
                 self._recent.append(bpm_corr)
