@@ -70,6 +70,8 @@ class AudioBpmDetector:
         self.last_bpm_corrected: float = 0.0
         self.last_bpm_multiplier: float = 1.0
         self.last_silent: bool = False
+        # Sentinel for detecting range-provider changes (genre switch).
+        self._last_rng_seen: tuple[float, float] | None | object = object()
 
     @property
     def error(self) -> str | None:
@@ -208,6 +210,12 @@ class AudioBpmDetector:
                 #    to raw — falling back makes the clock adopt a wrong
                 #    BPM whenever aubio momentarily wanders.
                 rng = self._range_provider()
+                # Flush the agreement window when the user switches genre,
+                # otherwise old corrected values (calibrated against the
+                # previous range) drift in with the smoothing filter.
+                if rng != self._last_rng_seen:
+                    self._recent.clear()
+                    self._last_rng_seen = rng
                 mult = 1.0
                 bpm_corr = bpm
                 if rng is not None:

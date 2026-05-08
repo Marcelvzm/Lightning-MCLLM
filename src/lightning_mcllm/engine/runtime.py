@@ -455,6 +455,23 @@ class Engine:
                 else:
                     self._bpm_range = (lo_f, hi_f)
                     log.info("BPM plausibility range set: %.0f-%.0f", lo_f, hi_f)
+                    # Snap the clock if its current BPM is outside the new
+                    # range. Otherwise the clock keeps an old (e.g. raw)
+                    # value while the detector starts rejecting frames.
+                    cur = self._clock.bpm
+                    pad = 6.0
+                    centre = (lo_f + hi_f) / 2.0
+                    fits = [
+                        cur * m for m in (1.0, 2.0, 0.5, 4.0, 0.25)
+                        if (lo_f - pad) <= cur * m <= (hi_f + pad)
+                    ]
+                    if fits:
+                        snapped = min(fits, key=lambda v: abs(v - centre))
+                    else:
+                        snapped = centre
+                    if abs(snapped - cur) > 0.5:
+                        self._clock.set_bpm(snapped, source=self._clock.source)
+                        log.info("snapped clock %.1f → %.1f to fit new range", cur, snapped)
         elif name == "all_off":
             # Hard-reset to clean state: drop ALL voices (chase + scene +
             # override), drop chase runners, release blackout latch, reset
