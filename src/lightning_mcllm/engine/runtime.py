@@ -184,6 +184,10 @@ class Engine:
         # the audio status.
         if self._clock.source.startswith("audio"):
             self._clock.set_source("manual")
+        # Audio detector may have paused the clock during silence
+        # (set_running(False) at audio/beat.py). Always resume on stop —
+        # if the user turns audio off, they want the clock running.
+        self._clock.set_running(True)
         log.info("audio BPM detector stopped")
 
     @property

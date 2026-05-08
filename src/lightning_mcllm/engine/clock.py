@@ -98,6 +98,10 @@ class BpmClock:
         with self._lock:
             self._bpm = bpm
             self._source = source
+            # Setting a BPM implies the user wants the clock running.
+            # Otherwise a paused clock (e.g. left over from audio silence)
+            # silently stays paused and beat-locked chases never advance.
+            self._running = True
             log.info("BPM set to %.2f (%s)", bpm, source)
 
     def set_source(self, source: str) -> None:
@@ -135,6 +139,9 @@ class BpmClock:
                     self._source = "tap"
                     self._beat_position = 0.0  # tap-driven phase reset
                     self._last_tick = now
+                    # Tap implies "play" — heal a clock that was paused
+                    # by audio silence and never resumed.
+                    self._running = True
                     log.info("tap tempo: %.2f BPM (from %d taps)", bpm, len(self._tap_times))
             return ClockSnapshot(
                 bpm=self._bpm,
