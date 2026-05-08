@@ -354,7 +354,12 @@ function _buildTriggerLi(kind, item) {
   // Note shown after meta — user-editable inline.
   const noteText = (state.notes[kind === "scene" ? "scenes" : "chases"] || {})[item.name]
                    || item.description || "";
-  li.innerHTML = `${kbdBadge}<span class="item-name">${escapeHtml(item.name)}</span>${meta}<span class="item-note" title="click to edit comment">${escapeHtml(noteText)}</span>`;
+  // Tooltip = full comment (so the user can read truncated ones on
+  // hover) + a click hint when the note is empty.
+  const noteTitle = noteText
+    ? `${noteText}\n\n(click to edit)`
+    : "click to add a comment";
+  li.innerHTML = `${kbdBadge}<span class="item-name">${escapeHtml(item.name)}</span>${meta}<span class="item-note" title="${escapeHtml(noteTitle)}">${escapeHtml(noteText)}</span>`;
 
   // Click on the name area fires the trigger (with param dialog if needed).
   const nameSpan = li.querySelector(".item-name");
@@ -419,7 +424,12 @@ function _editNoteInline(kind, name, noteSpan) {
       } catch (e) { /* swallow */ }
     }
     noteSpan.innerHTML = "";
-    noteSpan.textContent = state.notes[kind === "scene" ? "scenes" : "chases"][name] || "";
+    const newText = state.notes[kind === "scene" ? "scenes" : "chases"][name] || "";
+    noteSpan.textContent = newText;
+    // Refresh the hover tooltip to match the new text.
+    noteSpan.title = newText
+      ? `${newText}\n\n(click to edit)`
+      : "click to add a comment";
   };
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); finish(true); }
