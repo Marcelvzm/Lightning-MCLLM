@@ -197,13 +197,26 @@ class Engine:
     # ------------------------------------------------------------------- stage
 
     def replace_stage(self, stage: Stage | None) -> None:
+        prev_show_name: str | None = None
         with self._stage_lock:
+            if self._show_runner is not None:
+                prev_show_name = self._show_runner.show_name
             self._stage = stage
             # Drop chase runners; their stage reference is stale.
             self._chase_runners.clear()
             # Drop any active show — its action references may be stale.
             self._show_runner = None
             # Voices keep their captured targets — they'll fade out naturally.
+        # Auto-restart the show that was running before the swap (if it
+        # still exists by name in the new stage). Submitted through the
+        # command queue so we don't fight the stage_lock we just released.
+        if prev_show_name and stage is not None:
+            still_there = any(s.name == prev_show_name for s in stage.shows)
+            if still_there:
+                log.info("show '%s' was running — auto-restart after reload", prev_show_name)
+                self.submit("play_show", name=prev_show_name)
+            else:
+                log.info("show '%s' is gone after reload — not restarting", prev_show_name)
 
     def stage(self) -> Stage | None:
         with self._stage_lock:

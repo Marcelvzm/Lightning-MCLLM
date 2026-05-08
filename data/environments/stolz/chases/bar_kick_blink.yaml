@@ -1,0 +1,140 @@
+# Wie pars_kick_blink, aber für die TMH-Bar-Heads (head-1..4).
+# **Schreibt nur dimmer** — kein color, kein gobo, kein position.
+# Damit funktioniert der Chase als ECHTES OVERLAY auf jeder laufenden
+# MH-Voice: Color/Position/Gobo bleiben unangetastet, nur der Dimmer
+# wird kurz auf 255 gesnappt und 0.15 Beats später per release wieder
+# auf den Wert der underlying Voice zurückgegeben.
+#
+# Use case: dreh dir vorher eine Color/Position-Scene auf den Heads
+# (z.B. cathedral_blue mit dim 25), dann start_chase("bar_kick_blink") —
+# Heads pulsen kurz auf voll, fallen zurück auf 25 dim.
+#
+# Sub-Beat-Stellen sind LEICHT VERSETZT zu pars_kick_blink, damit beide
+# Chases parallel rhythmisch unterscheidbar bleiben.
+#
+# 16 Trigger-Punkte über 16 Beats:
+#   12× single  → ein Head
+#    3× double  → zwei Heads (Beats 3, 12)
+#    1× triple  → drei Heads (Beat 8 — Peak im Loop)
+
+name: bar_kick_blink
+description: 1/Beat MH-Dimmer-blink (overlay) — krumme Stellen, gelegentlich 2-3 gleichzeitig.
+loop: true
+length_beats: 16
+
+steps:
+  # Beat 0
+  - at_beat: 0.5
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 255 } }
+  - at_beat: 0.65
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 1
+  - at_beat: 1.2
+    actions:
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 255 } }
+  - at_beat: 1.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 2
+  - at_beat: 2.7
+    actions:
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 255 } }
+  - at_beat: 2.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 3 — DOUBLE
+  - at_beat: 3.3
+    actions:
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 255 } }
+  - at_beat: 3.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 4
+  - at_beat: 4.6
+    actions:
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 255 } }
+  - at_beat: 4.75
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 5
+  - at_beat: 5.4
+    actions:
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 255 } }
+  - at_beat: 5.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 6
+  - at_beat: 6.8
+    actions:
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 255 } }
+  - at_beat: 6.95
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 7
+  - at_beat: 7.2
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 255 } }
+  - at_beat: 7.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 8 — TRIPLE peak
+  - at_beat: 8.5
+    actions:
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 255 } }
+  - at_beat: 8.7
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 9
+  - at_beat: 9.4
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 255 } }
+  - at_beat: 9.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 10
+  - at_beat: 10.7
+    actions:
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 255 } }
+  - at_beat: 10.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 11
+  - at_beat: 11.3
+    actions:
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 255 } }
+  - at_beat: 11.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 12 — DOUBLE
+  - at_beat: 12.6
+    actions:
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 255 } }
+      - { kind: snap, group: { name: head-1 }, values: { dimmer: 255 } }
+  - at_beat: 12.75
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 13
+  - at_beat: 13.5
+    actions:
+      - { kind: snap, group: { name: head-3 }, values: { dimmer: 255 } }
+  - at_beat: 13.65
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 14
+  - at_beat: 14.2
+    actions:
+      - { kind: snap, group: { name: head-2 }, values: { dimmer: 255 } }
+  - at_beat: 14.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 15
+  - at_beat: 15.7
+    actions:
+      - { kind: snap, group: { name: head-4 }, values: { dimmer: 255 } }
+  - at_beat: 15.85
+    actions: [ { kind: release, group: { all: true } } ]

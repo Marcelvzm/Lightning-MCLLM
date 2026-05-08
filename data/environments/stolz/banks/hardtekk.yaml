@@ -11,7 +11,7 @@ slots:
   - { id: 3, kind: chase, name: hardtekk_density,  label: "Density" }
 
   # ── Spalte 2: Build / Anticipation ──────────────────────────────────
-  - { id: 4, kind: chase, name: build_rise,         label: "Build" }
+  - { id: 4, kind: chase, name: rx350_random_flash, label: "RX Flash" }
   - { id: 5, kind: chase, name: bar_random_flashes, label: "Bar Flashes" }
   - { id: 6, kind: chase, name: anticipation_halt,  label: "HALT (Z1)" }
 

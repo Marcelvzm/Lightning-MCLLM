@@ -462,6 +462,9 @@ function bind() {
   $("show-resume-btn").onclick = () => post("/api/show/resume");
   $("show-reset-btn").onclick = () => post("/api/show/reset");
   $("show-stop-btn").onclick = () => post("/api/show/stop");
+  // Reload — forces a stage rebuild from disk. The engine remembers the
+  // running show and auto-replays it once the stage swap is done.
+  $("show-reload-btn").onclick = () => post("/api/reload");
   $("play-mode-toggle").onclick = () => setPlayMode(!state.playMode);
 
   $("bank-select").onchange = (e) => { state.selectedBank = e.target.value; renderBankSlots(); };

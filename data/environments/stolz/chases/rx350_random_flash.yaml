@@ -1,0 +1,62 @@
+# Hardtekk-Random-Flash auf der RX350. Pro Beat wird ein Macro kurz
+# (~0.18 Beats) angesnapt, dann auf macro=0 zurück — laut Profil ist
+# "macro=0" effektiv aus ("sonst bleibt's dunkel"). Das ergibt einen
+# punktuellen Color-Burst auf jedem Kick.
+#
+# Mode-Folge mit Hardtekk-Palette: rot/weiß dominant, plus saturierte
+# Mischmodi für visuelle Abwechslung. Reihenfolge ist asymmetrisch
+# gewählt, damit's "random" wirkt (8 Beats Loop = 2 Bars).
+
+name: rx350_random_flash
+description: RX350 Random-Flash — pro Beat ein kurzer Macro-Burst, hardtekk-Palette.
+loop: true
+length_beats: 8
+
+steps:
+  # Beat 0 — RED
+  - at_beat: 0
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 11,  strobe: 0 } } ]
+  - at_beat: 0.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
+
+  # Beat 1 — WHITE
+  - at_beat: 1
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 103, strobe: 0 } } ]
+  - at_beat: 1.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
+
+  # Beat 2 — ALL COLORS
+  - at_beat: 2
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 241, strobe: 0 } } ]
+  - at_beat: 2.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
+
+  # Beat 3 — RED+BLUE
+  - at_beat: 3
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 172, strobe: 0 } } ]
+  - at_beat: 3.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
+
+  # Beat 4 — RGB
+  - at_beat: 4
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 218, strobe: 0 } } ]
+  - at_beat: 4.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
+
+  # Beat 5 — RED (lead-Farbe nochmal)
+  - at_beat: 5
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 11,  strobe: 0 } } ]
+  - at_beat: 5.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
+
+  # Beat 6 — RED+GREEN
+  - at_beat: 6
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 149, strobe: 0 } } ]
+  - at_beat: 6.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
+
+  # Beat 7 — WHITE (Bar-End-Akzent)
+  - at_beat: 7
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 103, strobe: 0 } } ]
+  - at_beat: 7.18
+    actions: [ { kind: snap, group: { tag: beam_bar }, values: { effect/macro: 0 } } ]
