@@ -174,7 +174,12 @@ class AudioBpmDetector:
                         was_paused_by_silence = False
 
                 bpm = float(tempo.get_bpm())
-                if not (40.0 <= bpm <= 240.0):
+                # Acceptance window. aubio sometimes locks half-time on
+                # very fast tracks (e.g. 280 BPM detected as 140) — both
+                # are visually useful, beat-locked chases just run at the
+                # detected rate. Range covers from slow ambient up through
+                # speedcore/frenchcore.
+                if not (40.0 <= bpm <= 300.0):
                     continue
                 self._recent.append(bpm)
                 if len(self._recent) >= self._agree_n:
