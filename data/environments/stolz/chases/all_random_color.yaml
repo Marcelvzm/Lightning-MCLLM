@@ -1,0 +1,59 @@
+# Gesamtes Rig synchron — Color-Wechsel zu off-grid Beats. Pro Beat alle
+# Fixture-Typen auf dieselbe Palette geschaltet (jeder mit dem passenden
+# Facet). Wirkt wie ein "Color-Snap" der über die ganze Anlage läuft.
+name: all_random_color
+description: Gesamtes Rig — synchroner Off-Grid Color-Wechsel.
+
+loop: true
+length_beats: 16
+
+steps:
+  - at_beat: 0.7
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: rot, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: rot, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: rot, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: rot, facet: rx350 } }
+  - at_beat: 2.4
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: blau, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: blau, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: blau, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: blau, facet: rx350 } }
+  - at_beat: 5.1
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: gruen, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: gruen, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: gruen, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: gruen, facet: rx350 } }
+  - at_beat: 7.8
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: weiss, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: weiss, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: weiss, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: weiss, facet: rx350 } }
+  - at_beat: 9.3
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: warm, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: warm, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: warm, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: warm, facet: rx350 } }
+  - at_beat: 11.6
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: blau, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: blau, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: blau, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: blau, facet: rx350 } }
+  - at_beat: 13.9
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: rot, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: rot, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: rot, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: rot, facet: rx350 } }

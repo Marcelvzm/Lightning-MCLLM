@@ -1,0 +1,47 @@
+# Pars (alle: cameos + showtecs + varytec + par64) wechseln Color zu
+# off-grid Beats. Pro Schritt 3 Actions: rgb-facet auf alle Pars,
+# cameo-facet drüber für die Cameos (macro-Override), showtec macro=0
+# für RGB-Direkt-Mode.
+# Schreibt nur Color-Channels — Dimmer/Strobe bleiben unangetastet.
+name: par_random_color
+description: Pars — synchroner Off-Grid Color-Wechsel via rgb/cameo/showtec.
+
+loop: true
+length_beats: 16
+
+steps:
+  - at_beat: 0.7
+    actions:
+      - { kind: snap, group: { tag: par },     palette: { name: rot,   facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },   palette: { name: rot,   facet: cameo } }
+      - { kind: snap, group: { tag: showtec }, values:  { effect/macro: 0 } }
+  - at_beat: 2.4
+    actions:
+      - { kind: snap, group: { tag: par },     palette: { name: blau,  facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },   palette: { name: blau,  facet: cameo } }
+      - { kind: snap, group: { tag: showtec }, values:  { effect/macro: 0 } }
+  - at_beat: 5.1
+    actions:
+      - { kind: snap, group: { tag: par },     palette: { name: gruen, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },   palette: { name: gruen, facet: cameo } }
+      - { kind: snap, group: { tag: showtec }, values:  { effect/macro: 0 } }
+  - at_beat: 7.8
+    actions:
+      - { kind: snap, group: { tag: par },     palette: { name: weiss, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },   palette: { name: weiss, facet: cameo } }
+      - { kind: snap, group: { tag: showtec }, values:  { effect/macro: 0 } }
+  - at_beat: 9.3
+    actions:
+      - { kind: snap, group: { tag: par },     palette: { name: warm,  facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },   palette: { name: warm,  facet: cameo } }
+      - { kind: snap, group: { tag: showtec }, values:  { effect/macro: 0 } }
+  - at_beat: 11.6
+    actions:
+      - { kind: snap, group: { tag: par },     palette: { name: blau,  facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },   palette: { name: blau,  facet: cameo } }
+      - { kind: snap, group: { tag: showtec }, values:  { effect/macro: 0 } }
+  - at_beat: 13.9
+    actions:
+      - { kind: snap, group: { tag: par },     palette: { name: rot,   facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },   palette: { name: rot,   facet: cameo } }
+      - { kind: snap, group: { tag: showtec }, values:  { effect/macro: 0 } }

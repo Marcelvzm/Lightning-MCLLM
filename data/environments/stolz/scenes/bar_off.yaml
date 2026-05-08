@@ -1,0 +1,9 @@
+# Bar-Heads aus — Dimmer auf 0, Strobe aus.
+name: bar_off
+description: Bar-Heads off (dimmer 0).
+
+targets:
+  - select: { tag: bar }
+    values:
+      dimmer: 0
+      strobe: 0

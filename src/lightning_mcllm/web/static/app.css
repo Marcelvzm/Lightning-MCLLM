@@ -98,6 +98,53 @@ button.active:hover { background: #ffc358; }
   white-space: nowrap;
 }
 .toggle-label input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
+
+/* ---- parameter-input modal ---- */
+.modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+}
+.modal-box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px 24px; min-width: 360px; max-width: 520px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.modal-box h3 { margin: 0 0 14px 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.modal-field { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.modal-field label { min-width: 100px; color: var(--muted); }
+.modal-field input, .modal-field select {
+  flex: 1; background: #14161c; color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px;
+  font-size: 13px;
+}
+.modal-field .hint { color: var(--muted); font-size: 11px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+.modal-actions button.primary {
+  background: var(--accent); color: black; border-color: var(--accent); font-weight: 600;
+}
+.modal-actions button.primary:hover { background: #ffc358; }
+
+/* ---- per-item note in scene/chase lists ---- */
+.scroll-list li .item-note {
+  flex: 0 1 auto; max-width: 50%; color: var(--muted); font-size: 11px;
+  font-style: italic; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; cursor: text;
+}
+.scroll-list li .item-note:empty::before {
+  content: "✎"; color: #444; font-style: normal; opacity: 0; transition: opacity 0.1s;
+}
+.scroll-list li:hover .item-note:empty::before { opacity: 1; }
+.scroll-list li .item-note input {
+  width: 100%; background: #0d0e12; color: var(--text);
+  border: 1px solid var(--accent); border-radius: 4px; padding: 2px 6px;
+  font-style: normal; font-size: 11px;
+}
+/* When a parameter-bearing item is clicked, the click target is the name not the note. */
+.scroll-list li .item-name { cursor: pointer; }
+.scroll-list li.has-params .item-name::after {
+  content: " ⚙"; color: var(--muted); font-size: 11px;
+}
 button.toggle.on { background: var(--accent); color: black; border-color: var(--accent); font-weight: 600; }
 select {
   background: #14161c; color: var(--text); border: 1px solid var(--border);

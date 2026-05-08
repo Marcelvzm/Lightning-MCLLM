@@ -1,0 +1,24 @@
+# Bar-Heads wechseln Color (color/wheel über palette wheel-facet) zu
+# off-grid Beats. 7 Wechsel über 16 Beats, mischt rot/blau/gruen/weiss/warm.
+# Schreibt nur Color-Channels — Dimmer/Position/Gobo bleiben unangetastet.
+name: bar_random_color
+description: Bar — synchroner Off-Grid Color-Wechsel via wheel-facet.
+
+loop: true
+length_beats: 16
+
+steps:
+  - at_beat: 0.7
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: rot,    facet: wheel } } ]
+  - at_beat: 2.4
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: blau,   facet: wheel } } ]
+  - at_beat: 5.1
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: gruen,  facet: wheel } } ]
+  - at_beat: 7.8
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: weiss,  facet: wheel } } ]
+  - at_beat: 9.3
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: warm,   facet: wheel } } ]
+  - at_beat: 11.6
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: blau,   facet: wheel } } ]
+  - at_beat: 13.9
+    actions: [ { kind: snap, group: { tag: bar }, palette: { name: rot,    facet: wheel } } ]

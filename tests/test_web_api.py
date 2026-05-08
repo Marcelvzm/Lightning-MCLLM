@@ -45,7 +45,7 @@ def test_stage_endpoint(web):
     assert body["loaded"] is True
     assert body["name"] == "default"
     assert {f["name"] for f in body["fixtures"]} == {"par-l", "par-r", "mh-l", "mh-r"}
-    assert "warm_idle" in body["scenes"]
+    assert any(s["name"] == "warm_idle" for s in body["scenes"])
     assert any(c["name"] == "red_pulse" for c in body["chases"])
 
 

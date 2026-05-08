@@ -1,0 +1,10 @@
+# RX350 aus. Hat keinen Dimmer; macro=0 ist laut Profil "keine Funktion"
+# = effektiv dunkel (LEDs aus).
+name: rx350_off
+description: RX350 off (effect/macro 0).
+
+targets:
+  - select: { tag: beam_bar }
+    values:
+      effect/macro: 0
+      strobe: 0

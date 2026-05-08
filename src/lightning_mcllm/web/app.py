@@ -58,6 +58,21 @@ def _engine_status_dict(engine: Engine) -> dict[str, Any]:
     return dataclasses.asdict(engine.status())
 
 
+def _params_to_dict(params: dict) -> dict[str, Any]:
+    """Pydantic ParameterSpec → JSON-friendly dict."""
+    out: dict[str, Any] = {}
+    for k, v in (params or {}).items():
+        out[k] = {
+            "type": v.type,
+            "default": v.default,
+            "min": v.min,
+            "max": v.max,
+            "options": list(v.options) if v.options else None,
+            "description": v.description,
+        }
+    return out
+
+
 def _stage_summary(engine: Engine) -> dict[str, Any]:
     stage = engine.stage()
     if stage is None:
@@ -80,7 +95,14 @@ def _stage_summary(engine: Engine) -> dict[str, Any]:
             }
             for f in stage.fixtures
         ],
-        "scenes": sorted(stage.scenes.keys()),
+        "scenes": [
+            {
+                "name": s.name,
+                "description": s.description,
+                "parameters": _params_to_dict(s.parameters),
+            }
+            for s in sorted(stage.scenes.values(), key=lambda x: x.name)
+        ],
         "chases": [
             {
                 "name": c.name,
@@ -88,6 +110,8 @@ def _stage_summary(engine: Engine) -> dict[str, Any]:
                 "length_beats": c.length_beats,
                 "length_seconds": c.length_seconds,
                 "step_count": len(c.steps),
+                "description": c.description,
+                "parameters": _params_to_dict(c.parameters),
             }
             for c in stage.chases.values()
         ],
@@ -200,6 +224,58 @@ def create_app(engine: Engine, reloader: HotReloader, settings: Settings) -> Fas
         stage = engine.stage()
         shadow = engine.shadow_snapshot()
         return compute_sim_state(stage, shadow)
+
+    # -------------------------------------------------------------- notes
+    # User-editable comments per scene/chase, stored in
+    # <env>/notes.yaml and overlaid on the YAML description in the GUI.
+
+    def _notes_path() -> Path | None:
+        stage = engine.stage()
+        if stage is None:
+            return None
+        return stage.env_dir / "notes.yaml"
+
+    def _read_notes() -> dict[str, dict[str, str]]:
+        p = _notes_path()
+        if not p or not p.exists():
+            return {"scenes": {}, "chases": {}}
+        try:
+            import yaml as _yaml
+            data = _yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+        except (OSError, Exception):  # noqa: BLE001
+            return {"scenes": {}, "chases": {}}
+        return {
+            "scenes": dict((data.get("scenes") or {})),
+            "chases": dict((data.get("chases") or {})),
+        }
+
+    def _write_notes(notes: dict[str, dict[str, str]]) -> None:
+        p = _notes_path()
+        if not p:
+            raise HTTPException(status_code=409, detail="no stage loaded")
+        import yaml as _yaml
+        body = _yaml.safe_dump(notes, sort_keys=True, allow_unicode=True)
+        p.write_text(body, encoding="utf-8")
+
+    @app.get("/api/notes")
+    async def get_notes() -> Any:
+        return _read_notes()
+
+    @app.put("/api/notes")
+    async def put_note(payload: dict[str, Any]) -> Any:
+        kind = payload.get("kind")
+        name = payload.get("name")
+        comment = (payload.get("comment") or "").strip()
+        if kind not in ("scene", "chase") or not name:
+            raise HTTPException(status_code=400, detail="kind ∈ {scene,chase} + name required")
+        notes = _read_notes()
+        bucket = "scenes" if kind == "scene" else "chases"
+        if comment:
+            notes[bucket][name] = comment
+        else:
+            notes[bucket].pop(name, None)
+        _write_notes(notes)
+        return {"ok": True}
 
     # ---------------------------------------------------------- environments
 

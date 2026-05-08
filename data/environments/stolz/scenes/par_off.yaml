@@ -1,0 +1,23 @@
+# Alle Pars aus.
+# - cameo / par64 / varytec haben echten Dimmer-Channel → dimmer: 0.
+# - showtec hat KEINEN Dimmer; wird über RGB=0 + macro=0 ausgeschaltet.
+# - cameo zusätzlich macro=0 (sicherheitshalber, da macro=0 = blackout-bug).
+name: par_off
+description: Alle Pars off — dimmer 0 + RGB 0 für showtecs.
+
+targets:
+  - select: { tag: par }
+    values:
+      dimmer: 0
+      strobe: 0
+
+  - select: { tag: showtec }
+    values:
+      color/red: 0
+      color/green: 0
+      color/blue: 0
+      effect/macro: 0
+
+  - select: { tag: cameo }
+    values:
+      effect/macro: 0

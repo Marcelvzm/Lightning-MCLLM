@@ -15,6 +15,7 @@ const state = {
   filter: "",
   bankFilter: "__all__",
   draggingTimeline: false,
+  notes: { scenes: {}, chases: {} },
 };
 
 // ---------------------------------------------------------------- websocket
@@ -220,14 +221,10 @@ function onStage(st) {
   // scenes
   const scenes = $("scenes-list");
   scenes.innerHTML = "";
-  for (const name of (st.scenes || [])) {
-    const li = document.createElement("li");
-    li.dataset.name = name;
-    li.dataset.kind = "scene";
-    const kbdBadge = makeKbdBadgeForName("scene", name);
-    li.innerHTML = `${kbdBadge}<span class="item-name">${escapeHtml(name)}</span>`;
-    li.onclick = () => cmd("snap_scene", { scene: name });
-    scenes.appendChild(li);
+  for (const sc of (st.scenes || [])) {
+    // Tolerate the old shape (string) — defensive.
+    const obj = (typeof sc === "string") ? { name: sc, parameters: {} } : sc;
+    scenes.appendChild(_buildTriggerLi("scene", obj));
   }
   $("scenes-count").textContent = `(${(st.scenes || []).length})`;
 
@@ -235,17 +232,7 @@ function onStage(st) {
   const chases = $("chases-list");
   chases.innerHTML = "";
   for (const c of (st.chases || [])) {
-    const li = document.createElement("li");
-    li.dataset.name = c.name;
-    li.dataset.kind = "chase";
-    const len = c.length_beats != null ? `${c.length_beats}b` : `${c.length_seconds}s`;
-    const kbdBadge = makeKbdBadgeForName("chase", c.name);
-    li.innerHTML = `${kbdBadge}<span class="item-name">${escapeHtml(c.name)}</span><span class="item-meta">${len} · ${c.step_count}st</span>`;
-    li.onclick = () => {
-      const isActive = state.status?.active_chases?.some(k => k.startsWith(`chase:${c.name}:`));
-      cmd(isActive ? "stop_chase" : "start_chase", { chase: c.name });
-    };
-    chases.appendChild(li);
+    chases.appendChild(_buildTriggerLi("chase", c));
   }
   $("chases-count").textContent = `(${(st.chases || []).length})`;
 
@@ -336,6 +323,168 @@ function renderBankSlots() {
     el.onclick = () => cmd("fire_slot", { bank: state.selectedBank, slot_id: slot.id });
     row.appendChild(el);
   }
+}
+
+// --------------------------------------------------------- trigger items
+
+function _buildTriggerLi(kind, item) {
+  const li = document.createElement("li");
+  li.dataset.name = item.name;
+  li.dataset.kind = kind;
+  const params = item.parameters || {};
+  const hasParams = Object.keys(params).length > 0;
+  if (hasParams) li.classList.add("has-params");
+
+  const kbdBadge = makeKbdBadgeForName(kind, item.name);
+  let meta = "";
+  if (kind === "chase") {
+    const len = item.length_beats != null ? `${item.length_beats}b` : `${item.length_seconds}s`;
+    meta = `<span class="item-meta">${len} · ${item.step_count}st</span>`;
+  }
+  // Note shown after meta — user-editable inline.
+  const noteText = (state.notes[kind === "scene" ? "scenes" : "chases"] || {})[item.name]
+                   || item.description || "";
+  li.innerHTML = `${kbdBadge}<span class="item-name">${escapeHtml(item.name)}</span>${meta}<span class="item-note" title="click to edit comment">${escapeHtml(noteText)}</span>`;
+
+  // Click on the name area fires the trigger (with param dialog if needed).
+  const nameSpan = li.querySelector(".item-name");
+  nameSpan.onclick = (e) => {
+    e.stopPropagation();
+    _fireTrigger(kind, item);
+  };
+
+  // Click on the note area edits it inline.
+  const noteSpan = li.querySelector(".item-note");
+  noteSpan.onclick = (e) => {
+    e.stopPropagation();
+    _editNoteInline(kind, item.name, noteSpan);
+  };
+
+  // Clicking elsewhere on the li also fires (but the tap-to-stop logic for
+  // chases stays the same).
+  li.onclick = () => _fireTrigger(kind, item);
+  return li;
+}
+
+function _fireTrigger(kind, item) {
+  const params = item.parameters || {};
+  if (Object.keys(params).length > 0) {
+    _openParamModal(kind, item);
+    return;
+  }
+  if (kind === "scene") {
+    cmd("snap_scene", { scene: item.name });
+  } else {
+    const isActive = state.status?.active_chases?.some(k => k.startsWith(`chase:${item.name}:`));
+    cmd(isActive ? "stop_chase" : "start_chase", { chase: item.name });
+  }
+}
+
+function _editNoteInline(kind, name, noteSpan) {
+  const cur = noteSpan.textContent;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = cur;
+  input.placeholder = "comment…";
+  noteSpan.innerHTML = "";
+  noteSpan.appendChild(input);
+  input.focus();
+  input.select();
+  let done = false;
+  const finish = async (commit) => {
+    if (done) return; done = true;
+    if (commit) {
+      const v = input.value.trim();
+      const bucket = kind === "scene" ? "scenes" : "chases";
+      try {
+        const r = await fetch("/api/notes", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ kind, name, comment: v }),
+        });
+        if (r.ok) {
+          if (v) state.notes[bucket][name] = v;
+          else delete state.notes[bucket][name];
+        }
+      } catch (e) { /* swallow */ }
+    }
+    noteSpan.innerHTML = "";
+    noteSpan.textContent = state.notes[kind === "scene" ? "scenes" : "chases"][name] || "";
+  };
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); finish(true); }
+    else if (e.key === "Escape") { e.preventDefault(); finish(false); }
+  });
+  input.addEventListener("blur", () => finish(true));
+}
+
+// ---------------------------------------------------------- param modal
+
+let _paramModalCtx = null;
+function _openParamModal(kind, item) {
+  _paramModalCtx = { kind, item };
+  $("param-modal-title").textContent = `Fire ${kind}: ${item.name}`;
+  const wrap = $("param-modal-fields");
+  wrap.innerHTML = "";
+  const params = item.parameters || {};
+  for (const [pname, spec] of Object.entries(params)) {
+    const row = document.createElement("div");
+    row.className = "modal-field";
+    const lbl = document.createElement("label");
+    lbl.textContent = pname;
+    let inp;
+    if (spec.options && spec.options.length) {
+      inp = document.createElement("select");
+      for (const o of spec.options) {
+        const opt = document.createElement("option");
+        opt.value = o; opt.textContent = o;
+        inp.appendChild(opt);
+      }
+    } else if (spec.type === "bool") {
+      inp = document.createElement("input"); inp.type = "checkbox";
+    } else if (spec.type === "int" || spec.type === "float") {
+      inp = document.createElement("input"); inp.type = "number";
+      if (spec.min != null) inp.min = spec.min;
+      if (spec.max != null) inp.max = spec.max;
+      if (spec.type === "float") inp.step = "0.01";
+    } else {
+      inp = document.createElement("input"); inp.type = "text";
+    }
+    inp.dataset.name = pname;
+    inp.dataset.ptype = spec.type;
+    if (spec.type === "bool") inp.checked = !!spec.default;
+    else inp.value = spec.default ?? "";
+    row.appendChild(lbl); row.appendChild(inp);
+    if (spec.description) {
+      const h = document.createElement("span");
+      h.className = "hint"; h.textContent = spec.description;
+      row.appendChild(h);
+    }
+    wrap.appendChild(row);
+  }
+  $("param-modal").style.display = "";
+  // Focus first input
+  const first = wrap.querySelector("input,select");
+  if (first) first.focus();
+}
+function _closeParamModal() { $("param-modal").style.display = "none"; _paramModalCtx = null; }
+function _commitParamModal() {
+  if (!_paramModalCtx) return;
+  const { kind, item } = _paramModalCtx;
+  const args = {};
+  for (const inp of $("param-modal-fields").querySelectorAll("input,select")) {
+    const name = inp.dataset.name;
+    const t = inp.dataset.ptype;
+    let v;
+    if (t === "bool") v = inp.checked;
+    else if (t === "int") v = parseInt(inp.value, 10);
+    else if (t === "float") v = parseFloat(inp.value);
+    else v = inp.value;
+    args[name] = v;
+  }
+  if (kind === "scene") cmd("snap_scene", { scene: item.name, args });
+  else cmd("start_chase", { chase: item.name, args });
+  _closeParamModal();
 }
 
 // ----------------------------------------------------------------- filter
@@ -816,6 +965,20 @@ function bind() {
       if (v > 0) cmd("set_show_reference_bpm", { bpm: v });
     });
   }
+
+  const modal = $("param-modal");
+  if (modal) {
+    $("param-modal-cancel").onclick = _closeParamModal;
+    $("param-modal-fire").onclick = _commitParamModal;
+    modal.addEventListener("click", (e) => { if (e.target === modal) _closeParamModal(); });
+    document.addEventListener("keydown", (e) => {
+      if (modal.style.display === "none") return;
+      if (e.key === "Escape") _closeParamModal();
+      else if (e.key === "Enter" && e.target?.tagName !== "TEXTAREA") {
+        e.preventDefault(); _commitParamModal();
+      }
+    });
+  }
   $("play-mode-toggle").onclick = () => setPlayMode(!state.playMode);
 
   $("bank-select").onchange = (e) => { state.selectedBank = e.target.value; renderBankSlots(); };
@@ -831,6 +994,18 @@ function escapeHtml(s) {
 }
 
 // ----------------------------------------------------------------- boot
+
+async function refreshNotes() {
+  try {
+    const r = await fetch("/api/notes");
+    if (!r.ok) return;
+    const data = await r.json();
+    state.notes = {
+      scenes: data.scenes || {},
+      chases: data.chases || {},
+    };
+  } catch (e) { /* ignore */ }
+}
 
 async function refreshBpmGenres() {
   try {
@@ -855,6 +1030,7 @@ async function refreshBpmGenres() {
 (async () => {
   bind();
   await refreshEnvs();
+  await refreshNotes();
   await refreshStage();
   await refreshBpmGenres();
   connectWs();

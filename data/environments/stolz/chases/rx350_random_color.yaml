@@ -1,0 +1,23 @@
+# RX350 wechselt Color (effect/macro über palette rx350-facet) zu off-grid
+# Beats. 7 Wechsel über 16 Beats.
+name: rx350_random_color
+description: RX350 — synchroner Off-Grid Color-Wechsel via rx350-facet.
+
+loop: true
+length_beats: 16
+
+steps:
+  - at_beat: 0.7
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: rot,    facet: rx350 } } ]
+  - at_beat: 2.4
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: blau,   facet: rx350 } } ]
+  - at_beat: 5.1
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: gruen,  facet: rx350 } } ]
+  - at_beat: 7.8
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: weiss,  facet: rx350 } } ]
+  - at_beat: 9.3
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: warm,   facet: rx350 } } ]
+  - at_beat: 11.6
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: blau,   facet: rx350 } } ]
+  - at_beat: 13.9
+    actions: [ { kind: snap, group: { tag: beam_bar }, palette: { name: rot,    facet: rx350 } } ]
