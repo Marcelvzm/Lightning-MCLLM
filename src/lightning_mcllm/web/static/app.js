@@ -14,6 +14,7 @@ const state = {
   playMode: false,
   filter: "",
   bankFilter: "__all__",
+  draggingTimeline: false,
 };
 
 // ---------------------------------------------------------------- websocket
@@ -138,23 +139,59 @@ function onStatus(s) {
   refreshSim();
 }
 
+function _fmtTime(s) {
+  s = Math.max(0, s || 0);
+  const m = Math.floor(s / 60);
+  const sec = (s % 60).toFixed(1);
+  return `${m}:${sec.padStart(4, "0")}`;
+}
+
 function renderShowState(showState) {
   const el = $("show-state");
+  const tlRow = $("show-timeline-row");
+  const refRow = $("show-refbpm-row");
   if (!showState) {
     el.innerHTML = '<span class="state-label">no show running</span>';
+    if (tlRow) tlRow.style.display = "none";
+    if (refRow) refRow.style.display = "none";
     return;
   }
   const stateClass = "state-" + showState.state;
   const elapsed = showState.elapsed_seconds || 0;
-  const mins = Math.floor(elapsed / 60);
-  const secs = (elapsed % 60).toFixed(1);
+  const total = showState.length_seconds || 0;
+  const estTag = showState.length_is_estimate ? " (est.)" : "";
   el.innerHTML = `
     <span class="${stateClass}">${showState.state.toUpperCase()}</span>
     <span><b>${escapeHtml(showState.name)}</b></span>
-    <span>elapsed: ${mins}:${secs.padStart(4, "0")}</span>
+    <span>${_fmtTime(elapsed)} / ${_fmtTime(total)}${estTag}</span>
     <span>action: ${escapeHtml(showState.current_action || "—")}</span>
     ${showState.waiting ? `<span class="muted-hint">${escapeHtml(showState.waiting)}</span>` : ""}
   `;
+  // Show timeline + reference-BPM rows when a show is loaded.
+  if (tlRow) tlRow.style.display = "";
+  if (refRow) refRow.style.display = "";
+  // Update the slider position only if the user is not actively dragging.
+  const slider = $("show-timeline");
+  const label = $("show-timeline-label");
+  if (slider && !state.draggingTimeline) {
+    const max = Math.max(0.1, total);
+    slider.max = String(Math.round(max * 10));  // 0.1s precision
+    slider.value = String(Math.round(elapsed * 10));
+  }
+  if (label) label.textContent = `${_fmtTime(elapsed)} / ${_fmtTime(total)}${estTag}`;
+  // Sync the reference-BPM input from server unless the user is editing it.
+  const refInput = $("show-refbpm");
+  const refHint = $("show-refbpm-hint");
+  if (refInput && document.activeElement !== refInput && showState.reference_bpm) {
+    if (parseFloat(refInput.value) !== showState.reference_bpm) {
+      refInput.value = String(showState.reference_bpm);
+    }
+  }
+  if (refHint) {
+    refHint.textContent = showState.length_is_estimate
+      ? "show contains wait_chase / wait_group — total is approximate"
+      : "";
+  }
 }
 
 function onStage(st) {
@@ -654,6 +691,40 @@ function bind() {
   // Reload — forces a stage rebuild from disk. The engine remembers the
   // running show and auto-replays it once the stage swap is done.
   $("show-reload-btn").onclick = () => post("/api/reload");
+
+  const tl = $("show-timeline");
+  if (tl) {
+    // While the user drags, suppress server-driven slider updates so the
+    // thumb doesn't jump back to the playhead between mousemoves. Seek
+    // only on release.
+    tl.addEventListener("pointerdown", () => { state.draggingTimeline = true; });
+    tl.addEventListener("input", () => {
+      // Live label update during drag, but no server hit yet.
+      const total = (state.status?.show?.length_seconds) || 0;
+      const seconds = parseFloat(tl.value) / 10;
+      const estTag = state.status?.show?.length_is_estimate ? " (est.)" : "";
+      const lbl = $("show-timeline-label");
+      if (lbl) lbl.textContent = `${_fmtTime(seconds)} / ${_fmtTime(total)}${estTag}`;
+    });
+    const commit = () => {
+      if (!state.draggingTimeline) return;
+      state.draggingTimeline = false;
+      const seconds = parseFloat(tl.value) / 10;
+      const refInput = $("show-refbpm");
+      const ref = refInput ? parseFloat(refInput.value) : undefined;
+      cmd("seek_show", { target_seconds: seconds, reference_bpm: ref });
+    };
+    tl.addEventListener("pointerup", commit);
+    tl.addEventListener("pointercancel", commit);
+    tl.addEventListener("change", commit);
+  }
+  const refInput = $("show-refbpm");
+  if (refInput) {
+    refInput.addEventListener("change", () => {
+      const v = parseFloat(refInput.value);
+      if (v > 0) cmd("set_show_reference_bpm", { bpm: v });
+    });
+  }
   $("play-mode-toggle").onclick = () => setPlayMode(!state.playMode);
 
   $("bank-select").onchange = (e) => { state.selectedBank = e.target.value; renderBankSlots(); };

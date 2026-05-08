@@ -2,8 +2,8 @@
 # kürzerer Periode (4 Beats statt 8). Heads oszillieren fast simultan,
 # subtiler "Trail"-Effekt — alle praktisch gleichzeitig in Bewegung mit
 # leichtem Nachlauf.
-name: bar_wave_short
-description: Wave-Oszillation aller Heads, 0.25-Beat Versatz pro Head.
+name: bar_wave_short_hori
+description: Wave horizontal (links↔rechts), 0.25-Beat Versatz pro Head.
 
 loop: true
 length_beats: 4

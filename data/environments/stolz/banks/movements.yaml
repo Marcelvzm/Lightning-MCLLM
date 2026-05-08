@@ -1,20 +1,17 @@
 # Movements-Bank — Pan/Tilt-Bewegungen, Sweeps, Drifts, Position-Snaps.
-# bar_diagonal_sweep + bar_chaos_movement existieren weiter als Chases,
-# sind nur nicht im 9-Slot-Pad (zugänglich über die Chase-Liste).
+# Folgende Chases existieren weiter, sind aber nicht im 9-Slot-Pad:
+# bar_turn_random, bar_slow_walk, bar_diagonal_sweep, bar_chaos_movement.
+# Alle über die Chase-Liste in der GUI startbar.
 name: movements
 description: Bank für alle Bewegungs-bezogenen Scenes & Chases (Pan/Tilt-Patterns).
 
 slots:
-  - { id: 1, kind: chase, name: bar_alternate, label: "Alt Vert" }
-  - id: 2
-    kind: chase
-    name: bar_alternate
-    label: "Alt Hori"
-    args: { a_pan: 50, a_tilt: 128, b_pan: 200, b_tilt: 128 }
-  - { id: 3, kind: chase, name: bar_turn_rechts, label: "Turn →" }
-  - { id: 4, kind: chase, name: bar_turn_links,  label: "Turn ←" }
-  - { id: 5, kind: chase, name: bar_turn_random, label: "Turn Rnd" }
-  - { id: 6, kind: chase, name: bar_slow_walk,   label: "Slow Walk" }
-  - { id: 7, kind: chase, name: bar_wave_long,   label: "Wave Long" }
-  - { id: 8, kind: chase, name: bar_wave_short,  label: "Wave Short" }
+  - { id: 1, kind: chase, name: bar_alternate_verti,  label: "Alt Vert" }
+  - { id: 2, kind: chase, name: bar_alternate_hori,   label: "Alt Hori" }
+  - { id: 3, kind: chase, name: bar_turn_rechts,      label: "Turn →" }
+  - { id: 4, kind: chase, name: bar_turn_links,       label: "Turn ←" }
+  - { id: 5, kind: chase, name: bar_wave_long_hori,   label: "Wave L Hori" }
+  - { id: 6, kind: chase, name: bar_wave_long_verti,  label: "Wave L Vert" }
+  - { id: 7, kind: chase, name: bar_wave_short_hori,  label: "Wave S Hori" }
+  - { id: 8, kind: chase, name: bar_wave_short_verti, label: "Wave S Vert" }
   - { id: 9, kind: blackout, label: "BLACKOUT", fade_seconds: 0.0 }

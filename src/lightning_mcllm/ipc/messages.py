@@ -54,6 +54,8 @@ ENGINE_OPS: tuple[str, ...] = (
     "resume_show",
     "reset_show",
     "stop_show",
+    "seek_show",
+    "set_show_reference_bpm",
     "start_audio",
     "stop_audio",
     "set_bpm_range",

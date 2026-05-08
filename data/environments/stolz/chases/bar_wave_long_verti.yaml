@@ -1,0 +1,59 @@
+# Wave vertikal — alle Heads oszillieren kontinuierlich zwischen Tilt-
+# Position A (vorne/Publikum) und B (hinten/Decke), jeder Head mit 1 Beat
+# Versatz. Periode pro Head = 8 Beats.
+name: bar_wave_long_verti
+description: Wave vertikal (vorne↔hinten), 1-Beat Versatz pro Head.
+
+loop: true
+length_beats: 8
+
+parameters:
+  a_pan:
+    type: int
+    default: 128         # zentriert
+    min: 0
+    max: 255
+    description: "Pan-Wert für Position A. Default: zentriert."
+  a_tilt:
+    type: int
+    default: 50          # vertikal: Decke
+    min: 0
+    max: 255
+    description: "Tilt-Wert für Position A. Default: Decke (50)."
+  b_pan:
+    type: int
+    default: 128
+    min: 0
+    max: 255
+    description: "Pan-Wert für Position B. Default: zentriert."
+  b_tilt:
+    type: int
+    default: 200         # vertikal: Publikum
+    min: 0
+    max: 255
+    description: "Tilt-Wert für Position B. Default: Publikum (200)."
+
+steps:
+  # head-1 — Phase 0
+  - at_beat: 0
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 4
+    actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
+
+  # head-2 — Phase 1
+  - at_beat: 1
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 5
+    actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
+
+  # head-3 — Phase 2
+  - at_beat: 2
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 6
+    actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
+
+  # head-4 — Phase 3
+  - at_beat: 3
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
+  - at_beat: 7
+    actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]

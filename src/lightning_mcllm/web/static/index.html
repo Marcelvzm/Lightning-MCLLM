@@ -75,6 +75,16 @@
     <div id="show-state" class="show-state">
       <span class="state-label">no show running</span>
     </div>
+    <div class="show-row" id="show-timeline-row" style="display:none">
+      <label>Timeline:</label>
+      <input type="range" id="show-timeline" min="0" max="1000" value="0" step="1">
+      <span id="show-timeline-label" class="muted-hint">0:00 / 0:00</span>
+    </div>
+    <div class="show-row" id="show-refbpm-row" style="display:none">
+      <label title="Assumed BPM for converting beat-based waits to a timeline. Independent of the live clock.">Ref BPM:</label>
+      <input type="number" id="show-refbpm" min="20" max="400" step="1" value="120" style="width:80px">
+      <span class="muted-hint" id="show-refbpm-hint"></span>
+    </div>
   </section>
 
   <section class="panel" id="triggers-panel">

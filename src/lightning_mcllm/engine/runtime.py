@@ -135,6 +135,10 @@ class Engine:
         # = "if the room goes quiet, freeze beat-locked chases". False
         # = lights keep moving on the last known BPM even without music.
         self._pause_on_silence: bool = True
+        # Reference BPM used for show-timeline length / seek calculations.
+        # User-configurable via the GUI; defaults to whatever the show
+        # itself declares, falling back to 120.
+        self._show_reference_bpm: float = 120.0
 
     # ----------------------------------------------------------------- lifecycle
 
@@ -254,12 +258,19 @@ class Engine:
         # Show-runner state, if any
         runner = self._show_runner
         if runner is not None:
+            from lightning_mcllm.engine.show_runner import compute_show_length_seconds
+            length, length_estimate = compute_show_length_seconds(
+                runner._show, self._show_reference_bpm
+            )
             show_state = {
                 "name": runner.show_name,
                 "state": runner.state,
                 "elapsed_seconds": runner.elapsed_seconds,
                 "current_action": runner.current_action_description,
                 "waiting": runner.waiting_description,
+                "length_seconds": round(length, 2),
+                "length_is_estimate": length_estimate,
+                "reference_bpm": self._show_reference_bpm,
             }
         else:
             show_state = None
@@ -433,6 +444,22 @@ class Engine:
         elif name == "reset_show":
             if self._show_runner is not None:
                 self._show_runner.reset()
+        elif name == "seek_show":
+            target = float(a.get("target_seconds", 0.0))
+            ref = a.get("reference_bpm")
+            if ref is not None:
+                ref_f = float(ref)
+                if ref_f > 0:
+                    self._show_reference_bpm = ref_f
+            if self._show_runner is not None:
+                self._chase_runners.clear()
+                self._voices = [v for v in self._voices if not v.key.startswith("chase:")]
+                self._show_runner.seek(target, reference_bpm=self._show_reference_bpm)
+        elif name == "set_show_reference_bpm":
+            ref_f = float(a.get("bpm", 120.0))
+            if ref_f > 0:
+                self._show_reference_bpm = ref_f
+                log.info("show reference BPM set to %.1f", ref_f)
         elif name == "stop_show":
             # Drop the runner AND everything it spawned. Just nulling the
             # runner left chase voices ticking forever — confusing UX (user

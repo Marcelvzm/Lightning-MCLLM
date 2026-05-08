@@ -1,0 +1,51 @@
+# Bar-Heads in zwei Zickzack-Paaren — head-1+head-3 (Paar A) vs.
+# head-2+head-4 (Paar B). Phase 1: A → links, B → rechts. Phase 2: getauscht.
+# Pan-Swap (horizontal). Tilt zentriert (128).
+name: bar_alternate_hori
+description: Bar-Heads-Alternate horizontal — Pan-Swap zwischen links (50) und rechts (200).
+
+loop: true
+length_beats: 4
+
+parameters:
+  a_pan:
+    type: int
+    default: 50         # horizontal: links
+    min: 0
+    max: 255
+    description: "Pan-Wert für Position A. Default: links (50)."
+  a_tilt:
+    type: int
+    default: 128
+    min: 0
+    max: 255
+    description: "Tilt-Wert für Position A. Default: zentriert (128)."
+  b_pan:
+    type: int
+    default: 200        # horizontal: rechts
+    min: 0
+    max: 255
+    description: "Pan-Wert für Position B. Default: rechts (200)."
+  b_tilt:
+    type: int
+    default: 128
+    min: 0
+    max: 255
+    description: "Tilt-Wert für Position B. Default: zentriert (128)."
+
+steps:
+  # ── Phase 1: Pair A (head-1 + head-3) → Position A; Pair B → Position B ──
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } }
+
+  # ── Phase 2: getauscht ───────────────────────────────────────────────────
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { name: head-1 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } }
+      - { kind: snap, group: { name: head-3 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } }
+      - { kind: snap, group: { name: head-2 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } }
+      - { kind: snap, group: { name: head-4 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } }

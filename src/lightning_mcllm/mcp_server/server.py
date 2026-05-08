@@ -452,6 +452,27 @@ def run_stdio(api_url: str) -> None:
                 inputSchema={"type": "object", "properties": {}},
             ),
             Tool(
+                name="seek_show",
+                description="Jump the running show to time position target_seconds. Uses reference_bpm (if given) to convert beat-based waits.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "target_seconds": {"type": "number"},
+                        "reference_bpm": {"type": "number"},
+                    },
+                    "required": ["target_seconds"],
+                },
+            ),
+            Tool(
+                name="set_show_reference_bpm",
+                description="Reference BPM used for show-timeline length and seek calculations. Independent of the live BPM clock.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {"bpm": {"type": "number"}},
+                    "required": ["bpm"],
+                },
+            ),
+            Tool(
                 name="set_pause_on_silence",
                 description="Whether the BPM clock should pause when the audio detector hears no music for 2s. Default true. False = lights keep moving on last known BPM.",
                 inputSchema={
@@ -537,6 +558,7 @@ def run_stdio(api_url: str) -> None:
                 "set_value", "set_values_group", "tap", "set_master",
                 "set_clock_running", "start_audio", "stop_audio", "all_off",
                 "set_bpm_range", "set_pause_on_silence",
+                "seek_show", "set_show_reference_bpm",
             }:
                 out = client.cmd(name, **arguments)
             else:

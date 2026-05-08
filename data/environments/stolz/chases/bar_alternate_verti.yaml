@@ -8,10 +8,8 @@
 # (linker/rechter Zickzack mit zentriertem Tilt.)
 #
 # Schreibt KEINE Color/Gobo/Dimmer — die kommen aus den anderen Banks.
-name: bar_alternate
-description: |
-  Bar-Heads-Alternate. Default vertikal (tilt 50 ↔ 165). Horizontal via
-  args (a_pan: 50, a_tilt: 128, b_pan: 200, b_tilt: 128).
+name: bar_alternate_verti
+description: Bar-Heads-Alternate vertikal — Tilt-Swap zwischen Decke (50) und Publikum (165).
 
 loop: true
 length_beats: 4

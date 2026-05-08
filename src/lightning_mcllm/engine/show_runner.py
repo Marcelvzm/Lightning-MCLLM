@@ -182,6 +182,101 @@ class ShowRunner:
         self._stack = [_Frame(actions=list(self._show.script), pc=0, iterations_remaining=top_iters)]
         self._wait = None
         self._elapsed_seconds = 0.0
+
+    def seek(self, target_seconds: float, reference_bpm: float | None = None) -> None:
+        """Fast-forward replay to the given time position.
+
+        Resets the show, then walks the script with no real-time waits:
+        side-effect actions (snap_scene, start_chase, set_bpm, etc.) are
+        submitted to the engine, wait durations are accounted by adding
+        to a virtual elapsed counter. When that counter would cross
+        target_seconds, the in-progress wait is split: its remainder
+        becomes the live wait, and tick() picks up from there.
+
+        wait_chase / wait_group are treated as instant during seek (their
+        real duration depends on runtime conditions we can't simulate).
+        """
+        if target_seconds < 0:
+            target_seconds = 0.0
+        bpm = reference_bpm if (reference_bpm and reference_bpm > 0) else self._clock.bpm
+        if not bpm or bpm <= 0:
+            bpm = 120.0
+
+        self._reset_internal()
+        self._state = "running"
+
+        # Cap iterations defensively against a malformed script.
+        max_iter = 200_000
+        iter_count = 0
+        accumulated = 0.0
+
+        while self._stack and iter_count < max_iter:
+            iter_count += 1
+            top = self._stack[-1]
+            if top.pc >= len(top.actions):
+                if top.iterations_remaining == -1:
+                    # show.loop = true at the top; one full pass is what
+                    # the timeline represents — stop here.
+                    break
+                top.iterations_remaining -= 1
+                if top.iterations_remaining > 0:
+                    top.pc = 0
+                    continue
+                self._stack.pop()
+                continue
+            action = top.actions[top.pc]
+            top.pc += 1
+
+            if isinstance(action, WaitAction):
+                if action.seconds is not None:
+                    wait_dur = action.seconds
+                elif action.beats is not None:
+                    wait_dur = action.beats * 60.0 / bpm
+                elif action.bars is not None:
+                    wait_dur = action.bars * 4.0 * 60.0 / bpm
+                else:
+                    wait_dur = 0.0
+                if accumulated + wait_dur >= target_seconds:
+                    # Crossing the target — settle here. The remainder of
+                    # this wait becomes the live wait so tick() resumes
+                    # naturally.
+                    remainder = (accumulated + wait_dur) - target_seconds
+                    self._elapsed_seconds = target_seconds
+                    if action.seconds is not None or remainder == 0:
+                        self._wait = _TimeWait(
+                            until_seconds=self._elapsed_seconds + remainder,
+                        )
+                    else:
+                        rem_beats = remainder * bpm / 60.0
+                        self._wait = _TimeWait(
+                            until_beats=self._clock.beat_position + rem_beats,
+                        )
+                    log.info(
+                        "show %r: seeked to %.2fs (remainder wait %.2fs)",
+                        self._show.name, target_seconds, remainder,
+                    )
+                    return
+                accumulated += wait_dur
+                continue
+
+            if isinstance(action, (WaitChaseAction, WaitGroupAction)):
+                # Runtime-dependent — treat as instant during seek.
+                continue
+
+            # Side-effect or LoopAction — let _execute do its thing.
+            self._execute(action)
+            # _execute might still install a wait for safety, but for the
+            # action types remaining here it shouldn't. Clear defensively.
+            self._wait = None
+
+        # Reached the end of the script before target.
+        self._state = "completed"
+        self._elapsed_seconds = accumulated
+        self._current_action_desc = "(seeked past end)"
+        log.info(
+            "show %r: seeked past end (target %.2fs, total %.2fs)",
+            self._show.name, target_seconds, accumulated,
+        )
         self._current_action_desc = ""
 
     # ------------------------------------------------------------------ tick
@@ -323,6 +418,42 @@ class ShowRunner:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def compute_show_length_seconds(show: Show, reference_bpm: float) -> tuple[float, bool]:
+    """Total length of `show` assuming a fixed BPM throughout.
+
+    Walks every action, summing wait durations:
+    * wait.seconds → seconds directly
+    * wait.beats / wait.bars → converted via reference_bpm
+    * wait_chase / wait_group → can't be simulated; counted as 0 and
+      marks the result as an estimate
+    * Loops are unrolled by their declared `times` (top-level
+      show.loop = true is treated as 1 — the timeline shows one pass)
+    """
+    if reference_bpm is None or reference_bpm <= 0:
+        reference_bpm = 120.0
+    is_estimate = False
+
+    def walk(actions: list[Action]) -> float:
+        nonlocal is_estimate
+        total = 0.0
+        for a in actions:
+            if isinstance(a, WaitAction):
+                if a.seconds is not None:
+                    total += a.seconds
+                elif a.beats is not None:
+                    total += a.beats * 60.0 / reference_bpm
+                elif a.bars is not None:
+                    total += a.bars * 4.0 * 60.0 / reference_bpm
+            elif isinstance(a, (WaitChaseAction, WaitGroupAction)):
+                is_estimate = True
+            elif isinstance(a, LoopAction):
+                if a.times > 0:
+                    total += a.times * walk(list(a.actions))
+        return total
+
+    return walk(list(show.script)), is_estimate
 
 
 def _build_time_wait(

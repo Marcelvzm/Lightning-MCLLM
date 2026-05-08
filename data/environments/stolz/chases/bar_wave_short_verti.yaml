@@ -1,64 +1,54 @@
-# Wave — alle Heads oszillieren kontinuierlich zwischen Position A und B
-# (default: links ↔ rechts), jeder Head mit 1 Beat Versatz zum vorigen.
-# Periode pro Head = 8 Beats (4 nach rechts, 4 nach links). Wave wandert
-# also visuell durch die Bar ohne Pause.
-#
-# Default = horizontal (links↔rechts pan-Achse).
-# Vertikal (vorne↔hinten) via Slot-Args:
-#   args: { a_pan: 128, a_tilt: 50, b_pan: 128, b_tilt: 200 }
-name: bar_wave_long
-description: Wave-Oszillation aller Heads, 1-Beat Versatz pro Head.
+# Wie bar_wave_long_verti aber mit minimalem Phasenversatz (0.25 Beats)
+# und kürzerer Periode (4 Beats statt 8).
+name: bar_wave_short_verti
+description: Wave vertikal (vorne↔hinten), 0.25-Beat Versatz pro Head.
 
 loop: true
-length_beats: 8
+length_beats: 4
 
 parameters:
   a_pan:
     type: int
-    default: 50          # horizontal: links
+    default: 128
     min: 0
     max: 255
-    description: "Pan-Wert für Position A. Default: links (50)."
   a_tilt:
     type: int
-    default: 128
+    default: 50          # vertikal: Decke
     min: 0
     max: 255
-    description: "Tilt-Wert für Position A. Default: zentriert."
   b_pan:
     type: int
-    default: 200         # horizontal: rechts
-    min: 0
-    max: 255
-    description: "Pan-Wert für Position B. Default: rechts (200)."
-  b_tilt:
-    type: int
     default: 128
     min: 0
     max: 255
-    description: "Tilt-Wert für Position B. Default: zentriert."
+  b_tilt:
+    type: int
+    default: 200         # vertikal: Publikum
+    min: 0
+    max: 255
 
 steps:
   # head-1 — Phase 0
   - at_beat: 0
     actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
-  - at_beat: 4
+  - at_beat: 2
     actions: [ { kind: snap, group: { name: head-1 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
 
-  # head-2 — Phase 1
-  - at_beat: 1
+  # head-2 — Phase 0.25
+  - at_beat: 0.25
     actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
-  - at_beat: 5
+  - at_beat: 2.25
     actions: [ { kind: snap, group: { name: head-2 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
 
-  # head-3 — Phase 2
-  - at_beat: 2
+  # head-3 — Phase 0.5
+  - at_beat: 0.5
     actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
-  - at_beat: 6
+  - at_beat: 2.5
     actions: [ { kind: snap, group: { name: head-3 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
 
-  # head-4 — Phase 3
-  - at_beat: 3
+  # head-4 — Phase 0.75
+  - at_beat: 0.75
     actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: "${b_pan}", position/tilt: "${b_tilt}", movement/speed: 80 } } ]
-  - at_beat: 7
+  - at_beat: 2.75
     actions: [ { kind: snap, group: { name: head-4 }, values: { position/pan: "${a_pan}", position/tilt: "${a_tilt}", movement/speed: 80 } } ]
