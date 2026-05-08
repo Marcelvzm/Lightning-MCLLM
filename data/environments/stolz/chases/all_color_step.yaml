@@ -1,0 +1,43 @@
+# Gesamtes Rig synchron — Color wechselt diskret jeden Beat. 5 Beats Loop.
+name: all_color_step
+description: Gesamtes Rig — pro Beat eine andere Farbe (rot/blau/gruen/weiss/warm).
+
+loop: true
+length_beats: 5
+
+steps:
+  - at_beat: 0
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: rot, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: rot, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: rot, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: rot, facet: rx350 } }
+  - at_beat: 1
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: blau, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: blau, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: blau, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: blau, facet: rx350 } }
+  - at_beat: 2
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: gruen, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: gruen, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: gruen, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: gruen, facet: rx350 } }
+  - at_beat: 3
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: weiss, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: weiss, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: weiss, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: weiss, facet: rx350 } }
+  - at_beat: 4
+    actions:
+      - { kind: snap, group: { tag: bar },      palette: { name: warm, facet: wheel } }
+      - { kind: snap, group: { tag: par },      palette: { name: warm, facet: rgb   } }
+      - { kind: snap, group: { tag: cameo },    palette: { name: warm, facet: cameo } }
+      - { kind: snap, group: { tag: showtec },  values:  { effect/macro: 0 } }
+      - { kind: snap, group: { tag: beam_bar }, palette: { name: warm, facet: rx350 } }

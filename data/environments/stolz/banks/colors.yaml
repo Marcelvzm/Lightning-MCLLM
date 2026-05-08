@@ -40,3 +40,15 @@ slots:
   - { id: 17, kind: scene, name: all_color, label: "Grün",  args: { col: gruen } }
   - { id: 18, kind: scene, name: all_color, label: "Weiß",  args: { col: weiss } }
   - { id: 19, kind: scene, name: all_color, label: "Warm",  args: { col: warm } }
+
+  # ── Color Fade (kontinuierlich durch Palette) ──────────────────────────
+  - { id: 20, kind: chase, name: bar_color_fade,    label: "Bar Fade" }
+  - { id: 21, kind: chase, name: par_color_fade,    label: "Par Fade" }
+  - { id: 22, kind: chase, name: rx350_color_fade,  label: "RX Fade" }
+  - { id: 23, kind: chase, name: all_color_fade,    label: "All Fade" }
+
+  # ── Color Step (diskret pro Beat) ──────────────────────────────────────
+  - { id: 24, kind: chase, name: bar_color_step,    label: "Bar Step" }
+  - { id: 25, kind: chase, name: par_color_step,    label: "Par Step" }
+  - { id: 26, kind: chase, name: rx350_color_step,  label: "RX Step" }
+  - { id: 27, kind: chase, name: all_color_step,    label: "All Step" }

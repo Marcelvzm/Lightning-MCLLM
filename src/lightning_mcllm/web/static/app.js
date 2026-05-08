@@ -565,18 +565,50 @@ function drawShadow(byteString) {
 }
 
 // ----------------------------------------------------------------- sim view
+//
+// Two pieces:
+//   * `refreshSim` polls /api/sim_state and updates _simLatest (target).
+//   * `_simAnimate` runs in a requestAnimationFrame loop, lerping each
+//     moving-head's displayed pan/tilt toward the target each frame so
+//     the pointer moves smoothly between server polls. Models the
+//     mechanical inertia a real head has — same end position, just
+//     visually smoothed.
 
 let simFetching = false;
+let _simLatest = null;          // last sim_state from server
+let _simDisplay = {};           // per-fixture displayed pan/tilt
+let _simRafRunning = false;
+
 async function refreshSim() {
   if (simFetching) return;
   simFetching = true;
   try {
     const r = await fetch("/api/sim_state");
     if (!r.ok) return;
-    drawSim(await r.json());
+    _simLatest = await r.json();
+    if (!_simRafRunning) { _simRafRunning = true; requestAnimationFrame(_simAnimate); }
   } finally {
     simFetching = false;
   }
+}
+
+function _simAnimate() {
+  if (_simLatest) {
+    // Lerp each moving head's pan/tilt toward the latest target.
+    // alpha ≈ 0.18 at 60Hz → ~80ms time constant. Approximates a
+    // medium-speed head; not driven by the real movement/speed channel
+    // (would be more accurate but overkill for a preview).
+    const ALPHA = 0.18;
+    for (const f of (_simLatest.fixtures || [])) {
+      if (f.kind !== "moving_head") continue;
+      let d = _simDisplay[f.name];
+      if (!d) { d = { pan: f.pan ?? 128, tilt: f.tilt ?? 128 }; _simDisplay[f.name] = d; }
+      if (f.pan != null)  d.pan  += (f.pan  - d.pan)  * ALPHA;
+      if (f.tilt != null) d.tilt += (f.tilt - d.tilt) * ALPHA;
+    }
+    drawSim(_simLatest);
+  }
+  requestAnimationFrame(_simAnimate);
 }
 
 // Group fixtures by render-kind into rows. Bar/moving heads on top,
@@ -629,7 +661,14 @@ function drawSim(state) {
     for (let i = 0; i < row.length; i++) {
       const f = row[i];
       const x = stepX * (i + 1);
-      _drawFixture(ctx, f, x, y, radius);
+      // For moving heads, swap in the lerped display values so the
+      // pointer moves smoothly between server polls.
+      let drawF = f;
+      if (f.kind === "moving_head") {
+        const d = _simDisplay[f.name];
+        if (d) drawF = { ...f, pan: d.pan, tilt: d.tilt };
+      }
+      _drawFixture(ctx, drawF, x, y, radius);
     }
   }
 }
