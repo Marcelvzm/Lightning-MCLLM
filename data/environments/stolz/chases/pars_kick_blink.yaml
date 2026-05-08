@@ -1,0 +1,135 @@
+# Wie pars_random_blinks, aber auf 1/Beat eingetaktet — pro Beat genau
+# ein Flash-Event, allerdings zu krummen Sub-Beat-Stellen (.2 bis .8)
+# damit der Eindruck "random" bleibt. Meist flasht 1 Par, gelegentlich
+# 2 oder 3 gleichzeitig (Beats 3, 8, 12) als Akzent.
+#
+# Designed als OVERLAY auf eine Background-Wash (z.B. pars_red_full):
+# der snap überschreibt kurz weiß, der release droppt die Voices, der
+# Wash paintet wieder durch.
+#
+# 16 Trigger-Punkte über 16 Beats:
+#   12× single  → meistens nur 1 Par
+#    3× double  → 2 Pars gleichzeitig (Beats 3, 12)
+#    1× triple  → 3 Pars gleichzeitig (Beat 8 — Höhepunkt im Loop)
+
+name: pars_kick_blink
+description: 1/Beat pars-blink, krumme Sub-Beat-Stellen, gelegentlich 2-3 gleichzeitig.
+loop: true
+length_beats: 16
+
+steps:
+  # Beat 0
+  - at_beat: 0.3
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 0.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 1
+  - at_beat: 1.7
+    actions:
+      - { kind: snap, group: { name: showtec-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 1.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 2
+  - at_beat: 2.4
+    actions:
+      - { kind: snap, group: { name: cameo-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 2.55
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 3 — DOUBLE
+  - at_beat: 3.6
+    actions:
+      - { kind: snap, group: { name: showtec-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+      - { kind: snap, group: { name: cameo-2 },   values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 3.75
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 4
+  - at_beat: 4.2
+    actions:
+      - { kind: snap, group: { name: showtec-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 4.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 5
+  - at_beat: 5.8
+    actions:
+      - { kind: snap, group: { name: cameo-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 5.95
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 6
+  - at_beat: 6.3
+    actions:
+      - { kind: snap, group: { name: showtec-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 6.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 7
+  - at_beat: 7.5
+    actions:
+      - { kind: snap, group: { name: cameo-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 7.65
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 8 — TRIPLE peak
+  - at_beat: 8.4
+    actions:
+      - { kind: snap, group: { name: cameo-3 },   values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+      - { kind: snap, group: { name: showtec-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+      - { kind: snap, group: { name: cameo-1 },   values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 8.6
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 9
+  - at_beat: 9.7
+    actions:
+      - { kind: snap, group: { name: showtec-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 9.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 10
+  - at_beat: 10.2
+    actions:
+      - { kind: snap, group: { name: cameo-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 10.35
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 11
+  - at_beat: 11.6
+    actions:
+      - { kind: snap, group: { name: showtec-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 11.75
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 12 — DOUBLE
+  - at_beat: 12.5
+    actions:
+      - { kind: snap, group: { name: cameo-1 },   values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+      - { kind: snap, group: { name: showtec-1 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 12.65
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 13
+  - at_beat: 13.3
+    actions:
+      - { kind: snap, group: { name: cameo-3 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 13.45
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 14
+  - at_beat: 14.7
+    actions:
+      - { kind: snap, group: { name: showtec-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, effect/macro: 0 } }
+  - at_beat: 14.85
+    actions: [ { kind: release, group: { all: true } } ]
+
+  # Beat 15
+  - at_beat: 15.4
+    actions:
+      - { kind: snap, group: { name: cameo-2 }, values: { color/red: 255, color/green: 255, color/blue: 255, dimmer: 255, effect/macro: 75 } }
+  - at_beat: 15.55
+    actions: [ { kind: release, group: { all: true } } ]

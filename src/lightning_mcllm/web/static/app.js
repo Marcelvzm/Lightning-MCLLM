@@ -13,6 +13,7 @@ const state = {
   selectedBank: null,
   playMode: false,
   filter: "",
+  bankFilter: "__all__",
 };
 
 // ---------------------------------------------------------------- websocket
@@ -210,6 +211,17 @@ function onStage(st) {
     const o = document.createElement("option"); o.value = b.name; o.textContent = b.name;
     bankSel.appendChild(o);
   }
+  // bank filter dropdown (Triggers panel) — same options + leading "All"
+  const bankFilter = $("bank-filter");
+  bankFilter.innerHTML = '<option value="__all__">All</option>';
+  for (const b of (st.banks || [])) {
+    const o = document.createElement("option"); o.value = b.name; o.textContent = b.name;
+    bankFilter.appendChild(o);
+  }
+  if (state.bankFilter !== "__all__" && !(st.banks || []).find(b => b.name === state.bankFilter)) {
+    state.bankFilter = "__all__";
+  }
+  bankFilter.value = state.bankFilter;
   if ((st.banks || []).length > 0) {
     if (!state.selectedBank || !st.banks.find(b => b.name === state.selectedBank)) {
       state.selectedBank = st.banks[0].name;
@@ -255,12 +267,38 @@ function renderBankSlots() {
 
 function applyFilter() {
   const f = state.filter.trim().toLowerCase();
-  for (const list of ["scenes-list", "chases-list", "fixtures-list"]) {
+  // Build per-kind name sets for the selected bank, or null = "all".
+  let bankScenes = null, bankChases = null;
+  if (state.bankFilter && state.bankFilter !== "__all__") {
+    const bank = (state.stage?.banks || []).find(b => b.name === state.bankFilter);
+    if (bank) {
+      bankScenes = new Set();
+      bankChases = new Set();
+      for (const slot of (bank.slots || [])) {
+        if (slot.kind === "scene" && slot.name) bankScenes.add(slot.name);
+        else if (slot.kind === "chase" && slot.name) bankChases.add(slot.name);
+      }
+    }
+  }
+  const lists = [
+    ["scenes-list", bankScenes],
+    ["chases-list", bankChases],
+    ["fixtures-list", null],   // fixtures are never bank-filtered
+  ];
+  for (const [list, bankSet] of lists) {
     document.querySelectorAll(`#${list} li`).forEach(li => {
-      const name = (li.dataset.name || li.textContent).toLowerCase();
-      li.classList.toggle("hidden", f !== "" && !name.includes(f));
+      const name = li.dataset.name || li.textContent;
+      const lname = name.toLowerCase();
+      const textHit = f === "" || lname.includes(f);
+      const bankHit = bankSet === null || bankSet.has(name);
+      li.classList.toggle("hidden", !(textHit && bankHit));
     });
   }
+  // Update counts to reflect the visible items.
+  const visible = (id) => document.querySelectorAll(`#${id} li:not(.hidden)`).length;
+  const total = (arr) => (arr || []).length;
+  const sCount = $("scenes-count"); if (sCount) sCount.textContent = `(${visible("scenes-list")}/${total(state.stage?.scenes)})`;
+  const cCount = $("chases-count"); if (cCount) cCount.textContent = `(${visible("chases-list")}/${total(state.stage?.chases)})`;
 }
 
 // ----------------------------------------------------------------- shadow
@@ -427,6 +465,7 @@ function bind() {
   $("play-mode-toggle").onclick = () => setPlayMode(!state.playMode);
 
   $("bank-select").onchange = (e) => { state.selectedBank = e.target.value; renderBankSlots(); };
+  $("bank-filter").onchange = (e) => { state.bankFilter = e.target.value; applyFilter(); };
   $("trigger-filter").oninput = (e) => { state.filter = e.target.value; applyFilter(); };
 
   document.addEventListener("keydown", handleKey);

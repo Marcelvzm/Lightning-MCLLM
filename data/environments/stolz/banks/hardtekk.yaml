@@ -12,7 +12,7 @@ slots:
 
   # ── Spalte 2: Build / Anticipation ──────────────────────────────────
   - { id: 4, kind: chase, name: build_rise,         label: "Build" }
-  - { id: 5, kind: chase, name: strobe_build_8bar,  label: "Strobe Build" }
+  - { id: 5, kind: chase, name: bar_random_flashes, label: "Bar Flashes" }
   - { id: 6, kind: chase, name: anticipation_halt,  label: "HALT (Z1)" }
 
   # ── Spalte 3: Drop / Peak / Panic ───────────────────────────────────
